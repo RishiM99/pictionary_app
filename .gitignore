@@ -4,4 +4,5 @@
 !.elasticbeanstalk/*.global.yml
 
 # Ignore Node Modules
-client/node_modules/*
+client/node_modules/
+node_modules/
