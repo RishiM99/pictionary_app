@@ -23,10 +23,6 @@ app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
   });
 
-io.on('connection', (socket) => {
-    console.log("connection");
-  });
-
 server.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
 });
