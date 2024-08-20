@@ -1,6 +1,8 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
+import { socket } from './socket';
+
 
 function App() {
   const [data, setData] = React.useState(null);
