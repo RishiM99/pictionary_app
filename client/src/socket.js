@@ -1,5 +1,5 @@
-const { io } = require('socket.io-client');
+// const { io } = require('socket.io-client');
 
-const URL = "http://pictionary-app-dev.us-west-2.elasticbeanstalk.com/";
+// const URL = undefined;
 
-export const socket = io(URL);
+// export const socket = io(URL);
