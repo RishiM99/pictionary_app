@@ -3,6 +3,7 @@ import './App.css';
 import {Events} from './Events.js';
 import {socket} from './socket.js';
 import { useState, useEffect } from 'react';
+import { MyForm } from './MyForm.js';
 
 function App() {
 
@@ -40,6 +41,7 @@ function App() {
       </header>
       <p>State: { '' + isConnected }</p>;
       <Events events={ [1,2,3] } />
+      <MyForm />
     </div>
   );
 }
