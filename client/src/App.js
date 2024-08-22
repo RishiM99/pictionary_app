@@ -1,6 +1,7 @@
 import logo from './logo.svg';
 import './App.css';
 import {Events} from './Events.js';
+import {socket} from './socket.js';
 
 function App() {
   return (
