@@ -40,7 +40,7 @@ function App() {
         <img src={logo} className="App-logo" alt="logo" />
       </header>
       <p>State: { '' + isConnected }</p>;
-      <Events events={ [1,2,3] } />
+      <Events events={ fooEvents } />
       <MyForm />
     </div>
   );

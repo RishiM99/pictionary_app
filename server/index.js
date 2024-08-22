@@ -26,8 +26,7 @@ app.get('*', (req, res) => {
 
 io.on('connection', (socket) => {
     socket.on('form-message', (msg) => {
-      console.log('message: ' + msg);
-      socket.emit("message-to-client", "Received the message")
+      socket.emit("message-to-client", "Received message: " + msg)
     });
   });
 
