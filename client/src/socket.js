@@ -1,3 +1,5 @@
 const { io } = require('socket.io-client');
 
-export const socket = io(window.location.host);
+const socket = io(window.location.host);
+
+export default socket;

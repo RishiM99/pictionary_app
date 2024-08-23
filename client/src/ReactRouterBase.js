@@ -4,20 +4,25 @@ import {
 } from "react-router-dom";
 import EnterName from "./routes/EnterName.js";
 import RouteErrorPage from "./routes/RouteErrorPage.js";
+import CreateOrJoinRooms from "./routes/CreateOrJoinRooms.js";
 import {useState} from "react";
-import NameContext from "./contexts/NameContext.js";
+import UserNameContext from "./contexts/UserNameContext.js";
 
 export default function ReactRouterBase() {
-  const [name, setName] = useState('');
+  const [userName, setUserName] = useState('');
   const router = createBrowserRouter([
     {
       path: "/",
       element: <EnterName />,
       errorElement: <RouteErrorPage />,
     },
+    {
+      path: "/rooms",
+      element: <CreateOrJoinRooms />,
+    },
   ]);
   return (
-    <NameContext.Provider value = {{name, setName}}>
+    <UserNameContext.Provider value = {{userName, setUserName}}>
        <RouterProvider router={router} />;
-    </NameContext.Provider>);
+    </UserNameContext.Provider>);
 }

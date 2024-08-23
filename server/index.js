@@ -25,8 +25,16 @@ app.get('*', (req, res) => {
   });
 
 io.on('connection', (socket) => {
-    socket.on('form-message', (msg) => {
-      socket.emit("message-to-client", "Received message: " + msg)
+    socket.on('create-room', (msg) => {
+      console.log(msg);
+      const userName = msg.userName; 
+      const roomName = msg.roomName;
+      console.log("ROOM NAME:");
+      console.log(roomName);
+      socket.userName = userName;
+      socket.join(roomName);
+      console.log(io.sockets.adapter.rooms);
+      io.emit('list-of-rooms', io.sockets.adapter.rooms); 
     });
   });
 

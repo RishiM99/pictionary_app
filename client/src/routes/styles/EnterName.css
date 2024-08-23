@@ -11,24 +11,38 @@
   color: #333;
 }
 
-.name-input-container input {
+.name-input-container-text {
   font-size: 1rem;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
   outline: none;
   width: 300px;
+  margin: 20px;
   max-width: 100%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.name-input-container input:focus {
+.name-input-container-submit {
+  font-size: 1rem;
+  background-color: rgba(0, 123, 255, 0.5);
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  outline: none;
+  width: 200px;
+  margin: 20px;
+  max-width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.name-input-container-text:focus {
   border-color: #007bff;
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
 .MainPage {
-  background-color: #ecf0f1;
+  background-color: #eff4f5;
   padding: 20px;
   min-height: 100vh;
   display: flex;
