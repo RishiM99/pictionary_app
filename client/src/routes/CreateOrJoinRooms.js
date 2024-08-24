@@ -20,8 +20,6 @@ export default function CreateOrJoinRooms() {
     };
   })
   const {userName, setUserName} = useContext(UserNameContext);
-  console.log("Username:");
-  console.log(userName);
 
   const handleCreateRoom = (event) => {
     socket.emit('create-room', {userName: userName, roomName: event.target.value});

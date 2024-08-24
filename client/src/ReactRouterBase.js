@@ -23,6 +23,8 @@ export default function ReactRouterBase() {
   ]);
   return (
     <UserNameContext.Provider value = {{userName, setUserName}}>
-       <RouterProvider router={router} />;
-    </UserNameContext.Provider>);
+      <RouterProvider router={router} />
+    </ UserNameContext.Provider>
+
+  )
 }
