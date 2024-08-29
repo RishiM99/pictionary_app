@@ -6,6 +6,8 @@ import {useContext, useEffect, useState} from "react";
 
 export default function CreateOrJoinRooms() {
   const [listOfRooms, setListOfRooms] = useState();
+  const [newRoomName, setNewRoomName] = useState('');
+
 
   useEffect(() => {
     function onGetListOfRooms(value) {
@@ -21,8 +23,12 @@ export default function CreateOrJoinRooms() {
   })
   const {userName, setUserName} = useContext(UserNameContext);
 
-  const handleCreateRoom = (event) => {
-    socket.emit('create-room', {userName: userName, roomName: event.target.value});
+  const handleUpdatedRoomName = (event) => {
+    setNewRoomName(event.target.value);
+  }
+
+  const handleCreateRoom = () => {
+    socket.emit('create-room', {userName: userName, roomName: newRoomName});
   };
 
   const handleJoinRoom = (roomName) => {
@@ -37,6 +43,7 @@ export default function CreateOrJoinRooms() {
           <input
             type="text"
             placeholder="Enter room name"
+            onChange={handleUpdatedRoomName}
             required
           />
           <button onClick={handleCreateRoom}>Create Room</button>
