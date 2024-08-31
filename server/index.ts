@@ -1,7 +1,14 @@
+const session = require('express-session')
+const pgSession = require('connect-pg-simple')(session)
 const express = require("express");
 const path = require('path');
 const { createServer } = require('node:http');
 const { Server } = require('socket.io');
+
+const sessionStore = new pgSession({
+  conString: 'postgres://rishimaheshwari@localhost:5432/rishimaheshwari',
+  tableName: 'session',
+});
 
 const PORT = process.env.PORT || 3001;
 
@@ -13,16 +20,30 @@ const server = createServer(app)
 const io = new Server(server)
 
 // Have Node serve the files for our built React app
-app.use(express.static(path.resolve(__dirname, '../client/build')));
+app.use(express.static(path.resolve(__dirname, '../../client/build')));
 
-app.get("/api", (req, res) => {
-    res.json({ message: "Hello from server!" });
-  });
+app.use(session({
+  secret: 'l7xQ2zLX93',
+  resave: false,
+  saveUninitialized: true,
+  store: sessionStore,
+}));
 
 // All other GET requests not handled before will return our React app
-app.get('*', (req, res) => { 
-    res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+app.get('/', (req, res) => { 
+    res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'));
   });
+
+app.get('/setname', (req, res) => {
+  req.session.name = "test_name";
+  console.log(req.session);
+  res.json({})
+})
+
+app.get('/getname', (req, res) => {
+  console.log(req.session);
+  res.json({ message: req.session.name });
+})
 
 io.on('connection', (socket) => {
     socket.on('create-room', (msg) => {
