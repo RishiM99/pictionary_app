@@ -1,8 +1,9 @@
 import {
   createBrowserRouter,
   RouterProvider,
+  redirect,
 } from "react-router-dom";
-import EnterName from "./routes/EnterName.js";
+import EnterName, {EnterNameAction} from "./routes/EnterName.js";
 import RouteErrorPage from "./routes/RouteErrorPage.js";
 import CreateOrJoinRooms from "./routes/CreateOrJoinRooms.js";
 import {useState} from "react";
@@ -15,6 +16,7 @@ export default function ReactRouterBase() {
       path: "/",
       element: <EnterName />,
       errorElement: <RouteErrorPage />,
+      action: EnterNameAction,
     },
     {
       path: "/rooms",

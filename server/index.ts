@@ -22,28 +22,25 @@ const io = new Server(server)
 // Have Node serve the files for our built React app
 app.use(express.static(path.resolve(__dirname, '../../client/build')));
 
+app.use(express.json())
+
 app.use(session({
   secret: 'l7xQ2zLX93',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   store: sessionStore,
 }));
 
-// All other GET requests not handled before will return our React app
 app.get('/', (req, res) => { 
     res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'));
   });
 
-app.get('/setname', (req, res) => {
-  req.session.name = "test_name";
-  console.log(req.session);
-  res.json({})
-})
-
-app.get('/getname', (req, res) => {
-  console.log(req.session);
-  res.json({ message: req.session.name });
-})
+app.post('/createUser', (req, res) => { 
+    console.log(req.body);
+    req.session.userName = req.body.userName;
+    console.log(req.session);
+    res.end();
+  });
 
 io.on('connection', (socket) => {
     socket.on('create-room', (msg) => {
