@@ -2,10 +2,14 @@ var session = require('express-session');
 var pgSession = require('connect-pg-simple')(session);
 var express = require("express");
 var path = require('path');
+var pg = require('pg');
 var createServer = require('node:http').createServer;
 var Server = require('socket.io').Server;
+var pgPool = new pg.Pool({
+    connectionString: 'postgres://rishimaheshwari@localhost:5432/rishimaheshwari'
+});
 var sessionStore = new pgSession({
-    conString: 'postgres://rishimaheshwari@localhost:5432/rishimaheshwari',
+    pool: pgPool,
     tableName: 'session',
 });
 var PORT = process.env.PORT || 3001;
@@ -21,6 +25,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000 // maxAge of 1 day
+    }
 }));
 app.get('/', function (req, res) {
     res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'));

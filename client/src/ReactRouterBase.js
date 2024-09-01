@@ -1,7 +1,6 @@
 import {
   createBrowserRouter,
   RouterProvider,
-  redirect,
 } from "react-router-dom";
 import EnterName, {EnterNameAction} from "./routes/EnterName.js";
 import RouteErrorPage from "./routes/RouteErrorPage.js";
