@@ -38,6 +38,10 @@ app.post('/createUser', function (req, res) {
     console.log(req.session);
     res.end();
 });
+app.get('/getUserName', function (req, res) {
+    var _a;
+    res.json({ userName: (_a = req.session.userName) !== null && _a !== void 0 ? _a : null });
+});
 io.on('connection', function (socket) {
     socket.on('create-room', function (msg) {
         console.log(msg);

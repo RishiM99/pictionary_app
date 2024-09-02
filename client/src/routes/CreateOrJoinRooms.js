@@ -1,14 +1,37 @@
 import './styles/CreateOrJoinRooms.css'; // Import your CSS file for styling
 import socket from '../socket.js';
-import UserNameContext from "../contexts/UserNameContext.js";
-import {useContext, useEffect, useState} from "react";
-import { Navigate } from "react-router-dom";
+import {useEffect, useState} from "react";
+import { redirect, useLoaderData, Form } from "react-router-dom";
 
+export async function loader() {
+  const response = await fetch("/getUserName");
+  if (!response.ok) {
+    throw new Error(`Response status: ${response.status}`);
+  }
+  const {userName} = await response.json();
+  console.log(userName);
+  if (userName == null) {
+    return redirect('/');
+  }
+  return userName;
+}
 
+export async function action({request}) {
+  const formData = Object.fromEntries(await request.formData());
+  switch (formData.formType) {
+    case "create-new-room-form":
+      socket.emit('create-room', {userName: formData.userName, roomName: formData.roomName});
+      return null;
+    case "join-room-form":
+      return null;
+    default:
+      return null;
+  }
+}
 
 export default function CreateOrJoinRooms() {
+  const userName = useLoaderData();
   const [listOfRooms, setListOfRooms] = useState();
-  const [newRoomName, setNewRoomName] = useState('');
 
   useEffect(() => {
     function onGetListOfRooms(value) {
@@ -23,37 +46,23 @@ export default function CreateOrJoinRooms() {
     };
   })
 
-  const {userName, setUserName} = useContext(UserNameContext);
-
-  if (userName === '') {
-    console.log('here');
-    //return <Navigate to={{ pathname: '/' }}/>
-  }
-
-  const handleUpdatedRoomName = (event) => {
-    setNewRoomName(event.target.value);
-  }
-
-  const handleCreateRoom = () => {
-    socket.emit('create-room', {userName: userName, roomName: newRoomName});
-  };
-
-  const handleJoinRoom = (roomName) => {
-    // Replace with actual join logic
-  };
-
-
   return (
-    <div className="create-or-join-rooms">
+    <div className="container">
+       <p> Hi, {userName}! 👋</p>
+       <div className="create-or-join-rooms">
         <div className="create-room">
           <p> Create a new room </p>
-          <input
-            type="text"
-            placeholder="Enter room name"
-            onChange={handleUpdatedRoomName}
-            required
-          />
-          <button onClick={handleCreateRoom}>Create Room</button>
+          <Form method="post">
+            <input name="formType" hidden defaultValue="create-new-room-form" />
+            <input name="userName" hidden defaultValue={userName} />
+            <input
+              name="roomName"
+              type="text"
+              placeholder="Enter room name"
+              required
+            />
+            <button>Create Room</button>
+          </Form>
         </div>
         <div className="room-list">
           <p>Existing Rooms</p>
@@ -61,11 +70,16 @@ export default function CreateOrJoinRooms() {
             {listOfRooms ?? [].map((room, index) => (
               <li key={index} className="room-item">
                 {room}
-                <button onClick={() => handleJoinRoom(room)}>Join</button>
+                <Form method="post">
+                  <input name="formType" hidden defaultValue="join-room-form" />
+                  <input name="userName" hidden defaultValue={userName} />
+                  <button>Join</button>
+                </Form>
               </li>
             ))}
           </ul>
         </div>
       </div>
-);
+    </div>
+  );
 };

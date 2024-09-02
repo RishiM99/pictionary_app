@@ -1,13 +1,36 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import ReactRouterBase from './ReactRouterBase';
 import reportWebVitals from './reportWebVitals';
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
+import EnterName, {action as enterNameAction, loader as enterNameLoader} from "./routes/EnterName.js";
+import RouteErrorPage from "./routes/RouteErrorPage.js";
+import CreateOrJoinRooms, {loader as createOrJoinRoomsLoader, action as createOrJoinRoomsAction} from "./routes/CreateOrJoinRooms.js";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <EnterName />,
+    errorElement: <RouteErrorPage />,
+    action: enterNameAction,
+    loader: enterNameLoader,
+  },
+  {
+    path: "/rooms",
+    element: <CreateOrJoinRooms />,
+    loader: createOrJoinRoomsLoader,
+    action: createOrJoinRoomsAction,
+  },
+]);
+
 root.render(
   <React.StrictMode>
-    <ReactRouterBase />
+    <RouterProvider router={router} />
   </React.StrictMode>
 );
 

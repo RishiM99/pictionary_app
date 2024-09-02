@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p server/",
-    "start": "node server/builtTs/index.js"
+    "start": "node server/builtTs/server.js"
   },
   "keywords": [],
   "author": "",

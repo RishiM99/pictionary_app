@@ -1,10 +1,21 @@
 import React from 'react';
-import {useContext} from 'react';
 import "./styles/EnterName.css";
-import UserNameContext from '../contexts/UserNameContext.js'
 import { Form, redirect } from "react-router-dom";
 
-export async function EnterNameAction({request}) {
+export async function loader() {
+  const response = await fetch("/getUserName");
+  if (!response.ok) {
+    throw new Error(`Response status: ${response.status}`);
+  }
+  const {userName} = await response.json();
+  console.log(userName);
+  if (userName != null) {
+    return redirect('/rooms');
+  }
+  return null;
+}
+
+export async function action({request}) {
     console.log('here');
     const formData = await request.formData();
     console.log(formData.get("userName"));
@@ -24,13 +35,6 @@ export async function EnterNameAction({request}) {
 }
 
 export default function EnterName () {
-    const {userName, setUserName} = useContext(UserNameContext);
-
-    // Handler for input change
-    const handleOnChange = (event) => {
-        setUserName(event.target.value);
-    };
-
     return (
         <div className="MainPage">
             <p className="question"> What's your name? </p>
@@ -40,7 +44,6 @@ export default function EnterName () {
                 name="userName"
                 type="text"
                 placeholder="Enter your name"
-                onChange={handleOnChange}
                 required
                 />
                 <button type="submit" className = "name-input-container-submit">Submit</button>
