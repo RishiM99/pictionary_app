@@ -1,10 +1,16 @@
-const session = require('express-session')
-const pgSession = require('connect-pg-simple')(session)
-const express = require("express");
-const path = require('path');
-const pg = require('pg');
-const { createServer } = require('node:http');
-const { Server } = require('socket.io');
+import session from 'express-session';
+import connect_pg from 'connect-pg-simple';
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import pg from 'pg';
+import { createServer } from 'node:http';
+import { Server } from 'socket.io';
+
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
+
+const pgSession = connect_pg(session);
 
 const pgPool = new pg.Pool({
   connectionString: 'postgres://rishimaheshwari@localhost:5432/rishimaheshwari'
@@ -29,15 +35,17 @@ app.use(express.static(path.resolve(__dirname, '../../client/build')));
 
 app.use(express.json())
 
-app.use(session({
+const sessionMiddleware = session({
   secret: 'l7xQ2zLX93',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   store: sessionStore,
   cookie: {
     maxAge: 24 * 60 * 60 * 1000 // maxAge of 1 day
   }
-}));
+});
+
+app.use(sessionMiddleware);
 
 app.get('/', (req, res) => { 
     res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'));
@@ -50,17 +58,23 @@ app.post('/createUser', (req, res) => {
     res.end();
   });
 app.get('/getUserName', (req, res) => {
+    console.log(req.session.id);
     res.json({userName: req.session.userName ?? null});
 });
 
-io.on('connection', (socket) => {
+io.engine.use(sessionMiddleware);
+
+io.on('connection', async (socket) => {
+    const sessionId = socket.request.session.id;
+    console.log(sessionId);
+    const result = await pgPool.query("INSERT INTO sockets_to_sessions (socket_id, session_id) VALUES ($1, $2)", [socket.id, sessionId]);
+    console.log(result);
     socket.on('create-room', (msg) => {
       console.log(msg);
       const userName = msg.userName; 
       const roomName = msg.roomName;
       console.log("ROOM NAME:");
       console.log(roomName);
-      socket.userName = userName;
       socket.join(roomName);
       console.log(io.sockets.adapter.rooms);
       io.emit('list-of-rooms', io.sockets.adapter.rooms); 

@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc -p server/",
-    "start": "node server/builtTs/server.js"
+    "start": "node server/server.js"
   },
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -21,6 +21,7 @@
   "devDependencies": {
     "@aws-amplify/backend": "^1.0.4",
     "@aws-amplify/backend-cli": "^1.2.2",
+    "@types/node": "^22.5.2",
     "aws-cdk": "^2.151.0",
     "aws-cdk-lib": "^2.151.0",
     "constructs": "^10.3.0",
