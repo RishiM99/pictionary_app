@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import pg from 'pg';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
+import { cleanUpExpiredSessions} from './utils.js';
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -22,6 +23,7 @@ const sessionStore = new pgSession({
 });
 
 const PORT = process.env.PORT || 3001;
+const MAX_AGE_OF_SESSION_MS = 24 * 60 * 60 * 1000 // max age of 1 day, in milliseconds
 
 const app = express();
 
@@ -41,9 +43,11 @@ const sessionMiddleware = session({
   saveUninitialized: true,
   store: sessionStore,
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000 // maxAge of 1 day
+    maxAge: MAX_AGE_OF_SESSION_MS
   }
 });
+
+setInterval(async () => {await cleanUpExpiredSessions(pgPool)}, MAX_AGE_OF_SESSION_MS);
 
 app.use(sessionMiddleware);
 
@@ -68,7 +72,7 @@ io.on('connection', async (socket) => {
     const sessionId = socket.request.session.id;
     console.log(sessionId);
     const result = await pgPool.query("INSERT INTO sockets_to_sessions (socket_id, session_id) VALUES ($1, $2)", [socket.id, sessionId]);
-    console.log(result);
+   //console.log(result);
     socket.on('create-room', (msg) => {
       console.log(msg);
       const userName = msg.userName; 
