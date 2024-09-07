@@ -1,4 +1,4 @@
-import Constants from './Constants.js';
+import * as Constants from './Constants.js';
 import assert from 'assert';
 
 export default class DBUtil {
@@ -28,28 +28,28 @@ export default class DBUtil {
     }
     
     async addSocketIntoSocketsToSessionsTable(socketId, sessionId) {
-        await pgPool.query("INSERT INTO sockets_to_sessions (socket_id, session_id) VALUES ($1, $2)", [socketId, sessionId]);
+        await this.pgPool.query("INSERT INTO sockets_to_sessions (socket_id, session_id) VALUES ($1, $2)", [socketId, sessionId]);
     }
 
     async addSocketToRelevantRoomsOnConnection(socket) {
-        const roomsSocketIsIn = (await pgPool.query("SELECT room_id FROM sockets_to_rooms WHERE socket_id = $1", [socket.id])).rows.map((row) => row.room_id);
+        const roomsSocketIsIn = (await this.pgPool.query("SELECT room_id FROM sockets_to_rooms WHERE socket_id = $1", [socket.id])).rows.map((row) => row.room_id);
         for (const roomId of roomsSocketIsIn) {
           socket.join(roomId);
         }
     }
 
     async addSocketToRoom(socketId, roomId) {
-        await pgPool.query("INSERT INTO sockets_to_rooms (socket_id, room_id) VALUES ($1, $2)", [socketId, roomId]);
+        await this.pgPool.query("INSERT INTO sockets_to_rooms (socket_id, room_id) VALUES ($1, $2)", [socketId, roomId]);
     }
 
     async createNewRoomWithDeduplicatedRoomName(roomName) {
         // Create individual client for transaction
-        const client = await pgPool.connect();
+        const client = await this.pgPool.connect();
         try {
             await client.query('BEGIN');
 
             const alreadyExistingRooms = (await client.query("SELECT room_id FROM rooms WHERE room_id = $1", [roomName])).rows;
-            const doesRoomAlreadyExist = Array.isArray(alreadyExistingRooms) && array.length > 0;
+            const doesRoomAlreadyExist = Array.isArray(alreadyExistingRooms) && alreadyExistingRooms.length > 0;
             let dedupedRoomName;
             if (doesRoomAlreadyExist) {
                 const existingDedupSuffixResp = (await client.query("SELECT duplicate_count FROM room_id_base_to_duplicates_count WHERE room_id_base = $1", [roomName])).rows;
@@ -76,16 +76,23 @@ export default class DBUtil {
     }
 
     async getRoomAndMembersInfo() {
-        const rooms = (await pgPool.query("SELECT room_id FROM rooms")).rows.map((row) => row.room_id);
+        const rooms = (await this.pgPool.query("SELECT room_id FROM rooms")).rows.map((row) => row.room_id);
+        console.log(rooms);
         let roomAndMembersInfo = [];
         for (const roomId of rooms) {
-          const socketsInRoom = (await pgPool.query("SELECT socket_id FROM sockets_to_rooms WHERE room_id = $1", [roomId])).rows.map((row) => row.socket_id);
+          const socketsInRoom = (await this.pgPool.query("SELECT socket_id FROM sockets_to_rooms WHERE room_id = $1", [roomId])).rows.map((row) => row.socket_id);
+          console.log(roomId);
+          console.log(socketsInRoom);
           const membersNames = [];
-          for (const socketId in socketsInRoom) {
-            const sessionResp = (await pgPool.query("SELECT session_id FROM sockets_to_sessions WHERE socket_id = $1", [socketId])).rows;
-            assert(Array.isArray(sessionResp) && sessionResp.length === 1);
+          for (const socketId of socketsInRoom) {
+            console.log(socketId);
+            const sessionResp = (await this.pgPool.query("SELECT session_id FROM sockets_to_sessions WHERE socket_id = $1", [socketId])).rows;
+            console.log(sessionResp);
+            if (sessionResp.length === 0) {
+                continue;
+            }
             const sessionId = sessionResp.map((row) => row.session_id)[0];
-            const memberName = ((await pgPool.query("SELECT sess FROM session WHERE sid = $1", [sessionId])).rows.map((row) => row.sess)[0]).userName;
+            const memberName = ((await this.pgPool.query("SELECT sess FROM session WHERE sid = $1", [sessionId])).rows.map((row) => row.sess)[0]).userName;
             membersNames.push(memberName);
           }
           roomAndMembersInfo.push({
