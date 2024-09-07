@@ -47,8 +47,7 @@ export default function CreateOrJoinRooms() {
   })
 
   return (
-    <div className="container">
-      <div className="flexbox-container">
+      <div className="container">
         <p className="create-or-join-room-header"> Hi, {userName}! 👋</p>
         <div className="create-or-join-rooms">
           <div className="create-room">
@@ -84,8 +83,6 @@ export default function CreateOrJoinRooms() {
             </ul>
           </div>
         </div>
-      </div>
-    </div>
-    
+      </div>    
   );
 };

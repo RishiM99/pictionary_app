@@ -9,6 +9,7 @@ import {
 import EnterName, {action as enterNameAction, loader as enterNameLoader} from "./routes/EnterName.js";
 import RouteErrorPage from "./routes/RouteErrorPage.js";
 import CreateOrJoinRooms, {loader as createOrJoinRoomsLoader, action as createOrJoinRoomsAction} from "./routes/CreateOrJoinRooms.js";
+import Room from './routes/Room.js';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
     element: <CreateOrJoinRooms />,
     loader: createOrJoinRoomsLoader,
     action: createOrJoinRoomsAction,
+  },
+  {
+    path: "/room",
+    element: <Room />
   },
 ]);
 
