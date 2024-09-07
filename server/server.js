@@ -66,19 +66,20 @@ io.engine.use(sessionMiddleware);
 
 io.on('connection', async (socket) => {
     const sessionId = socket.request.session.id;
-    console.log(sessionId);
+    console.log(`Session Id: ${sessionId}`);
     await dbUtil.addSocketIntoSocketsToSessionsTable(socket.id, sessionId);
     await dbUtil.addSocketToRelevantRoomsOnConnection(socket);
+    const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
+    io.emit('list-of-rooms-and-members', roomsAndMembersInfo); 
   
-   //console.log(result);
     socket.on('create-room', async (msg) => {
-      console.log(socket.id);
+      console.log(`Socket Id: ${socket.id}`);
       const requestedRoomName = msg.roomName;
       const dedupedRoomName = await dbUtil.createNewRoomWithDeduplicatedRoomName(requestedRoomName);
       socket.join(dedupedRoomName);
       dbUtil.addSocketToRoom(socket.id, dedupedRoomName);
       const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
-      io.emit('list-of-rooms', roomsAndMembersInfo); 
+      io.emit('list-of-rooms-and-members', roomsAndMembersInfo); 
     });
   });
 

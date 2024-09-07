@@ -1,9 +1,20 @@
 import * as Constants from './Constants.js';
 import assert from 'assert';
 
+const MAX_NUMBER_OF_CHARS_FOR_MEMBER_NAMES = 25;
+
 export default class DBUtil {
     constructor(pgPool) {
         this.pgPool = pgPool;
+    }
+
+    // If no params, set to [].
+    async #selectAndExtractSingleColumn(sql, params, column, sqlClient = null) {
+        if (sqlClient == null) {
+            return (await this.pgPool.query(sql, params)).rows.map((row) => row[column]);
+        } else {
+            return (await sqlClient.query(sql, params)).rows.map((row) => row[column]);
+        }
     }
 
     async scheduleCleanUpOfExpiredSessions() {
@@ -20,7 +31,7 @@ export default class DBUtil {
                 sessionsToRemove.push(sid);
             }
         }
-        const socketsToRemove = (await this.pgPool.query("SELECT socket_id FROM sockets_to_sessions WHERE session_id = ANY ($1)", [sessionsToRemove])).rows.map((row) => row.socket_id);
+        const socketsToRemove = await this.#selectAndExtractSingleColumn("SELECT socket_id FROM sockets_to_sessions WHERE session_id = ANY ($1)", [sessionsToRemove], "socket_id");
     
         await this.pgPool.query("DELETE FROM sockets_to_sessions WHERE session_id = ANY ($1)", [sessionsToRemove]);
         await this.pgPool.query("DELETE FROM session WHERE sid = ANY ($1)", [sessionsToRemove])
@@ -32,7 +43,7 @@ export default class DBUtil {
     }
 
     async addSocketToRelevantRoomsOnConnection(socket) {
-        const roomsSocketIsIn = (await this.pgPool.query("SELECT room_id FROM sockets_to_rooms WHERE socket_id = $1", [socket.id])).rows.map((row) => row.room_id);
+        const roomsSocketIsIn = await this.#selectAndExtractSingleColumn("SELECT room_id FROM sockets_to_rooms WHERE socket_id = $1", [socket.id], "room_id");
         for (const roomId of roomsSocketIsIn) {
           socket.join(roomId);
         }
@@ -48,13 +59,12 @@ export default class DBUtil {
         try {
             await client.query('BEGIN');
 
-            const alreadyExistingRooms = (await client.query("SELECT room_id FROM rooms WHERE room_id = $1", [roomName])).rows;
-            const doesRoomAlreadyExist = Array.isArray(alreadyExistingRooms) && alreadyExistingRooms.length > 0;
+            const alreadyExistingRooms = await this.#selectAndExtractSingleColumn("SELECT room_id FROM rooms WHERE room_id = $1", [roomName], "room_id", client);        
             let dedupedRoomName;
-            if (doesRoomAlreadyExist) {
-                const existingDedupSuffixResp = (await client.query("SELECT duplicate_count FROM room_id_base_to_duplicates_count WHERE room_id_base = $1", [roomName])).rows;
-                assert(Array.isArray(existingDedupSuffixResp) && existingDedupSuffixResp.length === 1);
-                const existingDedupSuffix = existingDedupSuffixResp.map((row) => row.duplicate_count)[0];
+            if (alreadyExistingRooms.length > 0) {
+                const existingDedupSuffixResp = await this.#selectAndExtractSingleColumn("SELECT duplicate_count FROM room_id_base_to_duplicates_count WHERE room_id_base = $1", [roomName], "duplicate_count", client);
+                assert(existingDedupSuffixResp.length === 1);
+                const existingDedupSuffix = existingDedupSuffixResp[0];
                 const newDedupSuffix = existingDedupSuffix + 1;
                 await client.query("UPDATE room_id_base_to_duplicates_count SET duplicate_count = $1 WHERE room_id_base = $2", [newDedupSuffix, roomName]);
                 dedupedRoomName = roomName + newDedupSuffix;
@@ -76,28 +86,42 @@ export default class DBUtil {
     }
 
     async getRoomAndMembersInfo() {
-        const rooms = (await this.pgPool.query("SELECT room_id FROM rooms")).rows.map((row) => row.room_id);
-        console.log(rooms);
+        const rooms = await this.#selectAndExtractSingleColumn("SELECT room_id FROM rooms", [], "room_id");
+        console.log(`Rooms: ${rooms}`);
         let roomAndMembersInfo = [];
         for (const roomId of rooms) {
-          const socketsInRoom = (await this.pgPool.query("SELECT socket_id FROM sockets_to_rooms WHERE room_id = $1", [roomId])).rows.map((row) => row.socket_id);
-          console.log(roomId);
-          console.log(socketsInRoom);
+          const socketsInRoom = await this.#selectAndExtractSingleColumn("SELECT socket_id FROM sockets_to_rooms WHERE room_id = $1", [roomId], "socket_id");
           const membersNames = [];
           for (const socketId of socketsInRoom) {
-            console.log(socketId);
-            const sessionResp = (await this.pgPool.query("SELECT session_id FROM sockets_to_sessions WHERE socket_id = $1", [socketId])).rows;
-            console.log(sessionResp);
-            if (sessionResp.length === 0) {
-                continue;
+            const sessionIdResp = await this.#selectAndExtractSingleColumn("SELECT session_id FROM sockets_to_sessions WHERE socket_id = $1", [socketId], "session_id");
+            assert(sessionIdResp.length === 1);
+            const sessionId = sessionIdResp[0];
+            const sessionResp = await this.#selectAndExtractSingleColumn("SELECT sess FROM session WHERE sid = $1", [sessionId], "sess");
+            assert(sessionResp.length === 1); 
+            //TODO: FIGURE OUT WHY USERNAME CAN BE NULL
+            if (sessionResp[0].userName != null) {
+                membersNames.push(sessionResp[0].userName);
             }
-            const sessionId = sessionResp.map((row) => row.session_id)[0];
-            const memberName = ((await this.pgPool.query("SELECT sess FROM session WHERE sid = $1", [sessionId])).rows.map((row) => row.sess)[0]).userName;
-            membersNames.push(memberName);
           }
+          let displayTextForMembers = [];
+          let currLength = 0;
+          let count = 0;
+          for (const memberName of membersNames) {
+            currLength += memberName.length; 
+            if (currLength > MAX_NUMBER_OF_CHARS_FOR_MEMBER_NAMES) {
+                break;
+            }
+            displayTextForMembers.push(memberName);
+            count += 1;
+          }
+          if (currLength > MAX_NUMBER_OF_CHARS_FOR_MEMBER_NAMES) {
+            displayTextForMembers.push(`and ${membersNames.length - count} others.`);
+          }
+          displayTextForMembers = displayTextForMembers.join(", ");
           roomAndMembersInfo.push({
             roomId: roomId, 
             membersNames: membersNames,
+            displayTextForMembers: displayTextForMembers,
           });
         }
         return roomAndMembersInfo;
