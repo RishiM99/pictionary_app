@@ -20,7 +20,7 @@ export async function action({request}) {
   const formData = Object.fromEntries(await request.formData());
   switch (formData.formType) {
     case "create-new-room-form":
-      socket.emit('create-room', {userName: formData.userName, roomName: formData.roomName});
+      socket.emit('create-room', {roomName: formData.roomName});
       return null;
     case "join-room-form":
       return null;
@@ -54,7 +54,6 @@ export default function CreateOrJoinRooms() {
           <p> Create a new room </p>
           <Form method="post">
             <input name="formType" hidden defaultValue="create-new-room-form" />
-            <input name="userName" hidden defaultValue={userName} />
             <input
               name="roomName"
               type="text"
@@ -72,7 +71,6 @@ export default function CreateOrJoinRooms() {
                 {room}
                 <Form method="post">
                   <input name="formType" hidden defaultValue="join-room-form" />
-                  <input name="userName" hidden defaultValue={userName} />
                   <button>Join</button>
                 </Form>
               </li>
