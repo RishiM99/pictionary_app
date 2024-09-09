@@ -11,6 +11,7 @@ import * as Constants from './Constants.js';
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
+console.log(__dirname);
 
 const pgSession = connect_pg(session);
 
