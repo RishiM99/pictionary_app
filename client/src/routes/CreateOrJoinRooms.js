@@ -1,7 +1,9 @@
 import './styles/CreateOrJoinRooms.css'; // Import your CSS file for styling
-import socket from '../socket.js';
+import getSocket from '../socket.js';
 import {useEffect, useState} from "react";
 import { redirect, useLoaderData, Form } from "react-router-dom";
+
+const socket = getSocket();
 
 export async function loader() {
   const response = await fetch("/getUserName");

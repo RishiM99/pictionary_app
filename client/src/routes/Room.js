@@ -10,6 +10,8 @@ export default function Room() {
         { user: 'Jane Smith', text: 'Hi John! How\'s it going?' },
         { user: 'Emily Johnson', text: 'Hey! Ready for the meeting?' }
     ]);
+
+    const currentPlayerList = ["Emily Johnson", "Jane Smith", "John Doe"];
     const [newMessage, setNewMessage] = useState('');
     const [currentColor, setCurrentColor] = useState('black');
     const [showColorPicker, setShowColorPicker] = useState(false);
@@ -65,6 +67,15 @@ export default function Room() {
                 }
             </div>
             <div className="game-play-area">
+                <div className="current-players-list">
+                    {currentPlayerList.map((player, index) => (
+                        <div className="current-player" key={index}>
+                            <p>
+                                {player}
+                            </p>
+                        </div>
+                    ))}
+                </div>
                 <div className="drawing-board">
                     <div className="palette">
                         <div className="draw-icon-background">
@@ -85,7 +96,7 @@ export default function Room() {
                                 416H150.628l-80-80 124.686-124.686z"></path>
                             </svg>
                         </div>
-                        <div className={currentColor} style = {{"height": "50px", "width": "50px"}} onClick={() => setShowColorPicker(true)}>
+                        <div className={currentColor} style = {{"height": "40px", "width": "40px"}} onClick={() => setShowColorPicker(true)}>
                         </div>
                     </div>
                 </div>
