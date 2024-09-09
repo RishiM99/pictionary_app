@@ -156,160 +156,150 @@ body {
 }
 
 .black {
-    height: 50px;
-    width: 50px;
+    height: 25px;
+    width: 25px;
     background-color: black;
     border-radius: 50%;
     position:relative;
 }
 
 .gray {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+    height: 25px;
+    width: 25px;
+    background-color: rgb(87, 87, 87);
     border-radius: 50%;
     position:relative;
 }
 
-.light-gray {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+/* .light-gray {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(160, 160, 160);
     border-radius: 50%;
     position:relative;
-}
+} */
 
 .purple {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+    height: 25px;
+    width: 25px;
+    background-color: rgb(156, 39, 176);
     border-radius: 50%;
     position:relative;
 }
 
-.light-blue {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+/* .light-blue {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(157, 175, 255);
     border-radius: 50%;
     position:relative;
-}
+} */
 
 
 .blue {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+    height: 25px;
+    width: 25px;
+    background-color: rgb(42, 75, 215);
     border-radius: 50%;
     position:relative;
 }
 
 .teal {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+    height: 25px;
+    width: 25px;
+    background-color: rgb(41, 208, 208);
     border-radius: 50%;
-    position:relative;
 }
 
-.light-green {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+/* .light-green {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(129, 197, 122);
     border-radius: 50%;
-    position:relative;
-}
+} */
 
 .green {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+    height: 25px;
+    width: 25px;
+    background-color: green;
     border-radius: 50%;
-    position:relative;
 }
 
-.bright-green {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+/* .bright-green {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(198, 255, 0);
     border-radius: 50%;
-    position:relative;
-}
+} */
 
 .yellow {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+    height: 25px;
+    width: 25px;
+    background-color: yellow;
     border-radius: 50%;
-    position:relative;
 }
 
 .orange {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+    height: 25px;
+    width: 25px;
+    background-color: orange;
     border-radius: 50%;
-    position:relative;
 }
 
-.cream {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+/* .cream {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(233, 222, 187);
     border-radius: 50%;
-    position:relative;
-}
+} */
 
 .brown {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+    height: 25px;
+    width: 25px;
+    background-color: rgb(129, 74, 25);
     border-radius: 50%;
-    position:relative;
 }
 
-.pink {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+/* .pink {
+    height: 20px;
+    width: 20px;
+    background-color: pink;
     border-radius: 50%;
-    position:relative;
-}
+} */
 
 .red {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+    height: 25px;
+    width: 25px;
+    background-color: red;
     border-radius: 50%;
-    position:relative;
 }
 
-.maroon {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+/* .maroon {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(173, 35, 35);
     border-radius: 50%;
-    position:relative;
-}
+} */
 
 .white {
-    height: 50px;
-    width: 50px;
-    background-color: black;
+    height: 25px;
+    width: 25px;
+    background-color: rgb(255, 255, 255);
     border-radius: 50%;
-    position:relative;
 }
-
 
 
 .color-picker {
     position:absolute;
-    bottom: 130%;
+    bottom: 22%;
     z-index: 1;
-    border: 1px solid black;
+    border: 1px solid #c0c4c4;;
     border-radius:10px;
     cursor: pointer;
-    background: green;
-    width: 50px;
-    height: 50px;
+    background: #e0e4e4;
+    width: 35%;
+    height: 15%;
+    display: flex;
+    align-items:center;
+    justify-content:space-between;
 }
