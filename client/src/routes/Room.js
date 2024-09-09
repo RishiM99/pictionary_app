@@ -83,21 +83,17 @@ export default function Room() {
         function setUpDrawingCanvas() {
             const drawingCanvas = drawingCanvasRef.current;
 
-            function drawLine(startPosition, endPosition) {
+            function drawBezierCurve(secondToLastPosition, lastPosition, currentPosition) {
                 const context = drawingCanvas.getContext("2d");
-                context.lineCap = 'round'
-                context.lineJoin = 'round'
-                const x1 = startPosition.x;
-                const y1 = startPosition.y;
-                const x2 = endPosition.x;
-                const y2 = endPosition.y;
                 context.beginPath();
                 context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
                 context.lineWidth = 1;
-                context.moveTo(x1, y1);
-                context.lineTo(x2, y2);
+                context.moveTo(secondToLastPosition.x, secondToLastPosition.y);
+                context.quadraticCurveTo(lastPosition.x, lastPosition.y, currentPosition.x, currentPosition.y);
+                // context.moveTo(10, 10);
+                // context.quadraticCurveTo(300, 100, 300, 300);
                 context.stroke();
-                context.closePath();
+               // context.closePath();
             }
 
             function mouseDownEventListener(e) {
@@ -105,7 +101,7 @@ export default function Room() {
                     console.log(e);
                     const currentX = e.offsetX;
                     const currentY = e.offsetY;
-                    currentDrawingPosition = {x: currentX, y: currentY};
+                    lastDrawingPosition = {x: currentX, y: currentY};
                     setIsDrawing(true);
                 }
             }
@@ -115,8 +111,11 @@ export default function Room() {
                     if (isDrawing) {
                         const currentX = e.offsetX;
                         const currentY = e.offsetY;
-                        drawLine(currentDrawingPosition, {x: currentX, y: currentY});
-                        currentDrawingPosition = {x: currentX, y: currentY};
+                        if (secondToLastDrawingPosition != null && lastDrawingPosition != null) {
+                            drawBezierCurve(secondToLastDrawingPosition, lastDrawingPosition, {x: currentX, y: currentY});
+                        }
+                        secondToLastDrawingPosition = lastDrawingPosition;
+                        lastDrawingPosition = {x: currentX, y: currentY};
                     }
                 }
             }
@@ -126,8 +125,11 @@ export default function Room() {
                     if (isDrawing) {
                         const currentX = e.offsetX;
                         const currentY = e.offsetY;
-                        drawLine(currentDrawingPosition, {x: currentX, y: currentY});
-                        currentDrawingPosition = {x: currentX, y: currentY};
+                        if (secondToLastDrawingPosition != null && lastDrawingPosition != null) {
+                            drawBezierCurve(secondToLastDrawingPosition, lastDrawingPosition, {x: currentX, y: currentY});
+                        }
+                        secondToLastDrawingPosition = lastDrawingPosition;
+                        lastDrawingPosition = {x: currentX, y: currentY};
                         setIsDrawing(false);
                     }
                 }
