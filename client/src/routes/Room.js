@@ -1,46 +1,163 @@
 import React, { useState, useEffect, useRef} from 'react';
 import './styles/Room.css';
 
-export default function Room() {
-    const colorPickerRef = useRef(null);
-    const [copyUrlClicked, setCopyUrlClicked] = useState(false);
+let secondToLastDrawingPosition = null;
+let lastDrawingPosition = null;
 
+export default function Room() {
     const [messages, setMessages] = useState([
         { user: 'John Doe', text: 'Hello, everyone!' },
         { user: 'Jane Smith', text: 'Hi John! How\'s it going?' },
         { user: 'Emily Johnson', text: 'Hey! Ready for the meeting?' }
     ]);
+    
+    const colorClassesForColorPicker = [
+        "black",
+        "gray",
+        "purple",
+        "blue",
+        "teal",
+        "green",
+        "yellow",
+        "orange",
+        "brown",
+        "red",
+        "white"
+    ];
 
     const currentPlayerList = ["Emily Johnson", "Jane Smith", "John Doe"];
     const [newMessage, setNewMessage] = useState('');
-    const [currentColor, setCurrentColor] = useState('black');
+    const [currentColorClass, setCurrentColorClass] = useState('black');
     const [showColorPicker, setShowColorPicker] = useState(false);
+    const [copyUrlClicked, setCopyUrlClicked] = useState(false);
+    const [isDrawing, setIsDrawing] = useState(false);
+
+
+    const colorPickerRef = useRef(null);
+    const drawingCanvasRef = useRef(null);
 
     useEffect(() => {
-        let intervalId = null;
-        if (copyUrlClicked) {
-            intervalId = setInterval(() => setCopyUrlClicked(false), 5000);
-        }    
-        function handleClickOutside(event) {
-            console.log(event);
-            if (colorPickerRef.current) {
-                const boundingRect = colorPickerRef.current.getBoundingClientRect();
-                console.log(boundingRect);
-                if (event.clientX < boundingRect.x || event.clientX > boundingRect.right ||
-                    event.clientY < boundingRect.y || event.clientY > boundingRect.bottom) {
-                        setShowColorPicker(false);
-                }
-            } 
-          }
-        
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-          document.removeEventListener("mousedown", handleClickOutside)
-          if (intervalId != null) {
-            clearInterval(intervalId)
-          }
+        const drawingCanvas = drawingCanvasRef.current;
+        if (drawingCanvas) {
+            drawingCanvas.height = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("height"), 10);
+            drawingCanvas.width = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("width"), 10);
+            console.log(drawingCanvas.height);
+            console.log(drawingCanvas.width);
         }
-      }, [colorPickerRef, copyUrlClicked]);
+        return () => {}
+    }, []);
+
+    useEffect(() => {
+        function handleClickOutsidePalette() {
+            function handleClickOutside(event) {
+                console.log(event);
+                if (colorPickerRef.current) {
+                    const boundingRect = colorPickerRef.current.getBoundingClientRect();
+                    console.log(boundingRect);
+                    if (event.clientX < boundingRect.x || event.clientX > boundingRect.right ||
+                        event.clientY < boundingRect.y || event.clientY > boundingRect.bottom) {
+                            setShowColorPicker(false);
+                    }
+                } 
+              }
+            
+            document.addEventListener("mousedown", handleClickOutside);
+            return () => {
+                document.removeEventListener("mousedown", handleClickOutside);
+            }
+        }
+
+        function handleCopyUrlClicked() {
+            let intervalId = null;
+            if (copyUrlClicked) {
+                intervalId = setInterval(() => setCopyUrlClicked(false), 5000);
+            }    
+        
+            return () => {
+                if (intervalId != null) {
+                    clearInterval(intervalId)
+                  }
+            };
+        }
+
+        function setUpDrawingCanvas() {
+            const drawingCanvas = drawingCanvasRef.current;
+
+            function drawLine(startPosition, endPosition) {
+                const context = drawingCanvas.getContext("2d");
+                context.lineCap = 'round'
+                context.lineJoin = 'round'
+                const x1 = startPosition.x;
+                const y1 = startPosition.y;
+                const x2 = endPosition.x;
+                const y2 = endPosition.y;
+                context.beginPath();
+                context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
+                context.lineWidth = 1;
+                context.moveTo(x1, y1);
+                context.lineTo(x2, y2);
+                context.stroke();
+                context.closePath();
+            }
+
+            function mouseDownEventListener(e) {
+                if (drawingCanvas) {
+                    console.log(e);
+                    const currentX = e.offsetX;
+                    const currentY = e.offsetY;
+                    currentDrawingPosition = {x: currentX, y: currentY};
+                    setIsDrawing(true);
+                }
+            }
+
+            function mouseMoveEventListener(e) {
+                if (drawingCanvas) {
+                    if (isDrawing) {
+                        const currentX = e.offsetX;
+                        const currentY = e.offsetY;
+                        drawLine(currentDrawingPosition, {x: currentX, y: currentY});
+                        currentDrawingPosition = {x: currentX, y: currentY};
+                    }
+                }
+            }
+
+            function mouseUpEventListener(e) {
+                if (drawingCanvas) {
+                    if (isDrawing) {
+                        const currentX = e.offsetX;
+                        const currentY = e.offsetY;
+                        drawLine(currentDrawingPosition, {x: currentX, y: currentY});
+                        currentDrawingPosition = {x: currentX, y: currentY};
+                        setIsDrawing(false);
+                    }
+                }
+            }
+                
+            if (drawingCanvas) {
+                drawingCanvas.addEventListener("mousedown", mouseDownEventListener);
+                drawingCanvas.addEventListener("mousemove", mouseMoveEventListener);
+                window.addEventListener("mouseup", mouseUpEventListener);
+            }
+
+            return () => {
+                if (drawingCanvas) {
+                    drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
+                    drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
+                    window.removeEventListener("mouseup", mouseUpEventListener);
+                }
+            }
+        }
+
+        const handleClickOutsidePaletteCleanup = handleClickOutsidePalette();
+        const handleCopyUrlClickedCleanup = handleCopyUrlClicked();
+        const setUpDrawingCanvasCleanup = setUpDrawingCanvas();
+
+        return () => {
+          handleClickOutsidePaletteCleanup();
+          handleCopyUrlClickedCleanup();
+          setUpDrawingCanvasCleanup();
+        }
+      }, [colorPickerRef, copyUrlClicked, drawingCanvasRef, isDrawing]);
 
 
     const handleSubmit = (event) => {
@@ -76,7 +193,8 @@ export default function Room() {
                         </div>
                     ))}
                 </div>
-                <div className="drawing-board">
+                <div className="drawing-board-container">
+                    <canvas className="drawing-canvas" ref={drawingCanvasRef}/>
                     <div className="palette">
                         <div className="draw-icon-background">
                             <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="draw-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
@@ -96,8 +214,7 @@ export default function Room() {
                                 416H150.628l-80-80 124.686-124.686z"></path>
                             </svg>
                         </div>
-                        <div className={currentColor} style = {{"height": "40px", "width": "40px"}} onClick={() => setShowColorPicker(true)}>
-                        </div>
+                        <div className={currentColorClass} style = {{"height": "40px", "width": "40px"}} onClick={() => setShowColorPicker(true)}/>
                     </div>
                 </div>
                 <div className="chat-area-container">
@@ -123,23 +240,14 @@ export default function Room() {
             </div>
             {showColorPicker && 
                 <div className="color-picker" ref={colorPickerRef}>
-                    <div className="black" onClick={() => 
-                        {
-                            setCurrentColor("black")
-                        }}/>
-                    <div className="light-gray" onClick={() => {
-                        setCurrentColor("light-gray");
-                        console.log('here');
-                    }}/>
-                    <div className="purple" onClick={() => setCurrentColor("purple")}/>
-                    <div className="blue" onClick={() => setCurrentColor("blue")}/>
-                    <div className="teal" onClick={() => setCurrentColor("teal")}/>
-                    <div className="green" onClick={() => setCurrentColor("green")}/>
-                    <div className="yellow" onClick={() => setCurrentColor("yellow")}/>
-                    <div className="orange" onClick={() => setCurrentColor("orange")}/>
-                    <div className="brown" onClick={() => setCurrentColor("brown")}/>
-                    <div className="red" onClick={() => setCurrentColor("red")}/>
-                    <div className="white" onClick={() => setCurrentColor("white")}/>
+                    {colorClassesForColorPicker.map((colorClass, index) => (
+
+                        <div className={colorClass} key={index} onClick={(e) => {
+                            setCurrentColorClass(e.target.className);
+                            setShowColorPicker(false);
+                        }
+                        }/>
+                    ))}
                 </div>}
         </div>
     );

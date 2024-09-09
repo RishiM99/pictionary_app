@@ -46,14 +46,14 @@ body {
 }
 
 .game-play-area {
-    display: flex;
     height: 100%;
     width: 100%;
+    display:flex;
 }
 
 .chat-area-container {
     height: 100%; 
-    width: 22%;
+    width: 25%;
 }
 
 .chat-area {
@@ -97,10 +97,16 @@ body {
     border-radius: 5px;
 }
 
-.drawing-board {
-    width: 78%;
+.drawing-board-container {
     background: white;
     height:100%;
+    width: 70%;
+    position: relative;
+}
+
+.drawing-canvas {
+    height:100%;
+    width: 100%;
     position: relative;
 }
 
@@ -318,7 +324,7 @@ body {
 
 .current-players-list {
     height: 100%; 
-    width: 30%;
+    width: 25%;
     overflow-y: auto;
     padding-bottom: 5px;
     background: white;
