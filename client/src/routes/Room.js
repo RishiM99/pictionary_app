@@ -4,7 +4,12 @@ import {LazyBrush} from 'lazy-brush';
 
 //let quadraticBezierPointGroup = [];
 
-let lazyBrush = null;
+const LAZY_RADIUS = 50;
+
+const lazyBrush = new LazyBrush({
+    enabled: true,
+    radius: LAZY_RADIUS,
+});
 
 export default function Room() {
     const [messages, setMessages] = useState([
@@ -84,6 +89,7 @@ export default function Room() {
 
         function setUpDrawingCanvas() {
             const drawingCanvas = drawingCanvasRef.current;
+            const context = drawingCanvas.getContext("2d");
 
             // function calculateControlPoint(positionOne, positionTwo, distanceAwayRelativeToSegmentLength) {
             //     const midpointVector = {x: (positionOne.x + positionTwo.x)/2, y: (positionOne.y + positionTwo.y)/2}; 
@@ -149,11 +155,10 @@ export default function Room() {
                     // const currentY = e.offsetY;
                     // quadraticBezierPointGroup.push({x: currentX, y: currentY});
                     setIsDrawing(true);
-                    lazyBrush = new LazyBrush({
-                        enabled: true,
-                        radius: 2,
-                        initialPoint: {x: e.clientX, y: e.clientY}
-                    });
+                    lazyBrush.update({x: e.offsetX, y: e.offsetY});
+                    context.moveTo(e.offsetX, e.offsetY);
+                    context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
+                    context.lineWidth = 1;
                 }
             }
 
@@ -166,7 +171,12 @@ export default function Room() {
                         // if (quadraticBezierPointGroup.length === 3) {
                         //     drawQuadraticBezierCurve();
                         // }
-                        lazyBrush.update({ x: e.clientX, y: e.clientY });
+                        lazyBrush.update({x: e.offsetX, y: e.offsetY});
+                        if (lazyBrush.brushHasMoved) {
+                            const brush = lazyBrush.getBrushCoordinates(); 
+                            context.lineTo(brush.x, brush.y);
+                            context.stroke();
+                        }
                     }
                 }
             }
@@ -181,7 +191,12 @@ export default function Room() {
                         //     drawQuadraticBezierCurve();
                         // }
                         // quadraticBezierPointGroup = [];
-                        lazyBrush.update({ x: e.clientX, y: e.clientY });
+                        lazyBrush.update({x: e.offsetX, y: e.offsetY});
+                        if (lazyBrush.brushHasMoved) {
+                            const brush = lazyBrush.getBrushCoordinates(); 
+                            context.lineTo(brush.x, brush.y);
+                            context.stroke();
+                        }
                         setIsDrawing(false);
                     }
                 }
