@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef} from 'react';
 import './styles/Room.css';
 
 let quadraticBezierPointGroup = [];
-let closeMidpoint = true;
 
 
 export default function Room() {
@@ -124,15 +123,10 @@ export default function Room() {
                 console.log(`quadratic bezier group ${quadraticBezierPointGroup.map((x) => JSON.stringify(x))}`)
                 let expandedPointGroup = expandArrWithMidpoints(quadraticBezierPointGroup);
                 console.log(`expanded midpoint ${expandedPointGroup.map((x) => JSON.stringify(x))}`)
-                let i = 0;
-                for (i = 1; i < expandedPointGroup.length; i = i + 2) {
-                    if (i > expandedPointGroup.length - 3) {
-                        break;
-                    }
-                    context.moveTo(expandedPointGroup[i].x, expandedPointGroup[i].y);
-                    context.quadraticCurveTo(expandedPointGroup[i+1].x, expandedPointGroup[i+1].y, expandedPointGroup[i+2].x, expandedPointGroup[i+2].y);
-                    context.stroke();
-                }
+                context.moveTo(expandedPointGroup[1].x, expandedPointGroup[1].y);
+                context.quadraticCurveTo(expandedPointGroup[2].x, expandedPointGroup[2].y, expandedPointGroup[3].x, expandedPointGroup[3].y);
+                context.stroke();
+
                 quadraticBezierPointGroup = quadraticBezierPointGroup.slice(1, quadraticBezierPointGroup.length);
                 console.log(`new quadratic bezier group ${quadraticBezierPointGroup.map((x) => JSON.stringify(x))}`)
             
