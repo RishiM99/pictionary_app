@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef} from 'react';
 import './styles/Room.css';
 
-let secondToLastDrawingPosition = null;
-let lastDrawingPosition = null;
+let currentDrawingPosition = null;
 
 export default function Room() {
     const [messages, setMessages] = useState([
@@ -83,15 +82,33 @@ export default function Room() {
         function setUpDrawingCanvas() {
             const drawingCanvas = drawingCanvasRef.current;
 
-            function drawBezierCurve(secondToLastPosition, lastPosition, currentPosition) {
+            function calculateControlPoint(positionOne, positionTwo, distanceAwayRelativeToSegmentLength) {
+                const midpointVector = {x: (positionOne.x + positionTwo.x)/2, y: (positionOne.y + positionTwo.y)/2}; 
+                const lengthOfSegment = Math.sqrt((positionOne.x - positionTwo.x)**2 + (positionOne.y - positionTwo.y)**2);
+                const distanceAwayFromSegment = distanceAwayRelativeToSegmentLength*lengthOfSegment;
+
+                let perpendicularVector = null;
+                if (positionOne.x > positionTwo.x) {
+                    perpendicularVector = {x: (positionTwo.y - positionOne.y), y: (positionOne.x - positionTwo.x)}; 
+                } else {
+                    perpendicularVector = {x: (positionTwo.y - positionOne.y), y: (positionOne.x - positionTwo.x)}; 
+                }
+                const lengthOfPerpendicularVector = Math.sqrt(perpendicularVector.x**2 + perpendicularVector.y**2);
+                const unitPerpendicularVector = {x: perpendicularVector.x/lengthOfPerpendicularVector, y: perpendicularVector.y/lengthOfPerpendicularVector};
+                console.log(unitPerpendicularVector);
+                const scaledPerpendicularVector = {x: unitPerpendicularVector.x * distanceAwayFromSegment, y: unitPerpendicularVector.y * distanceAwayFromSegment};
+
+                return {x: midpointVector.x + scaledPerpendicularVector.x, y: midpointVector.y + scaledPerpendicularVector.y};
+            }
+
+            function drawBezierCurve(lastPosition, currentPosition) {
                 const context = drawingCanvas.getContext("2d");
                 context.beginPath();
                 context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
                 context.lineWidth = 1;
-                context.moveTo(secondToLastPosition.x, secondToLastPosition.y);
-                context.quadraticCurveTo(lastPosition.x, lastPosition.y, currentPosition.x, currentPosition.y);
-                // context.moveTo(10, 10);
-                // context.quadraticCurveTo(300, 100, 300, 300);
+                context.moveTo(lastPosition.x, lastPosition.y);
+                const controlPoint = calculateControlPoint(lastPosition, currentPosition, 0.2); 
+                context.quadraticCurveTo(controlPoint.x, controlPoint.y, currentPosition.x, currentPosition.y);
                 context.stroke();
                // context.closePath();
             }
@@ -101,7 +118,7 @@ export default function Room() {
                     console.log(e);
                     const currentX = e.offsetX;
                     const currentY = e.offsetY;
-                    lastDrawingPosition = {x: currentX, y: currentY};
+                    currentDrawingPosition = {x: currentX, y: currentY};
                     setIsDrawing(true);
                 }
             }
@@ -111,11 +128,8 @@ export default function Room() {
                     if (isDrawing) {
                         const currentX = e.offsetX;
                         const currentY = e.offsetY;
-                        if (secondToLastDrawingPosition != null && lastDrawingPosition != null) {
-                            drawBezierCurve(secondToLastDrawingPosition, lastDrawingPosition, {x: currentX, y: currentY});
-                        }
-                        secondToLastDrawingPosition = lastDrawingPosition;
-                        lastDrawingPosition = {x: currentX, y: currentY};
+                        drawBezierCurve(currentDrawingPosition, {x: currentX, y: currentY});
+                        currentDrawingPosition = {x: currentX, y: currentY};
                     }
                 }
             }
@@ -125,11 +139,8 @@ export default function Room() {
                     if (isDrawing) {
                         const currentX = e.offsetX;
                         const currentY = e.offsetY;
-                        if (secondToLastDrawingPosition != null && lastDrawingPosition != null) {
-                            drawBezierCurve(secondToLastDrawingPosition, lastDrawingPosition, {x: currentX, y: currentY});
-                        }
-                        secondToLastDrawingPosition = lastDrawingPosition;
-                        lastDrawingPosition = {x: currentX, y: currentY};
+                        drawBezierCurve(currentDrawingPosition, {x: currentX, y: currentY});
+                        currentDrawingPosition = {x: currentX, y: currentY};
                         setIsDrawing(false);
                     }
                 }
