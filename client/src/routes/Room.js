@@ -1,15 +1,9 @@
 import React, { useState, useEffect, useRef} from 'react';
 import './styles/Room.css';
-import {LazyBrush} from 'lazy-brush';
 
-//let quadraticBezierPointGroup = [];
+let quadraticBezierPointGroup = [];
+let closeMidpoint = true;
 
-const LAZY_RADIUS = 50;
-
-const lazyBrush = new LazyBrush({
-    enabled: true,
-    radius: LAZY_RADIUS,
-});
 
 export default function Room() {
     const [messages, setMessages] = useState([
@@ -89,7 +83,6 @@ export default function Room() {
 
         function setUpDrawingCanvas() {
             const drawingCanvas = drawingCanvasRef.current;
-            const context = drawingCanvas.getContext("2d");
 
             // function calculateControlPoint(positionOne, positionTwo, distanceAwayRelativeToSegmentLength) {
             //     const midpointVector = {x: (positionOne.x + positionTwo.x)/2, y: (positionOne.y + positionTwo.y)/2}; 
@@ -110,72 +103,60 @@ export default function Room() {
             //     return {x: midpointVector.x + scaledPerpendicularVector.x, y: midpointVector.y + scaledPerpendicularVector.y};
             // }
 
-            // function calcMidpoint(point1, point2) {
-            //     return {x: (point1.x + point2.x)/2, y: (point1.y + point2.y)/2};
-            // }
+            function calcMidpoint(point1, point2) {
+                return {x: 0.5*point1.x + 0.5*point2.x, y: 0.5*point1.y + 0.5*point2.y};
+            }
 
-            // function expandArrWithMidpoints(arr) {
-            //     let arrWithMidpoints = [arr[0]];
-            //     for (let i = 1; i < arr.length; i++) {
-            //         arrWithMidpoints.push(calcMidpoint(arr[i-1], arr[i]));
-            //         arrWithMidpoints.push(arr[i]);
-            //     }
-            //     return arrWithMidpoints;
-            // }
+            function expandArrWithMidpoints(arr) {
+                let arrWithMidpoints = [arr[0]];
+                for (let i = 1; i < arr.length; i++) {
+                    arrWithMidpoints.push(calcMidpoint(arr[i-1], arr[i]));
+                    arrWithMidpoints.push(arr[i]);
+                }
+                return arrWithMidpoints;
+            }
 
-            // function drawQuadraticBezierCurve() {
-            //     const context = drawingCanvas.getContext("2d");
-            //     context.beginPath();
-            //     context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
-            //     context.lineWidth = 1;
-            //     console.log(`quadratic bezier group ${quadraticBezierPointGroup}`)
-            //     let expandedPointGroup = expandArrWithMidpoints(quadraticBezierPointGroup);
-            //     expandedPointGroup = expandArrWithMidpoints(expandedPointGroup);
-            //     expandedPointGroup = expandArrWithMidpoints(expandedPointGroup);
-            //     console.log(`expanded midpoint ${expandedPointGroup}`)
-            //     let i = 0;
-            //     for (i = 0; i < expandedPointGroup.length; i = i + 2) {
-            //         if (i > expandedPointGroup.length - 3) {
-            //             break;
-            //         }
-            //         context.moveTo(expandedPointGroup[i].x, expandedPointGroup[i].y);
-            //         context.quadraticCurveTo(expandedPointGroup[i+1].x, expandedPointGroup[i+1].y, expandedPointGroup[i+2].x, expandedPointGroup[i+2].y);
-            //         context.stroke();
-            //     }
-            //     quadraticBezierPointGroup = expandedPointGroup.slice(i-1, expandedPointGroup.length);
-            //     console.log(`new quadratic bezier group ${quadraticBezierPointGroup}`)
+            function drawQuadraticBezierCurve() {
+                const context = drawingCanvas.getContext("2d");
+                context.beginPath();
+                context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
+                context.lineWidth = 3;
+                console.log(`quadratic bezier group ${quadraticBezierPointGroup.map((x) => JSON.stringify(x))}`)
+                let expandedPointGroup = expandArrWithMidpoints(quadraticBezierPointGroup);
+                console.log(`expanded midpoint ${expandedPointGroup.map((x) => JSON.stringify(x))}`)
+                let i = 0;
+                for (i = 1; i < expandedPointGroup.length; i = i + 2) {
+                    if (i > expandedPointGroup.length - 3) {
+                        break;
+                    }
+                    context.moveTo(expandedPointGroup[i].x, expandedPointGroup[i].y);
+                    context.quadraticCurveTo(expandedPointGroup[i+1].x, expandedPointGroup[i+1].y, expandedPointGroup[i+2].x, expandedPointGroup[i+2].y);
+                    context.stroke();
+                }
+                quadraticBezierPointGroup = quadraticBezierPointGroup.slice(1, quadraticBezierPointGroup.length);
+                console.log(`new quadratic bezier group ${quadraticBezierPointGroup.map((x) => JSON.stringify(x))}`)
             
-            //    // context.closePath();
-            // }
+               // context.closePath();
+            }
 
             function mouseDownEventListener(e) {
                 if (drawingCanvas) {
                     console.log(e);
-                    // const currentX = e.offsetX;
-                    // const currentY = e.offsetY;
-                    // quadraticBezierPointGroup.push({x: currentX, y: currentY});
+                    const currentX = e.offsetX;
+                    const currentY = e.offsetY;
+                    quadraticBezierPointGroup.push({x: currentX, y: currentY});
                     setIsDrawing(true);
-                    lazyBrush.update({x: e.offsetX, y: e.offsetY});
-                    context.moveTo(e.offsetX, e.offsetY);
-                    context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
-                    context.lineWidth = 1;
                 }
             }
 
             function mouseMoveEventListener(e) {
                 if (drawingCanvas) {
                     if (isDrawing) {
-                        // const currentX = e.offsetX;
-                        // const currentY = e.offsetY;
-                        // quadraticBezierPointGroup.push({x: currentX, y: currentY});
-                        // if (quadraticBezierPointGroup.length === 3) {
-                        //     drawQuadraticBezierCurve();
-                        // }
-                        lazyBrush.update({x: e.offsetX, y: e.offsetY});
-                        if (lazyBrush.brushHasMoved) {
-                            const brush = lazyBrush.getBrushCoordinates(); 
-                            context.lineTo(brush.x, brush.y);
-                            context.stroke();
+                        const currentX = e.offsetX;
+                        const currentY = e.offsetY;
+                        quadraticBezierPointGroup.push({x: currentX, y: currentY});
+                        if (quadraticBezierPointGroup.length === 3) {
+                            drawQuadraticBezierCurve();
                         }
                     }
                 }
@@ -184,19 +165,13 @@ export default function Room() {
             function mouseUpEventListener(e) {
                 if (drawingCanvas) {
                     if (isDrawing) {
-                        // const currentX = e.offsetX;
-                        // const currentY = e.offsetY;
-                        // quadraticBezierPointGroup.push({x: currentX, y: currentY});
-                        // if (quadraticBezierPointGroup.length === 3) {
-                        //     drawQuadraticBezierCurve();
-                        // }
-                        // quadraticBezierPointGroup = [];
-                        lazyBrush.update({x: e.offsetX, y: e.offsetY});
-                        if (lazyBrush.brushHasMoved) {
-                            const brush = lazyBrush.getBrushCoordinates(); 
-                            context.lineTo(brush.x, brush.y);
-                            context.stroke();
+                        const currentX = e.offsetX;
+                        const currentY = e.offsetY;
+                        quadraticBezierPointGroup.push({x: currentX, y: currentY});
+                        if (quadraticBezierPointGroup.length === 3) {
+                            drawQuadraticBezierCurve();
                         }
+                        quadraticBezierPointGroup = [];
                         setIsDrawing(false);
                     }
                 }
