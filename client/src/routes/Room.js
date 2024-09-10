@@ -129,8 +129,6 @@ export default function Room() {
 
                 quadraticBezierPointGroup = quadraticBezierPointGroup.slice(1, quadraticBezierPointGroup.length);
                 console.log(`new quadratic bezier group ${quadraticBezierPointGroup.map((x) => JSON.stringify(x))}`)
-            
-               // context.closePath();
             }
 
             function mouseDownEventListener(e) {
@@ -244,7 +242,7 @@ export default function Room() {
                             </svg>
                         </div>
                        
-                        <div className="erase-icon-background"> 
+                        <div className="erase-icon-background" onClick={() => setCurrentColorClass("white")}> 
                             <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="erase-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M497.941 273.941c18.745-18.745 18.745-49.137 0-67.882l-160-160c-18.745-18.745-49.136-18.746-67.883 
                                 0l-256 256c-18.745 18.745-18.745 49.137 0 67.882l96 96A48.004 48.004 0 0 0 144 480h356c6.627 0 12-5.373 
