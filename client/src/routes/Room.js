@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef} from 'react';
 import './styles/Room.css';
 
-let currentDrawingPosition = null;
+let quadraticBezierPointGroup = [];
 
 export default function Room() {
     const [messages, setMessages] = useState([
@@ -82,34 +82,60 @@ export default function Room() {
         function setUpDrawingCanvas() {
             const drawingCanvas = drawingCanvasRef.current;
 
-            function calculateControlPoint(positionOne, positionTwo, distanceAwayRelativeToSegmentLength) {
-                const midpointVector = {x: (positionOne.x + positionTwo.x)/2, y: (positionOne.y + positionTwo.y)/2}; 
-                const lengthOfSegment = Math.sqrt((positionOne.x - positionTwo.x)**2 + (positionOne.y - positionTwo.y)**2);
-                const distanceAwayFromSegment = distanceAwayRelativeToSegmentLength*lengthOfSegment;
+            // function calculateControlPoint(positionOne, positionTwo, distanceAwayRelativeToSegmentLength) {
+            //     const midpointVector = {x: (positionOne.x + positionTwo.x)/2, y: (positionOne.y + positionTwo.y)/2}; 
+            //     const lengthOfSegment = Math.sqrt((positionOne.x - positionTwo.x)**2 + (positionOne.y - positionTwo.y)**2);
+            //     const distanceAwayFromSegment = distanceAwayRelativeToSegmentLength*lengthOfSegment;
 
-                let perpendicularVector = null;
-                if (positionOne.x > positionTwo.x) {
-                    perpendicularVector = {x: (positionTwo.y - positionOne.y), y: (positionOne.x - positionTwo.x)}; 
-                } else {
-                    perpendicularVector = {x: (positionTwo.y - positionOne.y), y: (positionOne.x - positionTwo.x)}; 
-                }
-                const lengthOfPerpendicularVector = Math.sqrt(perpendicularVector.x**2 + perpendicularVector.y**2);
-                const unitPerpendicularVector = {x: perpendicularVector.x/lengthOfPerpendicularVector, y: perpendicularVector.y/lengthOfPerpendicularVector};
-                console.log(unitPerpendicularVector);
-                const scaledPerpendicularVector = {x: unitPerpendicularVector.x * distanceAwayFromSegment, y: unitPerpendicularVector.y * distanceAwayFromSegment};
+            //     let perpendicularVector = null;
+            //     if (positionOne.x > positionTwo.x) {
+            //         perpendicularVector = {x: (positionTwo.y - positionOne.y), y: (positionOne.x - positionTwo.x)}; 
+            //     } else {
+            //         perpendicularVector = {x: (positionTwo.y - positionOne.y), y: (positionOne.x - positionTwo.x)}; 
+            //     }
+            //     const lengthOfPerpendicularVector = Math.sqrt(perpendicularVector.x**2 + perpendicularVector.y**2);
+            //     const unitPerpendicularVector = {x: perpendicularVector.x/lengthOfPerpendicularVector, y: perpendicularVector.y/lengthOfPerpendicularVector};
+            //     console.log(unitPerpendicularVector);
+            //     const scaledPerpendicularVector = {x: unitPerpendicularVector.x * distanceAwayFromSegment, y: unitPerpendicularVector.y * distanceAwayFromSegment};
 
-                return {x: midpointVector.x + scaledPerpendicularVector.x, y: midpointVector.y + scaledPerpendicularVector.y};
+            //     return {x: midpointVector.x + scaledPerpendicularVector.x, y: midpointVector.y + scaledPerpendicularVector.y};
+            // }
+
+            function calcMidpoint(point1, point2) {
+                return {x: (point1.x + point2.x)/2, y: (point1.y + point2.y)/2};
             }
 
-            function drawBezierCurve(lastPosition, currentPosition) {
+            function expandArrWithMidpoints(arr) {
+                let arrWithMidpoints = [arr[0]];
+                for (let i = 1; i < arr.length; i++) {
+                    arrWithMidpoints.push(calcMidpoint(arr[i-1], arr[i]));
+                    arrWithMidpoints.push(arr[i]);
+                }
+                return arrWithMidpoints;
+            }
+
+            function drawQuadraticBezierCurve() {
                 const context = drawingCanvas.getContext("2d");
                 context.beginPath();
                 context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
                 context.lineWidth = 1;
-                context.moveTo(lastPosition.x, lastPosition.y);
-                const controlPoint = calculateControlPoint(lastPosition, currentPosition, 0.2); 
-                context.quadraticCurveTo(controlPoint.x, controlPoint.y, currentPosition.x, currentPosition.y);
-                context.stroke();
+                console.log(`quadratic bezier group ${quadraticBezierPointGroup}`)
+                let expandedPointGroup = expandArrWithMidpoints(quadraticBezierPointGroup);
+                expandedPointGroup = expandArrWithMidpoints(expandedPointGroup);
+                expandedPointGroup = expandArrWithMidpoints(expandedPointGroup);
+                console.log(`expanded midpoint ${expandedPointGroup}`)
+                let i = 0;
+                for (i = 0; i < expandedPointGroup.length; i = i + 2) {
+                    if (i > expandedPointGroup.length - 3) {
+                        break;
+                    }
+                    context.moveTo(expandedPointGroup[i].x, expandedPointGroup[i].y);
+                    context.quadraticCurveTo(expandedPointGroup[i+1].x, expandedPointGroup[i+1].y, expandedPointGroup[i+2].x, expandedPointGroup[i+2].y);
+                    context.stroke();
+                }
+                quadraticBezierPointGroup = expandedPointGroup.slice(i-1, expandedPointGroup.length);
+                console.log(`new quadratic bezier group ${quadraticBezierPointGroup}`)
+            
                // context.closePath();
             }
 
@@ -118,7 +144,7 @@ export default function Room() {
                     console.log(e);
                     const currentX = e.offsetX;
                     const currentY = e.offsetY;
-                    currentDrawingPosition = {x: currentX, y: currentY};
+                    quadraticBezierPointGroup.push({x: currentX, y: currentY});
                     setIsDrawing(true);
                 }
             }
@@ -128,8 +154,10 @@ export default function Room() {
                     if (isDrawing) {
                         const currentX = e.offsetX;
                         const currentY = e.offsetY;
-                        drawBezierCurve(currentDrawingPosition, {x: currentX, y: currentY});
-                        currentDrawingPosition = {x: currentX, y: currentY};
+                        quadraticBezierPointGroup.push({x: currentX, y: currentY});
+                        if (quadraticBezierPointGroup.length === 3) {
+                            drawQuadraticBezierCurve();
+                        }
                     }
                 }
             }
@@ -139,8 +167,11 @@ export default function Room() {
                     if (isDrawing) {
                         const currentX = e.offsetX;
                         const currentY = e.offsetY;
-                        drawBezierCurve(currentDrawingPosition, {x: currentX, y: currentY});
-                        currentDrawingPosition = {x: currentX, y: currentY};
+                        quadraticBezierPointGroup.push({x: currentX, y: currentY});
+                        if (quadraticBezierPointGroup.length === 3) {
+                            drawQuadraticBezierCurve();
+                        }
+                        quadraticBezierPointGroup = [];
                         setIsDrawing(false);
                     }
                 }
