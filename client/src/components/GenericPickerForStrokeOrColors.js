@@ -2,9 +2,9 @@ import React, {useState, forwardRef} from 'react';
 import './styles/GenericPickerForStrokeOrColors.css';
 
 const GenericPickerForStrokeOrColors = forwardRef(
-    function GenericPickerForStrokeOrColors({children}, ref) {
+    function GenericPickerForStrokeOrColors({children, style}, ref) {
         return (
-            <div className="color-picker" ref={ref}>
+            <div className="generic-picker" ref={ref}>
                 {children}
             </div> 
         );
