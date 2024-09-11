@@ -81,110 +81,6 @@ export default function Room() {
             };
         }
 
-        // function setUpDrawingCanvas() {
-        //     const drawingCanvas = drawingCanvasRef.current;
-
-        //     // function calculateControlPoint(positionOne, positionTwo, distanceAwayRelativeToSegmentLength) {
-        //     //     const midpointVector = {x: (positionOne.x + positionTwo.x)/2, y: (positionOne.y + positionTwo.y)/2}; 
-        //     //     const lengthOfSegment = Math.sqrt((positionOne.x - positionTwo.x)**2 + (positionOne.y - positionTwo.y)**2);
-        //     //     const distanceAwayFromSegment = distanceAwayRelativeToSegmentLength*lengthOfSegment;
-
-        //     //     let perpendicularVector = null;
-        //     //     if (positionOne.x > positionTwo.x) {
-        //     //         perpendicularVector = {x: (positionTwo.y - positionOne.y), y: (positionOne.x - positionTwo.x)}; 
-        //     //     } else {
-        //     //         perpendicularVector = {x: (positionTwo.y - positionOne.y), y: (positionOne.x - positionTwo.x)}; 
-        //     //     }
-        //     //     const lengthOfPerpendicularVector = Math.sqrt(perpendicularVector.x**2 + perpendicularVector.y**2);
-        //     //     const unitPerpendicularVector = {x: perpendicularVector.x/lengthOfPerpendicularVector, y: perpendicularVector.y/lengthOfPerpendicularVector};
-        //     //     console.log(unitPerpendicularVector);
-        //     //     const scaledPerpendicularVector = {x: unitPerpendicularVector.x * distanceAwayFromSegment, y: unitPerpendicularVector.y * distanceAwayFromSegment};
-
-        //     //     return {x: midpointVector.x + scaledPerpendicularVector.x, y: midpointVector.y + scaledPerpendicularVector.y};
-        //     // }
-
-        //     function calcMidpoint(point1, point2) {
-        //         return {x: 0.5*point1.x + 0.5*point2.x, y: 0.5*point1.y + 0.5*point2.y};
-        //     }
-
-        //     function expandArrWithMidpoints(arr) {
-        //         let arrWithMidpoints = [arr[0]];
-        //         for (let i = 1; i < arr.length; i++) {
-        //             arrWithMidpoints.push(calcMidpoint(arr[i-1], arr[i]));
-        //             arrWithMidpoints.push(arr[i]);
-        //         }
-        //         return arrWithMidpoints;
-        //     }
-
-        //     function drawQuadraticBezierCurve() {
-        //         const context = drawingCanvas.getContext("2d");
-        //         context.beginPath();
-        //         context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
-        //         context.lineWidth = 3;
-        //         console.log(`quadratic bezier group ${quadraticBezierPointGroup.map((x) => JSON.stringify(x))}`)
-        //         let expandedPointGroup = expandArrWithMidpoints(quadraticBezierPointGroup);
-        //         console.log(`expanded midpoint ${expandedPointGroup.map((x) => JSON.stringify(x))}`)
-        //         context.moveTo(expandedPointGroup[1].x, expandedPointGroup[1].y);
-        //         context.quadraticCurveTo(expandedPointGroup[2].x, expandedPointGroup[2].y, expandedPointGroup[3].x, expandedPointGroup[3].y);
-        //         context.stroke();
-
-        //         quadraticBezierPointGroup = quadraticBezierPointGroup.slice(1, quadraticBezierPointGroup.length);
-        //         console.log(`new quadratic bezier group ${quadraticBezierPointGroup.map((x) => JSON.stringify(x))}`)
-        //     }
-
-        //     function mouseDownEventListener(e) {
-        //         if (drawingCanvas) {
-        //             console.log(e);
-        //             const currentX = e.offsetX;
-        //             const currentY = e.offsetY;
-        //             quadraticBezierPointGroup.push({x: currentX, y: currentY});
-        //             setIsDrawing(true);
-        //         }
-        //     }
-
-        //     function mouseMoveEventListener(e) {
-        //         if (drawingCanvas) {
-        //             if (isDrawing) {
-        //                 const currentX = e.offsetX;
-        //                 const currentY = e.offsetY;
-        //                 quadraticBezierPointGroup.push({x: currentX, y: currentY});
-        //                 if (quadraticBezierPointGroup.length === 3) {
-        //                     drawQuadraticBezierCurve();
-        //                 }
-        //             }
-        //         }
-        //     }
-
-        //     function mouseUpEventListener(e) {
-        //         if (drawingCanvas) {
-        //             if (isDrawing) {
-        //                 const currentX = e.offsetX;
-        //                 const currentY = e.offsetY;
-        //                 quadraticBezierPointGroup.push({x: currentX, y: currentY});
-        //                 if (quadraticBezierPointGroup.length === 3) {
-        //                     drawQuadraticBezierCurve();
-        //                 }
-        //                 quadraticBezierPointGroup = [];
-        //                 setIsDrawing(false);
-        //             }
-        //         }
-        //     }
-                
-        //     if (drawingCanvas) {
-        //         drawingCanvas.addEventListener("mousedown", mouseDownEventListener);
-        //         drawingCanvas.addEventListener("mousemove", mouseMoveEventListener);
-        //         window.addEventListener("mouseup", mouseUpEventListener);
-        //     }
-
-        //     return () => {
-        //         if (drawingCanvas) {
-        //             drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
-        //             drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
-        //             window.removeEventListener("mouseup", mouseUpEventListener);
-        //         }
-        //     }
-        // }
-
         const handleClickOutsidePaletteCleanup = handleClickOutsidePalette();
         const handleCopyUrlClickedCleanup = handleCopyUrlClicked();
         const setUpDrawingCanvasCleanup = drawToCanvas(drawingCanvasRef, isDrawing, setIsDrawing, currentColorClass);
@@ -253,6 +149,17 @@ export default function Room() {
                         </div>
                         <div className={currentColorClass} style = {{"height": "40px", "width": "40px"}} onClick={() => setShowColorPicker(true)}/>
                     </div>
+                    {showColorPicker && 
+                        <div className="color-picker" ref={colorPickerRef}>
+                            {colorClassesForColorPicker.map((colorClass, index) => (
+
+                                <div className={colorClass} key={index} onClick={(e) => {
+                                    setCurrentColorClass(e.target.className);
+                                    setShowColorPicker(false);
+                                }
+                                }/>
+                            ))}
+                        </div>}
                 </div>
                 <div className="chat-area-container">
                     <div className="chat-area">
@@ -275,17 +182,6 @@ export default function Room() {
                     </div>
                 </div>
             </div>
-            {showColorPicker && 
-                <div className="color-picker" ref={colorPickerRef}>
-                    {colorClassesForColorPicker.map((colorClass, index) => (
-
-                        <div className={colorClass} key={index} onClick={(e) => {
-                            setCurrentColorClass(e.target.className);
-                            setShowColorPicker(false);
-                        }
-                        }/>
-                    ))}
-                </div>}
         </div>
     );
 };

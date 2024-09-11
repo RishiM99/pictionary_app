@@ -309,6 +309,10 @@ body {
 
 .color-picker {
     position:absolute;
+    left: 0; 
+    right: 0;
+    margin-left: 43%;
+
     bottom: 18%;
     z-index: 1;
     border: 1px solid #c0c4c4;;
