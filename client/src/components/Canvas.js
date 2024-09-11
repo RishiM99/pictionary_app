@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef} from 'react';
 import {drawToCanvas} from '../DrawToCanvasHelper.js';
 import './styles/Canvas.css';
+import GenericPickerForStrokeOrColors from './GenericPickerForStrokeOrColors.js';
 
 
 const colorClassesForColorPicker = [
@@ -14,16 +15,21 @@ const colorClassesForColorPicker = [
     "orange",
     "brown",
     "red",
-    "white"
 ];
 
 
 export default function Canvas() {
     const [showColorPicker, setShowColorPicker] = useState(false);
+    const [showPenStrokePicker, setShowPenStrokePicker] = useState(false);
+    const [showEraseStrokePicker, setShowEraseStrokePicker] = useState(false);
+
     const [isDrawing, setIsDrawing] = useState(false);
     const [currentColorClass, setCurrentColorClass] = useState('black');
 
     const colorPickerRef = useRef(null);
+    const eraseStrokePickerRef = useRef(null);
+    const penStrokePickerRef = useRef(null);
+
     const drawingCanvasRef = useRef(null);
 
     useEffect(() => {
@@ -38,7 +44,7 @@ export default function Canvas() {
     }, []);
 
     useEffect(() => {
-        function handleClickOutsidePalette() {
+        function handleClickOutsideColorOrStrokePickers() {
             function handleClickOutside(event) {
                 console.log(event);
                 if (colorPickerRef.current) {
@@ -49,6 +55,22 @@ export default function Canvas() {
                             setShowColorPicker(false);
                     }
                 } 
+                if (eraseStrokePickerRef.current) {
+                    const boundingRect = eraseStrokePickerRef.current.getBoundingClientRect();
+                    console.log(boundingRect);
+                    if (event.clientX < boundingRect.x || event.clientX > boundingRect.right ||
+                        event.clientY < boundingRect.y || event.clientY > boundingRect.bottom) {
+                            setShowEraseStrokePicker(false);
+                    }
+                } 
+                if (penStrokePickerRef.current) {
+                    const boundingRect = penStrokePickerRef.current.getBoundingClientRect();
+                    console.log(boundingRect);
+                    if (event.clientX < boundingRect.x || event.clientX > boundingRect.right ||
+                        event.clientY < boundingRect.y || event.clientY > boundingRect.bottom) {
+                            setShowPenStrokePicker(false);
+                    }
+                } 
               }
             
             document.addEventListener("mousedown", handleClickOutside);
@@ -57,12 +79,12 @@ export default function Canvas() {
             }
         }
 
-        const handleClickOutsidePaletteCleanup = handleClickOutsidePalette();
+        const handleClickOutsideColorOrStrokePickersCleanup = handleClickOutsideColorOrStrokePickers();
         const setUpDrawingCanvasCleanup = drawToCanvas(drawingCanvasRef, isDrawing, setIsDrawing, currentColorClass);
 
         return () => {
-          handleClickOutsidePaletteCleanup();
-          setUpDrawingCanvasCleanup();
+            handleClickOutsideColorOrStrokePickersCleanup();
+            setUpDrawingCanvasCleanup();
         }
       }, [colorPickerRef, drawingCanvasRef, isDrawing, currentColorClass]);
 
@@ -70,7 +92,7 @@ export default function Canvas() {
         <div className="drawing-board-container">
             <canvas className="drawing-canvas" ref={drawingCanvasRef}/>
             <div className="palette">
-                <div className="draw-icon-background">
+                <div className="draw-icon-background" onClick={() => setShowPenStrokePicker(!showPenStrokePicker)}>
                     <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="draw-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
                         <path d="M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3 0-17l46.1-46.1c18.7-18.7 
                         49.1-18.7 67.9 0l60.1 60.1c18.8 18.7 18.8 49.1 0 67.9zM284.2 99.8L21.6 362.4.4 483.9c-2.9 16.4 11.4 
@@ -80,7 +102,12 @@ export default function Canvas() {
                     </svg>
                 </div>
                 
-                <div className="erase-icon-background" onClick={() => setCurrentColorClass("white")}> 
+                <div className="erase-icon-background" onClick={() => {
+                    setCurrentColorClass("white");
+                    console.log(showEraseStrokePicker);
+                    console.log(!showEraseStrokePicker);
+                    setShowEraseStrokePicker(!showEraseStrokePicker);
+                }}> 
                     <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="erase-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
                         <path d="M497.941 273.941c18.745-18.745 18.745-49.137 0-67.882l-160-160c-18.745-18.745-49.136-18.746-67.883 
                         0l-256 256c-18.745 18.745-18.745 49.137 0 67.882l96 96A48.004 48.004 0 0 0 144 480h356c6.627 0 12-5.373 
@@ -88,18 +115,37 @@ export default function Canvas() {
                         416H150.628l-80-80 124.686-124.686z"></path>
                     </svg>
                 </div>
-                <div className={currentColorClass} style = {{"height": "40px", "width": "40px"}} onClick={() => setShowColorPicker(true)}/>
+                <div className={currentColorClass} style = {{"height": "40px", "width": "40px"}} onClick={() => setShowColorPicker(!showColorPicker)}/>
             </div>
             {showColorPicker && 
-                <div className="color-picker" ref={colorPickerRef}>
-                    {colorClassesForColorPicker.map((colorClass, index) => (
-
-                        <div className={colorClass} key={index} onClick={(e) => {
-                            setCurrentColorClass(e.target.className);
-                            setShowColorPicker(false);
-                        }
-                        }/>
-                    ))}
-                </div>}
+             <GenericPickerForStrokeOrColors ref={colorPickerRef} setCurrentColorClass={setCurrentColorClass} setShowColorPicker={setShowColorPicker}>
+                {colorClassesForColorPicker.map((colorClass, index) => (
+                    <div className={colorClass} key={index} onClick={(e) => {
+                        setCurrentColorClass(e.target.className);
+                        setShowColorPicker(false);
+                    }
+                    }/>
+                ))}   
+            </GenericPickerForStrokeOrColors>}
+            {showEraseStrokePicker && 
+            <GenericPickerForStrokeOrColors ref={eraseStrokePickerRef} setCurrentColorClass={setCurrentColorClass} setShowColorPicker={setShowEraseStrokePicker}>
+                {colorClassesForColorPicker.map((colorClass, index) => (
+                    <div className={colorClass} key={index} onClick={(e) => {
+                        setCurrentColorClass(e.target.className);
+                        setShowColorPicker(false);
+                    }
+                    }/>
+                ))}
+            </GenericPickerForStrokeOrColors>}
+            {showPenStrokePicker && 
+            <GenericPickerForStrokeOrColors ref={penStrokePickerRef} setCurrentColorClass={setCurrentColorClass} setShowColorPicker={setShowPenStrokePicker}>
+                {colorClassesForColorPicker.map((colorClass, index) => (
+                    <div className={colorClass} key={index} onClick={(e) => {
+                        setCurrentColorClass(e.target.className);
+                        setShowColorPicker(false);
+                    }
+                    }/>
+                ))}  
+            </GenericPickerForStrokeOrColors>}
         </div>);
 }
