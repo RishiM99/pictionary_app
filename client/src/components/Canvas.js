@@ -1,8 +1,73 @@
 import React, { useState, useEffect, useRef} from 'react';
+import {drawToCanvas} from '../DrawToCanvasHelper.js';
+import './styles/Canvas.css';
 
-export default function Canvas({drawingCanvasRef, showColorPicker, setShowColorPicker, setCurrentColorClass}) {
-    return 
-        (<div className="drawing-board-container">
+
+const colorClassesForColorPicker = [
+    "black",
+    "gray",
+    "purple",
+    "blue",
+    "teal",
+    "green",
+    "yellow",
+    "orange",
+    "brown",
+    "red",
+    "white"
+];
+
+
+export default function Canvas() {
+    const [showColorPicker, setShowColorPicker] = useState(false);
+    const [isDrawing, setIsDrawing] = useState(false);
+    const [currentColorClass, setCurrentColorClass] = useState('black');
+
+    const colorPickerRef = useRef(null);
+    const drawingCanvasRef = useRef(null);
+
+    useEffect(() => {
+        const drawingCanvas = drawingCanvasRef.current;
+        if (drawingCanvas) {
+            drawingCanvas.height = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("height"), 10);
+            drawingCanvas.width = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("width"), 10);
+            console.log(drawingCanvas.height);
+            console.log(drawingCanvas.width);
+        }
+        return () => {}
+    }, []);
+
+    useEffect(() => {
+        function handleClickOutsidePalette() {
+            function handleClickOutside(event) {
+                console.log(event);
+                if (colorPickerRef.current) {
+                    const boundingRect = colorPickerRef.current.getBoundingClientRect();
+                    console.log(boundingRect);
+                    if (event.clientX < boundingRect.x || event.clientX > boundingRect.right ||
+                        event.clientY < boundingRect.y || event.clientY > boundingRect.bottom) {
+                            setShowColorPicker(false);
+                    }
+                } 
+              }
+            
+            document.addEventListener("mousedown", handleClickOutside);
+            return () => {
+                document.removeEventListener("mousedown", handleClickOutside);
+            }
+        }
+
+        const handleClickOutsidePaletteCleanup = handleClickOutsidePalette();
+        const setUpDrawingCanvasCleanup = drawToCanvas(drawingCanvasRef, isDrawing, setIsDrawing, currentColorClass);
+
+        return () => {
+          handleClickOutsidePaletteCleanup();
+          setUpDrawingCanvasCleanup();
+        }
+      }, [colorPickerRef, drawingCanvasRef, isDrawing, currentColorClass]);
+
+    return (
+        <div className="drawing-board-container">
             <canvas className="drawing-canvas" ref={drawingCanvasRef}/>
             <div className="palette">
                 <div className="draw-icon-background">
@@ -36,5 +101,5 @@ export default function Canvas({drawingCanvasRef, showColorPicker, setShowColorP
                         }/>
                     ))}
                 </div>}
-            </div>);
+        </div>);
 }

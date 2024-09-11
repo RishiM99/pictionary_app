@@ -1,0 +1,228 @@
+.drawing-board-container {
+    background: white;
+    height:100%;
+    width: 100%;
+    position: relative;
+}
+
+.drawing-canvas {
+    height:100%;
+    width: 100%;
+    position: relative;
+}
+
+.palette {
+    position: absolute;
+    bottom: 5px;
+    margin: 0 auto;
+    left: 0;
+    background: #e0e4e4;
+    right: 0;
+    width: 32%;
+    height: 15%;
+    border-radius: 10px;
+    display: flex; 
+    align-items:center;
+    flex-direction: row;
+    justify-content:space-around;
+}
+
+.draw-icon-background {
+    height: 40px;
+    width: 40px;
+    background-color: #bbb;
+    border-radius: 50%;
+    position:relative;
+}
+
+
+.draw-icon {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+
+.erase-icon-background {
+    height: 40px;
+    width: 40px;
+    background-color: #bbb;
+    border-radius: 50%;
+    position:relative;
+}
+
+.erase-icon {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+.black {
+    height: 25px;
+    width: 25px;
+    margin: 2px;
+    background-color: black;
+    border-radius: 50%;
+    position:relative;
+}
+
+.gray {
+    height: 25px;
+    width: 25px;
+    background-color: rgb(87, 87, 87);
+    border-radius: 50%;
+    position:relative;
+    margin: 2px;
+}
+
+/* .light-gray {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(160, 160, 160);
+    border-radius: 50%;
+    position:relative;
+} */
+
+.purple {
+    height: 25px;
+    width: 25px;
+    background-color: rgb(156, 39, 176);
+    border-radius: 50%;
+    position:relative;
+    margin: 2px;
+}
+
+/* .light-blue {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(157, 175, 255);
+    border-radius: 50%;
+    position:relative;
+} */
+
+
+.blue {
+    height: 25px;
+    width: 25px;
+    background-color: rgb(42, 75, 215);
+    border-radius: 50%;
+    position:relative;
+    margin: 2px;
+}
+
+.teal {
+    height: 25px;
+    width: 25px;
+    background-color: rgb(41, 208, 208);
+    border-radius: 50%;
+    margin: 2px;
+}
+
+/* .light-green {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(129, 197, 122);
+    border-radius: 50%;
+} */
+
+.green {
+    height: 25px;
+    width: 25px;
+    background-color: green;
+    border-radius: 50%;
+    margin: 2px;
+}
+
+/* .bright-green {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(198, 255, 0);
+    border-radius: 50%;
+} */
+
+.yellow {
+    height: 25px;
+    width: 25px;
+    background-color: yellow;
+    border-radius: 50%;
+    margin: 2px;
+}
+
+.orange {
+    height: 25px;
+    width: 25px;
+    background-color: orange;
+    border-radius: 50%;
+    margin: 2px;
+}
+
+/* .cream {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(233, 222, 187);
+    border-radius: 50%;
+} */
+
+.brown {
+    height: 25px;
+    width: 25px;
+    background-color: rgb(129, 74, 25);
+    border-radius: 50%;
+    margin: 2px;
+}
+
+/* .pink {
+    height: 20px;
+    width: 20px;
+    background-color: pink;
+    border-radius: 50%;
+} */
+
+.red {
+    height: 25px;
+    width: 25px;
+    background-color: red;
+    border-radius: 50%;
+    margin: 2px;
+}
+
+/* .maroon {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(173, 35, 35);
+    border-radius: 50%;
+} */
+
+.white {
+    height: 25px;
+    width: 25px;
+    background-color: rgb(255, 255, 255);
+    border-radius: 50%;
+    margin: 2px;
+}
+
+
+.color-picker {
+    position:absolute;
+    left: 0; 
+    right: 0;
+    margin-left: 43%;
+
+    bottom: 18%;
+    z-index: 1;
+    border: 1px solid #c0c4c4;;
+    border-radius:10px;
+    cursor: pointer;
+    background: #e0e4e4;
+    width: 35%;
+    height: 15%;
+    display: flex;
+    align-items:center;
+    justify-content:space-between;
+}
