@@ -2,7 +2,7 @@ export let allPaths = [[]];
 export let currentPathIndex = 0;
 export let currentTripletIndex = 0;
 
-export function setUpDrawingForCanvas({drawingCanvasRef, currentColorClass, currentDrawStrokeSize, setIsDrawing, isDrawing}) {
+export function setUpDrawingForCanvas({drawingCanvasRef, currentColorClass, currentDrawStrokeSize, setIsDrawing, isDrawing, isErasing, currentEraseStrokeSize}) {
     const drawingCanvas = drawingCanvasRef?.current;
 
     function calcMidpoint(point1, point2) {
@@ -12,8 +12,13 @@ export function setUpDrawingForCanvas({drawingCanvasRef, currentColorClass, curr
     function drawQuadraticBezierCurve() {
         const context = drawingCanvas.getContext("2d");
         context.beginPath();
-        context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
-        context.lineWidth = currentDrawStrokeSize;
+        if (!isErasing) {
+            context.lineWidth = currentDrawStrokeSize;
+            context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
+        } else {
+            context.lineWidth = currentEraseStrokeSize;
+            context.strokeStyle = "white";
+        }
         const currentPath = allPaths[currentPathIndex];
         const firstMidpoint = calcMidpoint(currentPath[currentTripletIndex], currentPath[currentTripletIndex+1])
         const secondMidpoint = calcMidpoint(currentPath[currentTripletIndex+1], currentPath[currentTripletIndex+2])

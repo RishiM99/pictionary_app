@@ -22,7 +22,7 @@ export default function ColorPicker({openColorPickerButtonRef}) {
 
 
     useEffect(() => {
-        function handleClickOutsideColorOrStrokePickers() {
+        function handleClickOutsideColorPicker() {
             function handleClickOutside(event) {
                 if (colorPickerRef?.current && openColorPickerButtonRef?.current) {
                     const colorPickerBoundingRect = colorPickerRef.current.getBoundingClientRect();
@@ -43,9 +43,9 @@ export default function ColorPicker({openColorPickerButtonRef}) {
             }
         }
 
-        const handleClickOutsideColorOrStrokePickersCleanup = handleClickOutsideColorOrStrokePickers();
+        const handleClickOutsideColorPickerCleanup = handleClickOutsideColorPicker();
         return () => {
-            handleClickOutsideColorOrStrokePickersCleanup();
+            handleClickOutsideColorPickerCleanup();
         }
       }, [setShowColorPicker, openColorPickerButtonRef]);
 

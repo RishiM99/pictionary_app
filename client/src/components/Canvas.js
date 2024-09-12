@@ -4,6 +4,8 @@ import './styles/Canvas.css';
 import { DrawingContext } from '../contexts/DrawingContext.js';
 import ColorPicker from './ColorPicker.js';
 import DrawStrokePicker from './DrawStrokePicker.js';
+import EraseStrokePicker from './EraseStrokePicker.js';
+
 
 
 export default function Canvas() {
@@ -11,6 +13,8 @@ export default function Canvas() {
     const [showDrawStrokePicker, setShowDrawStrokePicker] = useState(false);
     const [showEraseStrokePicker, setShowEraseStrokePicker] = useState(false);
     const [isDrawing, setIsDrawing] = useState(false);
+    const [isErasing, setIsErasing] = useState(false);
+
 
 
     const [currentColorClass, setCurrentColorClass] = useState('black');
@@ -19,6 +23,8 @@ export default function Canvas() {
 
     const openColorPickerButtonRef = useRef(null);
     const openDrawStrokePickerButtonRef = useRef(null);
+    const openEraseStrokePickerButtonRef = useRef(null);
+
 
     const drawingCanvasRef = useRef(null);
 
@@ -34,12 +40,12 @@ export default function Canvas() {
     }, []);
 
     useEffect(() => {
-        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({drawingCanvasRef, currentColorClass, currentDrawStrokeSize, isDrawing, setIsDrawing});
+        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({drawingCanvasRef, currentColorClass, currentDrawStrokeSize, isDrawing, setIsDrawing, isErasing, currentEraseStrokeSize});
 
         return () => {
             setUpDrawingCanvasCleanup();
         }
-      }, [currentDrawStrokeSize, currentColorClass, isDrawing, drawingCanvasRef, setIsDrawing]);
+      }, [currentDrawStrokeSize, currentColorClass, isDrawing, drawingCanvasRef, setIsDrawing, currentEraseStrokeSize, isErasing]);
 
     return (
         <DrawingContext.Provider value = {{currentColorClass, setCurrentColorClass, showColorPicker, setShowColorPicker, currentDrawStrokeSize, setCurrentDrawStrokeSize, currentEraseStrokeSize, setCurrentEraseStrokeSize, showEraseStrokePicker, setShowEraseStrokePicker, showDrawStrokePicker, setShowDrawStrokePicker}}>
@@ -48,15 +54,13 @@ export default function Canvas() {
                 <div className="palette">
                     <div className="draw-icon-background" ref={openDrawStrokePickerButtonRef} onClick={() => 
                         {   
-                            console.log("show draw stroke picker");
-                            if (showColorPicker) {
+                            if (!showDrawStrokePicker && showColorPicker) {
                                 setShowColorPicker(false);
                             }
-                            console.log(`changing draw stroke from ${showDrawStrokePicker} to ${!showDrawStrokePicker}`);
+                            if (!showDrawStrokePicker && showEraseStrokePicker) {
+                                setShowEraseStrokePicker(false);
+                            }
                             setShowDrawStrokePicker(!showDrawStrokePicker);
-                    
-                            console.log("changing1");
-
                         }}>
                         <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="draw-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
                             <path d="M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3 0-17l46.1-46.1c18.7-18.7 
@@ -68,10 +72,14 @@ export default function Canvas() {
                     </div>
                     
                     <div className="erase-icon-background" onClick={() => {
-                        setCurrentColorClass("white");
-                        console.log(showEraseStrokePicker);
-                        console.log(!showEraseStrokePicker);
-                        setShowEraseStrokePicker(!showEraseStrokePicker);
+                        if (!showEraseStrokePicker && showColorPicker) {
+                            setShowColorPicker(false);
+                        }
+                        if (!showEraseStrokePicker && showDrawStrokePicker) {
+                            setShowDrawStrokePicker(false);
+                        }
+                        setShowEraseStrokePicker(!setShowEraseStrokePicker);
+                        setIsErasing(!isErasing);
                     }}> 
                         <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="erase-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
                             <path d="M497.941 273.941c18.745-18.745 18.745-49.137 0-67.882l-160-160c-18.745-18.745-49.136-18.746-67.883 
@@ -82,17 +90,19 @@ export default function Canvas() {
                     </div>
                     <div className={currentColorClass} style = {{"height": "40px", "width": "40px"}} ref={openColorPickerButtonRef} onClick = {() =>
                         {
-                            console.log(`CHANGING FROM ${showColorPicker} to ${!showColorPicker}`);
-                            if (showDrawStrokePicker) {
+                            if (!showColorPicker && showDrawStrokePicker) {
                                 setShowDrawStrokePicker(false);
                             }
-                            setShowColorPicker(!showColorPicker);
+                            if (!showColorPicker && showEraseStrokePicker) {
+                                setShowEraseStrokePicker(false);
+                            }
+                            setShowColorPicker(!setShowColorPicker);
                         }
                     }/>
                 </div>
                 {showColorPicker && <ColorPicker openColorPickerButtonRef={openColorPickerButtonRef}/>}
                 {showDrawStrokePicker && <DrawStrokePicker openDrawStrokePickerButtonRef={openDrawStrokePickerButtonRef}/>}
-
+                {showEraseStrokePicker && <EraseStrokePicker openEraseStrokePickerButtonRef={openEraseStrokePickerButtonRef}/>}
             </div>
         </DrawingContext.Provider>
     );
