@@ -1,6 +1,6 @@
-import React, {useRef, useContext, useEffect} from 'react';
+import React, { useRef, useContext, useEffect } from 'react';
 import './styles/ColorPicker.css';
-import {DrawingContext} from '../contexts/DrawingContext.js';
+import { DrawingContext } from '../contexts/DrawingContext.js';
 
 const colorClassesForColorPicker = [
     "black",
@@ -16,8 +16,8 @@ const colorClassesForColorPicker = [
 ];
 
 
-export default function ColorPicker({openColorPickerButtonRef}) {
-    const {setCurrentColorClass, setShowColorPicker} = useContext(DrawingContext);
+export default function ColorPicker({ openColorPickerButtonRef }) {
+    const { setCurrentColorClass, setShowColorPicker, setSelectedPaletteOption } = useContext(DrawingContext);
     const colorPickerRef = useRef(null);
 
 
@@ -28,15 +28,16 @@ export default function ColorPicker({openColorPickerButtonRef}) {
                     const colorPickerBoundingRect = colorPickerRef.current.getBoundingClientRect();
                     const openColorPickerButtonBoundingRect = openColorPickerButtonRef.current.getBoundingClientRect();
                     const outsideColorPicker = (event.clientX < colorPickerBoundingRect.x || event.clientX > colorPickerBoundingRect.right ||
-                    event.clientY < colorPickerBoundingRect.y || event.clientY > colorPickerBoundingRect.bottom);
+                        event.clientY < colorPickerBoundingRect.y || event.clientY > colorPickerBoundingRect.bottom);
                     const outsideColorPickerButton = (event.clientX < openColorPickerButtonBoundingRect.x || event.clientX > openColorPickerButtonBoundingRect.right ||
                         event.clientY < openColorPickerButtonBoundingRect.y || event.clientY > openColorPickerButtonBoundingRect.bottom);
 
                     if (outsideColorPicker && outsideColorPickerButton) {
-                            setShowColorPicker(false);
+                        setShowColorPicker(false);
+                        setSelectedPaletteOption('pen'); //default option
                     }
-                } 
-              }
+                }
+            }
             document.addEventListener("mousedown", handleClickOutside);
             return () => {
                 document.removeEventListener("mousedown", handleClickOutside);
@@ -47,7 +48,7 @@ export default function ColorPicker({openColorPickerButtonRef}) {
         return () => {
             handleClickOutsideColorPickerCleanup();
         }
-      }, [setShowColorPicker, openColorPickerButtonRef]);
+    }, [setShowColorPicker, openColorPickerButtonRef]);
 
     return (
         <div className="color-picker-container" ref={colorPickerRef}>
@@ -56,9 +57,9 @@ export default function ColorPicker({openColorPickerButtonRef}) {
                     setCurrentColorClass(e.target.className);
                     setShowColorPicker(false);
                 }
-                }/>
+                } />
             ))}
-        </div> 
+        </div>
     );
 }
 

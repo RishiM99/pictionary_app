@@ -1,29 +1,37 @@
+import { isBreakStatement } from "typescript";
+
 export let allPaths = [[]];
 export let currentPathIndex = 0;
 export let currentTripletIndex = 0;
 
-export function setUpDrawingForCanvas({drawingCanvasRef, currentColorClass, currentDrawStrokeSize, setIsDrawing, isDrawing, isErasing, currentEraseStrokeSize}) {
+export function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, currentDrawStrokeSize, setIsDrawing, isDrawing, selectedPaletteOption, currentEraseStrokeSize }) {
     const drawingCanvas = drawingCanvasRef?.current;
 
     function calcMidpoint(point1, point2) {
-        return {x: 0.5*point1.x + 0.5*point2.x, y: 0.5*point1.y + 0.5*point2.y};
+        return { x: 0.5 * point1.x + 0.5 * point2.x, y: 0.5 * point1.y + 0.5 * point2.y };
     }
 
     function drawQuadraticBezierCurve() {
         const context = drawingCanvas.getContext("2d");
         context.beginPath();
-        if (!isErasing) {
-            context.lineWidth = currentDrawStrokeSize;
-            context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
-        } else {
-            context.lineWidth = currentEraseStrokeSize;
-            context.strokeStyle = "white";
+        switch (selectedPaletteOption) {
+            case 'eraser':
+                context.lineWidth = currentEraseStrokeSize;
+                context.strokeStyle = "white";
+                break;
+            case 'pen':
+                context.lineWidth = currentDrawStrokeSize;
+                context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
+                break;
+            default:
+                break;
         }
+
         const currentPath = allPaths[currentPathIndex];
-        const firstMidpoint = calcMidpoint(currentPath[currentTripletIndex], currentPath[currentTripletIndex+1])
-        const secondMidpoint = calcMidpoint(currentPath[currentTripletIndex+1], currentPath[currentTripletIndex+2])
+        const firstMidpoint = calcMidpoint(currentPath[currentTripletIndex], currentPath[currentTripletIndex + 1])
+        const secondMidpoint = calcMidpoint(currentPath[currentTripletIndex + 1], currentPath[currentTripletIndex + 2])
         context.moveTo(firstMidpoint.x, firstMidpoint.y);
-        context.quadraticCurveTo(currentPath[currentTripletIndex+1].x, currentPath[currentTripletIndex+1].y, secondMidpoint.x, secondMidpoint.y);
+        context.quadraticCurveTo(currentPath[currentTripletIndex + 1].x, currentPath[currentTripletIndex + 1].y, secondMidpoint.x, secondMidpoint.y);
         context.stroke();
     }
 
@@ -32,7 +40,7 @@ export function setUpDrawingForCanvas({drawingCanvasRef, currentColorClass, curr
             console.log(e);
             const currentX = e.offsetX;
             const currentY = e.offsetY;
-            allPaths[currentPathIndex].push({x: currentX, y: currentY});
+            allPaths[currentPathIndex].push({ x: currentX, y: currentY });
             setIsDrawing(true);
         }
     }
@@ -42,7 +50,7 @@ export function setUpDrawingForCanvas({drawingCanvasRef, currentColorClass, curr
             if (isDrawing) {
                 const currentX = e.offsetX;
                 const currentY = e.offsetY;
-                allPaths[currentPathIndex].push({x: currentX, y: currentY});
+                allPaths[currentPathIndex].push({ x: currentX, y: currentY });
 
                 if (allPaths[currentPathIndex].length >= 3) {
                     drawQuadraticBezierCurve();
@@ -57,7 +65,7 @@ export function setUpDrawingForCanvas({drawingCanvasRef, currentColorClass, curr
             if (isDrawing) {
                 const currentX = e.offsetX;
                 const currentY = e.offsetY;
-                allPaths[currentPathIndex].push({x: currentX, y: currentY});
+                allPaths[currentPathIndex].push({ x: currentX, y: currentY });
                 if (allPaths[currentPathIndex].length >= 3) {
                     drawQuadraticBezierCurve();
                     currentTripletIndex += 1;
@@ -72,9 +80,16 @@ export function setUpDrawingForCanvas({drawingCanvasRef, currentColorClass, curr
     }
 
     if (drawingCanvas) {
-        drawingCanvas.addEventListener("mousedown", mouseDownEventListener);
-        drawingCanvas.addEventListener("mousemove", mouseMoveEventListener);
-        window.addEventListener("mouseup", mouseUpEventListener);
+        if (selectedPaletteOption === 'color-picker') {
+            drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
+            drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
+            window.removeEventListener("mouseup", mouseUpEventListener);
+            // Do nothing for drawing, and remove event listeners
+        } else {
+            drawingCanvas.addEventListener("mousedown", mouseDownEventListener);
+            drawingCanvas.addEventListener("mousemove", mouseMoveEventListener);
+            window.addEventListener("mouseup", mouseUpEventListener);
+        }
     }
 
     return () => {
@@ -82,6 +97,6 @@ export function setUpDrawingForCanvas({drawingCanvasRef, currentColorClass, curr
             drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
             drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
             window.removeEventListener("mouseup", mouseUpEventListener);
-            }
         }
+    }
 }
