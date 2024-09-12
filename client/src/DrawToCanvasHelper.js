@@ -2,7 +2,7 @@ export let allPaths = [[]];
 export let currentPathIndex = 0;
 export let currentTripletIndex = 0;
 
-export function drawToCanvas(drawingCanvasRef, isDrawing, setIsDrawing, currentColorClass) {
+export function setUpDrawingForCanvas({drawingCanvasRef, currentColorClass, currentDrawStrokeSize, setIsDrawing, isDrawing}) {
     const drawingCanvas = drawingCanvasRef?.current;
 
     function calcMidpoint(point1, point2) {
@@ -13,7 +13,7 @@ export function drawToCanvas(drawingCanvasRef, isDrawing, setIsDrawing, currentC
         const context = drawingCanvas.getContext("2d");
         context.beginPath();
         context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
-        context.lineWidth = 3;
+        context.lineWidth = currentDrawStrokeSize;
         const currentPath = allPaths[currentPathIndex];
         const firstMidpoint = calcMidpoint(currentPath[currentTripletIndex], currentPath[currentTripletIndex+1])
         const secondMidpoint = calcMidpoint(currentPath[currentTripletIndex+1], currentPath[currentTripletIndex+2])
@@ -65,7 +65,7 @@ export function drawToCanvas(drawingCanvasRef, isDrawing, setIsDrawing, currentC
             }
         }
     }
-        
+
     if (drawingCanvas) {
         drawingCanvas.addEventListener("mousedown", mouseDownEventListener);
         drawingCanvas.addEventListener("mousemove", mouseMoveEventListener);
@@ -77,6 +77,6 @@ export function drawToCanvas(drawingCanvasRef, isDrawing, setIsDrawing, currentC
             drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
             drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
             window.removeEventListener("mouseup", mouseUpEventListener);
+            }
         }
-    }
 }
