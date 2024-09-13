@@ -6,6 +6,8 @@ export let currentPathIndexFromMouse = 0;
 export let currentPath2DObjectFromMouse = new Path2D();
 export let currentTripletIndexFromMouse = 0;
 
+const CLOSE_PATH_RADIUS = 10;
+
 export function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, currentDrawStrokeSize, setIsDrawing, isDrawing, selectedPaletteOption, currentEraseStrokeSize }) {
     const drawingCanvas = drawingCanvasRef?.current;
     const context = drawingCanvas?.getContext("2d");
@@ -14,11 +16,17 @@ export function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, cur
         return { x: 0.5 * point1.x + 0.5 * point2.x, y: 0.5 * point1.y + 0.5 * point2.y };
     }
 
-    function drawPathIncrementally(serializedPath, currentTripletIndex, path2DObject) {
+    function calcDistance(point1, point2) {
+        return Math.sqrt((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2);
+    }
+
+    function drawPathIncrementally(serializedPath, currentTripletIndex) {
+
         if (serializedPath.points.length >= 3) {
             console.log(serializedPath);
             console.log(currentTripletIndex);
             const { lineWidth, strokeStyle, points } = serializedPath;
+            context.beginPath();
             context.lineWidth = lineWidth;
             context.strokeStyle = strokeStyle;
 
@@ -27,14 +35,22 @@ export function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, cur
             console.log(currentPathIndexFromMouse);
             console.log(allPaths);
             const secondMidpoint = calcMidpoint(points[currentTripletIndex + 1], points[currentTripletIndex + 2])
+
+            // The path2d object is just for record keeping of the points. I don't actually use it to draw since it reduces resolution for some reason.
             path2DObject.moveTo(firstMidpoint.x, firstMidpoint.y);
             path2DObject.quadraticCurveTo(points[currentTripletIndex + 1].x, points[currentTripletIndex + 1].y, secondMidpoint.x, secondMidpoint.y);
+            if (calcDistance(serializedPath.points[0], serializedPath.points[serializedPath.points.length - 1]) < CLOSE_PATH_RADIUS) {
+                path2DObject.
+            }
 
-            context.stroke(path2DObject);
+            context.moveTo(firstMidpoint.x, firstMidpoint.y);
+            context.quadraticCurveTo(points[currentTripletIndex + 1].x, points[currentTripletIndex + 1].y, secondMidpoint.x, secondMidpoint.y);
+
+            context.stroke();
         }
     }
 
-    function drawFullPath(serializedPath, path2DObject) {
+    function drawFullPathOnResize(serializedPath) {
         const { lineWidth, strokeStyle } = serializedPath;
         context.lineWidth = lineWidth;
         context.strokeStyle = strokeStyle;
@@ -105,10 +121,10 @@ export function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, cur
         }
     }
 
-    function redrawAllCurves() {
+    function redrawAllCurvesOnResize() {
         console.log(allPaths);
         for (let currentPathIndex = 0; currentPathIndex < allPaths.length; currentPathIndex++) {
-            drawFullPath(allPaths[currentPathIndex]);
+            drawFullPathOnResize(allPaths[currentPathIndex]);
         }
     }
 
@@ -125,7 +141,7 @@ export function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, cur
             const yScale = drawingCanvas.height / getOldCanvasHeight();
             console.log(xScale, yScale);
             context.scale(xScale, yScale);
-            redrawAllCurves();
+            redrawAllCurvesOnResize();
             context.scale(1 / xScale, 1 / yScale);
         }
     }
