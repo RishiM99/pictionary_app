@@ -79,8 +79,8 @@ export function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, cur
                 const currentY = e.offsetY;
                 allPaths[currentPathIndexFromMouse].points.push({ x: currentX, y: currentY });
                 console.log(allPaths[currentPathIndexFromMouse]);
+                drawPathIncrementally(allPaths[currentPathIndexFromMouse], currentTripletIndexFromMouse, currentPath2DObjectFromMouse);
                 if (allPaths[currentPathIndexFromMouse].points.length >= 3) {
-                    drawPathIncrementally(allPaths[currentPathIndexFromMouse], currentTripletIndexFromMouse, currentPath2DObjectFromMouse);
                     currentTripletIndexFromMouse++;
                 }
             }
@@ -91,19 +91,16 @@ export function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, cur
         console.log('mouseup');
         if (context) {
             if (isDrawing) {
-                if (allPaths[currentPathIndexFromMouse].points.length >= 3) {
-                    const currentX = e.offsetX;
-                    const currentY = e.offsetY;
-                    console.log(allPaths[currentPathIndexFromMouse]);
-                    allPaths[currentPathIndexFromMouse].points.push({ x: currentX, y: currentY });
-                    drawPathIncrementally(allPaths[currentPathIndexFromMouse], currentTripletIndexFromMouse, currentPath2DObjectFromMouse);
+                const currentX = e.offsetX;
+                const currentY = e.offsetY;
+                allPaths[currentPathIndexFromMouse].points.push({ x: currentX, y: currentY });
+                drawPathIncrementally(allPaths[currentPathIndexFromMouse], currentTripletIndexFromMouse, currentPath2DObjectFromMouse);
 
-                    console.log(allPaths);
-                    currentPathIndexFromMouse++;
-                    currentTripletIndexFromMouse = 0;
-                    currentPath2DObjectFromMouse = new Path2D();
-                    setIsDrawing(false);
-                }
+                console.log(allPaths);
+                currentPathIndexFromMouse++;
+                currentTripletIndexFromMouse = 0;
+                currentPath2DObjectFromMouse = new Path2D();
+                setIsDrawing(false);
             }
         }
     }
