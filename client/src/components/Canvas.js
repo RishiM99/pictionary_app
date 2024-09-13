@@ -5,6 +5,7 @@ import { DrawingContext } from '../contexts/DrawingContext.js';
 import ColorPicker from './ColorPicker.js';
 import DrawStrokePicker from './DrawStrokePicker.js';
 import EraseStrokePicker from './EraseStrokePicker.js';
+import { setOldCanvasHeight, setOldCanvasWidth } from '../CanvasResizingHelper.js';
 
 
 
@@ -34,6 +35,8 @@ export default function Canvas() {
             drawingCanvas.width = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("width"), 10);
             console.log(drawingCanvas.height);
             console.log(drawingCanvas.width);
+            setOldCanvasHeight(drawingCanvas.height);
+            setOldCanvasWidth(drawingCanvas.width);
         }
         return () => { }
     }, []);

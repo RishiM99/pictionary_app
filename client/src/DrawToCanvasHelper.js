@@ -1,81 +1,135 @@
-import { isBreakStatement } from "typescript";
+import { setOldCanvasWidth, setOldCanvasHeight, getOldCanvasHeight, getOldCanvasWidth } from './CanvasResizingHelper.js';
 
-export let allPaths = [[]];
-export let currentPathIndex = 0;
-export let currentTripletIndex = 0;
+
+export let allPaths = [];
+export let currentPathIndexFromMouse = 0;
+export let currentPath2DObjectFromMouse = new Path2D();
+export let currentTripletIndexFromMouse = 0;
 
 export function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, currentDrawStrokeSize, setIsDrawing, isDrawing, selectedPaletteOption, currentEraseStrokeSize }) {
     const drawingCanvas = drawingCanvasRef?.current;
+    const context = drawingCanvas?.getContext("2d");
 
     function calcMidpoint(point1, point2) {
         return { x: 0.5 * point1.x + 0.5 * point2.x, y: 0.5 * point1.y + 0.5 * point2.y };
     }
 
-    function drawQuadraticBezierCurve() {
-        const context = drawingCanvas.getContext("2d");
-        context.beginPath();
-        switch (selectedPaletteOption) {
-            case 'eraser':
-                context.lineWidth = currentEraseStrokeSize;
-                context.strokeStyle = "white";
-                break;
-            case 'pen':
-                context.lineWidth = currentDrawStrokeSize;
-                context.strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
-                break;
-            default:
-                break;
-        }
+    function drawPathIncrementally(serializedPath, currentTripletIndex, path2DObject) {
+        if (serializedPath.points.length >= 3) {
+            console.log(serializedPath);
+            console.log(currentTripletIndex);
+            const { lineWidth, strokeStyle, points } = serializedPath;
+            context.lineWidth = lineWidth;
+            context.strokeStyle = strokeStyle;
 
-        const currentPath = allPaths[currentPathIndex];
-        const firstMidpoint = calcMidpoint(currentPath[currentTripletIndex], currentPath[currentTripletIndex + 1])
-        const secondMidpoint = calcMidpoint(currentPath[currentTripletIndex + 1], currentPath[currentTripletIndex + 2])
-        context.moveTo(firstMidpoint.x, firstMidpoint.y);
-        context.quadraticCurveTo(currentPath[currentTripletIndex + 1].x, currentPath[currentTripletIndex + 1].y, secondMidpoint.x, secondMidpoint.y);
-        context.stroke();
+            const firstMidpoint = calcMidpoint(points[currentTripletIndex], points[currentTripletIndex + 1])
+            console.log(currentTripletIndex);
+            console.log(currentPathIndexFromMouse);
+            console.log(allPaths);
+            const secondMidpoint = calcMidpoint(points[currentTripletIndex + 1], points[currentTripletIndex + 2])
+            path2DObject.moveTo(firstMidpoint.x, firstMidpoint.y);
+            path2DObject.quadraticCurveTo(points[currentTripletIndex + 1].x, points[currentTripletIndex + 1].y, secondMidpoint.x, secondMidpoint.y);
+
+            context.stroke(path2DObject);
+        }
+    }
+
+    function drawFullPath(serializedPath, path2DObject) {
+        const { lineWidth, strokeStyle } = serializedPath;
+        context.lineWidth = lineWidth;
+        context.strokeStyle = strokeStyle;
+
+        for (let currentTripletIndex = 0; currentTripletIndex <= serializedPath.points.length - 3; currentTripletIndex++) {
+            const path2DObject = new Path2D();
+            drawPathIncrementally(serializedPath, currentTripletIndex, path2DObject);
+        }
     }
 
     function mouseDownEventListener(e) {
-        if (drawingCanvas) {
+        console.log('mousedown');
+        if (context) {
+            let lineWidth = null;
+            let strokeStyle = null;
+            switch (selectedPaletteOption) {
+                case 'eraser':
+                    lineWidth = currentEraseStrokeSize;
+                    strokeStyle = "white";
+                    break;
+                case 'pen':
+                    lineWidth = currentDrawStrokeSize;
+                    strokeStyle = getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
+                    break;
+                default:
+                    break;
+            }
             console.log(e);
             const currentX = e.offsetX;
             const currentY = e.offsetY;
-            allPaths[currentPathIndex].push({ x: currentX, y: currentY });
+            allPaths.push({ points: [{ x: currentX, y: currentY }], lineWidth, strokeStyle });
+            console.log(allPaths);
             setIsDrawing(true);
         }
     }
 
     function mouseMoveEventListener(e) {
-        if (drawingCanvas) {
+        console.log('mousemove');
+        if (context) {
             if (isDrawing) {
                 const currentX = e.offsetX;
                 const currentY = e.offsetY;
-                allPaths[currentPathIndex].push({ x: currentX, y: currentY });
-
-                if (allPaths[currentPathIndex].length >= 3) {
-                    drawQuadraticBezierCurve();
-                    currentTripletIndex += 1;
+                allPaths[currentPathIndexFromMouse].points.push({ x: currentX, y: currentY });
+                console.log(allPaths[currentPathIndexFromMouse]);
+                if (allPaths[currentPathIndexFromMouse].points.length >= 3) {
+                    drawPathIncrementally(allPaths[currentPathIndexFromMouse], currentTripletIndexFromMouse, currentPath2DObjectFromMouse);
+                    currentTripletIndexFromMouse++;
                 }
             }
         }
     }
 
     function mouseUpEventListener(e) {
-        if (drawingCanvas) {
+        console.log('mouseup');
+        if (context) {
             if (isDrawing) {
-                const currentX = e.offsetX;
-                const currentY = e.offsetY;
-                allPaths[currentPathIndex].push({ x: currentX, y: currentY });
-                if (allPaths[currentPathIndex].length >= 3) {
-                    drawQuadraticBezierCurve();
-                    currentTripletIndex += 1;
-                    currentTripletIndex = 0;
+                if (allPaths[currentPathIndexFromMouse].points.length >= 3) {
+                    const currentX = e.offsetX;
+                    const currentY = e.offsetY;
+                    console.log(allPaths[currentPathIndexFromMouse]);
+                    allPaths[currentPathIndexFromMouse].points.push({ x: currentX, y: currentY });
+                    drawPathIncrementally(allPaths[currentPathIndexFromMouse], currentTripletIndexFromMouse, currentPath2DObjectFromMouse);
+
+                    console.log(allPaths);
+                    currentPathIndexFromMouse++;
+                    currentTripletIndexFromMouse = 0;
+                    currentPath2DObjectFromMouse = new Path2D();
+                    setIsDrawing(false);
                 }
-                allPaths.push([]);
-                console.log(allPaths);
-                currentPathIndex++;
-                setIsDrawing(false);
             }
+        }
+    }
+
+    function redrawAllCurves() {
+        console.log(allPaths);
+        for (let currentPathIndex = 0; currentPathIndex < allPaths.length; currentPathIndex++) {
+            drawFullPath(allPaths[currentPathIndex]);
+        }
+    }
+
+
+    function windowResizeListener(e) {
+        if (drawingCanvas) {
+            drawingCanvas.height = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("height"), 10);
+            drawingCanvas.width = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("width"), 10);
+
+            console.log("HERE");
+            console.log(getOldCanvasWidth(), getOldCanvasHeight());
+            console.log(drawingCanvas.width, drawingCanvas.height);
+            const xScale = drawingCanvas.width / getOldCanvasWidth();
+            const yScale = drawingCanvas.height / getOldCanvasHeight();
+            console.log(xScale, yScale);
+            context.scale(xScale, yScale);
+            redrawAllCurves();
+            context.scale(1 / xScale, 1 / yScale);
         }
     }
 
@@ -84,11 +138,13 @@ export function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, cur
             drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
             drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
             window.removeEventListener("mouseup", mouseUpEventListener);
+            window.removeEventListener("resize", windowResizeListener)
             // Do nothing for drawing, and remove event listeners
         } else {
             drawingCanvas.addEventListener("mousedown", mouseDownEventListener);
             drawingCanvas.addEventListener("mousemove", mouseMoveEventListener);
             window.addEventListener("mouseup", mouseUpEventListener);
+            window.addEventListener("resize", windowResizeListener)
         }
     }
 
@@ -97,6 +153,7 @@ export function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, cur
             drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
             drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
             window.removeEventListener("mouseup", mouseUpEventListener);
+            window.removeEventListener("resize", windowResizeListener)
         }
     }
 }
