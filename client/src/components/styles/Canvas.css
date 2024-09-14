@@ -1,5 +1,5 @@
 .drawing-board-container {
-    background: white;
+    background-color: white;
     height: 100%;
     width: 100%;
     position: relative;
@@ -85,15 +85,40 @@
     border: 3px solid black;
 }
 
+.fill-icon-background-unselected {
+    height: 40px;
+    width: 40px;
+    background-color: #bbb;
+    border-radius: 50%;
+    position: relative;
+}
+
+.fill-icon-background-selected {
+    height: 40px;
+    width: 40px;
+    background-color: #bbb;
+    border-radius: 50%;
+    position: relative;
+    border: 3px solid black;
+}
+
 .color-picker-button-border {
+    width: 35x;
+    height: 35px;
+    border: double 5px transparent;
+    border-radius: 50%;
+    background-image: linear-gradient(white, white),
+        linear-gradient(to bottom right, #b827fc 0%, #2c90fc 25%, #b8fd33 50%, #fec837 75%, #fd1892 100%);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    position: relative;
+    /* 
     height: 50px;
     width: 50px;
     background-color: #bbb;
     border-radius: 50%;
     border: 3px solid black;
-    position: relative;
-    display: flex;
-    align-items: center;
+    position: relative; */
 }
 
 .erase-icon {
@@ -105,10 +130,18 @@
     transform: translate(-50%, -50%);
 }
 
+.fill-icon {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 60%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
 .black {
     height: 25px;
     width: 25px;
-    margin: 2px;
     background-color: black;
     border-radius: 50%;
     position: relative;
@@ -120,7 +153,6 @@
     background-color: rgb(87, 87, 87);
     border-radius: 50%;
     position: relative;
-    margin: 2px;
 }
 
 /* .light-gray {
@@ -137,7 +169,6 @@
     background-color: rgb(156, 39, 176);
     border-radius: 50%;
     position: relative;
-    margin: 2px;
 }
 
 /* .light-blue {
@@ -155,7 +186,6 @@
     background-color: rgb(42, 75, 215);
     border-radius: 50%;
     position: relative;
-    margin: 2px;
 }
 
 .teal {
@@ -163,7 +193,6 @@
     width: 25px;
     background-color: rgb(41, 208, 208);
     border-radius: 50%;
-    margin: 2px;
 }
 
 /* .light-green {
@@ -178,7 +207,6 @@
     width: 25px;
     background-color: green;
     border-radius: 50%;
-    margin: 2px;
 }
 
 /* .bright-green {
@@ -193,7 +221,6 @@
     width: 25px;
     background-color: yellow;
     border-radius: 50%;
-    margin: 2px;
 }
 
 .orange {
@@ -201,7 +228,6 @@
     width: 25px;
     background-color: orange;
     border-radius: 50%;
-    margin: 2px;
 }
 
 /* .cream {
@@ -216,7 +242,6 @@
     width: 25px;
     background-color: rgb(129, 74, 25);
     border-radius: 50%;
-    margin: 2px;
 }
 
 /* .pink {
@@ -231,7 +256,6 @@
     width: 25px;
     background-color: red;
     border-radius: 50%;
-    margin: 2px;
 }
 
 /* .maroon {

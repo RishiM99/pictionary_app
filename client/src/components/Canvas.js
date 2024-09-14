@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { setUpDrawingForCanvas } from '../DrawToCanvasHelper.js';
+import DrawToCanvas from '../DrawToCanvas.js';
 import './styles/Canvas.css';
 import { DrawingContext } from '../contexts/DrawingContext.js';
 import ColorPicker from './ColorPicker.js';
@@ -43,7 +43,7 @@ export default function Canvas() {
     }, []);
 
     useEffect(() => {
-        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, currentDrawStrokeSize, isDrawing, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption });
+        const setUpDrawingCanvasCleanup = DrawToCanvas.setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, currentDrawStrokeSize, isDrawing, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption });
 
         return () => {
             setUpDrawingCanvasCleanup();
@@ -93,6 +93,7 @@ export default function Canvas() {
     }
 
     const fillButtonOnClick = () => {
+        console.log('clicked fill button');
         setShowColorPicker(false);
         setShowEraseStrokePicker(false);
         setShowDrawStrokePicker(false);
@@ -105,7 +106,7 @@ export default function Canvas() {
                 <canvas className="drawing-canvas" ref={drawingCanvasRef} />
                 <div className="palette">
                     <div className={selectedPaletteOption === 'pen' ? "draw-icon-background-selected" : "draw-icon-background-unselected"} ref={openDrawStrokePickerButtonRef} onClick={penButtonOnClick}>
-                        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="draw-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
+                        <svg viewBox="0 0 512 512" className="draw-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
                             <path d="M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3 0-17l46.1-46.1c18.7-18.7 
                             49.1-18.7 67.9 0l60.1 60.1c18.8 18.7 18.8 49.1 0 67.9zM284.2 99.8L21.6 362.4.4 483.9c-2.9 16.4 11.4 
                             30.6 27.8 27.8l121.5-21.3 262.6-262.6c4.7-4.7 4.7-12.3 0-17l-111-111c-4.8-4.7-12.4-4.7-17.1 0zM124.1 
@@ -115,21 +116,21 @@ export default function Canvas() {
                     </div>
 
                     <div className={selectedPaletteOption === 'eraser' ? "erase-icon-background-selected" : "erase-icon-background-unselected"} ref={openEraseStrokePickerButtonRef} onClick={eraserButtonOnClick}>
-                        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="erase-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
+                        <svg viewBox="0 0 512 512" className="erase-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
                             <path d="M497.941 273.941c18.745-18.745 18.745-49.137 0-67.882l-160-160c-18.745-18.745-49.136-18.746-67.883 
                             0l-256 256c-18.745 18.745-18.745 49.137 0 67.882l96 96A48.004 48.004 0 0 0 144 480h356c6.627 0 12-5.373 
                             12-12v-40c0-6.627-5.373-12-12-12H355.883l142.058-142.059zm-302.627-62.627l137.373 137.373L265.373 
                             416H150.628l-80-80 124.686-124.686z"></path>
                         </svg>
                     </div>
-                    <div className={"erase-icon-background-selected"} ref={fillButtonRef} onClick={fillButtonOnClick}>
-                        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 352 512" class="i4fm0v6" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                    <div className={selectedPaletteOption === 'fill' ? "fill-icon-background-selected" : "fill-icon-background-unselected"} ref={fillButtonRef} onClick={fillButtonOnClick}>
+                        <svg viewBox="0 0 512 512" className="fill-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
                             <path d="M205.22 22.09c-7.94-28.78-49.44-30.12-58.44 0C100.01 179.85 0 222.72 0 333.91 0 432.35 78.72 512 176 512s176-79.65 176-178.09c0-111.75-99.79-153.34-146.78-311.82zM176 448c-61.75 0-112-50.25-112-112 0-8.84 7.16-16 16-16s16 7.16 16 16c0 44.11 35.89 80 80 80 8.84 0 16 7.16 16 16s-7.16 16-16 16z">
                             </path>
                         </svg>
                     </div>
                     <div className="color-picker-button-border" ref={openColorPickerButtonRef} onClick={colorPickerButtonOnClick}>
-                        <div className={currentColorClass} style={{ "height": "25px", "width": "25px", "align-self": "center" }} />
+                        <div className={currentColorClass} style={{ "height": "25px", "width": "25px" }} />
                     </div>
                 </div>
                 {showColorPicker && <ColorPicker openColorPickerButtonRef={openColorPickerButtonRef} />}

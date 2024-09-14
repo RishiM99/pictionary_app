@@ -48,14 +48,16 @@ export default function ColorPicker({ openColorPickerButtonRef }) {
         return () => {
             handleClickOutsideColorPickerCleanup();
         }
-    }, [setShowColorPicker, openColorPickerButtonRef]);
+    }, [setShowColorPicker, openColorPickerButtonRef, setSelectedPaletteOption]);
 
     return (
         <div className="color-picker-container" ref={colorPickerRef}>
             {colorClassesForColorPicker.map((colorClass, index) => (
                 <div className={colorClass} key={index} onClick={(e) => {
+                    console.log(e.target.className);
                     setCurrentColorClass(e.target.className);
                     setShowColorPicker(false);
+                    setSelectedPaletteOption('pen');
                 }
                 } />
             ))}
