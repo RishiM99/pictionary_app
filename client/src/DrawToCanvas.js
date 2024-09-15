@@ -32,40 +32,43 @@ export default class DrawToCanvas {
         let queue = [startingPoint];
         while (queue.length > 0) {
             const currentPoint = queue.shift();
-            alreadySeenPoints.add(JSON.stringify(currentPoint));
-            const currX = startingPoint.x;
-            const currY = startingPoint.y;
+            const currX = currentPoint.x;
+            const currY = currentPoint.y;
             console.log(currX, currY);
             console.log(`CANVAS HEIGHT AND WIDTH ${DrawToCanvas.drawingCanvas.height}`);
             console.log(`CANVAS HEIGHT AND WIDTH ${DrawToCanvas.drawingCanvas.width}`);
 
             // right
-            if (currX < canvasWidth && coordinateIsNotABoundary(currX + 1, currY)) {
+            if (currX + 1 < canvasWidth && coordinateIsNotABoundary(currX + 1, currY)) {
                 const newPoint = { x: currX + 1, y: currY };
                 if (!alreadySeenPoints.has(JSON.stringify(newPoint))) {
+                    alreadySeenPoints.add(JSON.stringify(newPoint));
                     queue.push(newPoint);
                 }
             }
             // left
-            if (currX > 0 && coordinateIsNotABoundary(currX - 1, currY)) {
+            if (currX - 1 >= 0 && coordinateIsNotABoundary(currX - 1, currY)) {
                 const newPoint = { x: currX - 1, y: currY };
                 if (!alreadySeenPoints.has(JSON.stringify(newPoint))) {
+                    alreadySeenPoints.add(JSON.stringify(newPoint));
                     queue.push(newPoint);
 
                 }
             }
             // top
-            if (currY > 0 && coordinateIsNotABoundary(currX, currY - 1)) {
+            if (currY - 1 >= 0 && coordinateIsNotABoundary(currX, currY - 1)) {
                 const newPoint = { x: currX, y: currY - 1 };
                 if (!alreadySeenPoints.has(JSON.stringify(newPoint))) {
+                    alreadySeenPoints.add(JSON.stringify(newPoint));
                     queue.push(newPoint);
                 }
 
             }
             // bottom
-            if (currY < canvasHeight && coordinateIsNotABoundary(currX, currY + 1)) {
+            if (currY + 1 < canvasHeight && coordinateIsNotABoundary(currX, currY + 1)) {
                 const newPoint = { x: currX, y: currY + 1 };
                 if (!alreadySeenPoints.has(JSON.stringify(newPoint))) {
+                    alreadySeenPoints.add(JSON.stringify(newPoint));
                     queue.push(newPoint);
                 }
             }
