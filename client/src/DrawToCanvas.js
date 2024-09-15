@@ -16,74 +16,75 @@ export default class DrawToCanvas {
     static MIN_POINTS_IN_CLOSED_PATH = 10;
     static CLOSE_PATH_RADIUS = 7;
 
-    // static getAllPointsToFillUsingBFS(startingPoint) {
-    //     // function coordinateIsNotABoundary(x, y) {
-    //     //     const data = DrawToCanvas.context.getImageData(x, y, 1, 1).data;
-    //     //     // Either all 0's (no line has beeen drawn) or white (eraser mark)
-    //     //     const val = (data[0] === 0 && data[1] === 0 && data[2] === 0 && data[3] === 0) || (data[0] === 255 && data[1] === 255 && data[2] === 255 && data[3] === 1);
-    //     //     return val;
-    //     // }
 
-    //     const canvasHeight = getOldCanvasHeight();
-    //     const canvasWidth = getOldCanvasWidth();
-    //     let alreadySeenPoints = new Set();
-    //     let queue = [startingPoint];
-    //     console.log("QUEUE:");
-    //     for (let data of queue) {
-    //         console.log(data);
-    //     }
-    //     while (queue.length > 0) {
-    //         const currentPoint = queue.shift();
-    //         alreadySeenPoints.add(JSON.stringify(currentPoint));
-    //         const currX = currentPoint.x;
-    //         const currY = currentPoint.y;
+    static getAllPointsToFillUsingBFS(startingPoint) {
+        function coordinateIsNotABoundary(x, y) {
+            const data = DrawToCanvas.context.getImageData(x, y, 1, 1).data;
+            console.log(x, y);
+            console.log(data);
+            // Either all 0's (no line has beeen drawn) or white (eraser mark)
+            const val = (data[0] === 0 && data[1] === 0 && data[2] === 0 && data[3] === 0) || (data[0] === 255 && data[1] === 255 && data[2] === 255 && data[3] === 1);
+            console.log(val);
+            return val;
+        }
 
-    //         // right
-    //         if (currX < canvasWidth && coordinateIsNotABoundary(currX + 1, currY)) {
-    //             const newPoint = { x: currX + 1, y: currY };
-    //             if (!alreadySeenPoints.has(JSON.stringify(newPoint))) {
-    //                 queue.push(newPoint);
-    //             }
-    //         }
-    //         // left
-    //         if (currX > 0 && coordinateIsNotABoundary(currX - 1, currY)) {
-    //             const newPoint = { x: currX - 1, y: currY };
-    //             if (!alreadySeenPoints.has(JSON.stringify(newPoint))) {
-    //                 queue.push(newPoint);
+        const canvasHeight = getOldCanvasHeight();
+        const canvasWidth = getOldCanvasWidth();
+        let alreadySeenPoints = new Set();
+        let queue = [startingPoint];
+        while (queue.length > 0) {
+            const currentPoint = queue.shift();
+            alreadySeenPoints.add(JSON.stringify(currentPoint));
+            const currX = startingPoint.x;
+            const currY = startingPoint.y;
+            console.log(currX, currY);
+            console.log(`CANVAS HEIGHT AND WIDTH ${DrawToCanvas.drawingCanvas.height}`);
+            console.log(`CANVAS HEIGHT AND WIDTH ${DrawToCanvas.drawingCanvas.width}`);
 
-    //             }
-    //         }
-    //         // top
-    //         if (currY > 0 && coordinateIsNotABoundary(currX, currY - 1)) {
-    //             const newPoint = { x: currX, y: currY - 1 };
-    //             if (!alreadySeenPoints.has(JSON.stringify(newPoint))) {
-    //                 queue.push(newPoint);
-    //             }
+            // right
+            if (currX < canvasWidth && coordinateIsNotABoundary(currX + 1, currY)) {
+                const newPoint = { x: currX + 1, y: currY };
+                if (!alreadySeenPoints.has(JSON.stringify(newPoint))) {
+                    queue.push(newPoint);
+                }
+            }
+            // left
+            if (currX > 0 && coordinateIsNotABoundary(currX - 1, currY)) {
+                const newPoint = { x: currX - 1, y: currY };
+                if (!alreadySeenPoints.has(JSON.stringify(newPoint))) {
+                    queue.push(newPoint);
 
-    //         }
-    //         // bottom
-    //         if (currY < canvasHeight && coordinateIsNotABoundary(currX, currY + 1)) {
-    //             const newPoint = { x: currX, y: currY + 1 };
-    //             if (!alreadySeenPoints.has(JSON.stringify(newPoint))) {
-    //                 queue.push(newPoint);
-    //             }
-    //         }
-    //         console.log("QUEUE:");
-    //         for (let data of queue) {
-    //             console.log(data);
-    //         }
-    //     }
-    //     console.log(alreadySeenPoints);
-    //     return alreadySeenPoints;
-    // }
+                }
+            }
+            // top
+            if (currY > 0 && coordinateIsNotABoundary(currX, currY - 1)) {
+                const newPoint = { x: currX, y: currY - 1 };
+                if (!alreadySeenPoints.has(JSON.stringify(newPoint))) {
+                    queue.push(newPoint);
+                }
 
-    // static fillAllPoints(pointsToFill) {
-    //     for (let point of pointsToFill) {
-    //         point = JSON.parse(point);
-    //         DrawToCanvas.context.fillStyle = getComputedStyle(document.querySelector(`.${DrawToCanvas.currentColorClass}`))["background-color"];
-    //         DrawToCanvas.context.fillRect(point.x, point.y, 1, 1);
-    //     }
-    // }
+            }
+            // bottom
+            if (currY < canvasHeight && coordinateIsNotABoundary(currX, currY + 1)) {
+                const newPoint = { x: currX, y: currY + 1 };
+                if (!alreadySeenPoints.has(JSON.stringify(newPoint))) {
+                    queue.push(newPoint);
+                }
+            }
+            console.log(`queue ${queue}`)
+        }
+        console.log(`alreadySeenPoints ${Array.from(alreadySeenPoints)}`);
+        return alreadySeenPoints;
+    }
+
+
+    static fillAllPoints(pointsToFill) {
+        for (let point of pointsToFill) {
+            point = JSON.parse(point);
+            DrawToCanvas.context.fillStyle = getComputedStyle(document.querySelector(`.${DrawToCanvas.currentColorClass}`))["background-color"];
+            DrawToCanvas.context.fillRect(point.x, point.y, 1, 1);
+        }
+    }
 
 
     static calcMidpoint(point1, point2) {
