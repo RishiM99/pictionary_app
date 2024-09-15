@@ -14,7 +14,7 @@ export default class DrawToCanvas {
     static selectedPaletteOption = null;
     static currentPathUUIDFromMouse = null;
     static MIN_POINTS_IN_CLOSED_PATH = 10;
-    static CLOSE_PATH_RADIUS = 10;
+    static CLOSE_PATH_RADIUS = 7;
 
     // static getAllPointsToFillUsingBFS(startingPoint) {
     //     // function coordinateIsNotABoundary(x, y) {
@@ -98,19 +98,21 @@ export default class DrawToCanvas {
     // Draws remainder of path from tripletStartIndex to end of serializedPath.points
     static drawRemainderOfPath(serializedPath, tripletStartIndex, redrawing = false) {
         const { lineWidth, strokeStyle, points, path } = serializedPath;
-        DrawToCanvas.context.beginPath();
         DrawToCanvas.context.lineWidth = lineWidth;
         DrawToCanvas.context.strokeStyle = strokeStyle;
 
+        DrawToCanvas.context.beginPath();
+
+
         for (let currentTripletIndex = tripletStartIndex; currentTripletIndex <= points.length - 3; currentTripletIndex++) {
-            const firstMidpoint = DrawToCanvas.calcMidpoint(points[currentTripletIndex], points[currentTripletIndex + 1])
-            const secondMidpoint = DrawToCanvas.calcMidpoint(points[currentTripletIndex + 1], points[currentTripletIndex + 2])
 
+            const firstMidpoint = DrawToCanvas.calcMidpoint(points[currentTripletIndex], points[currentTripletIndex + 1]);
             DrawToCanvas.context.moveTo(firstMidpoint.x, firstMidpoint.y);
-            DrawToCanvas.context.quadraticCurveTo(points[currentTripletIndex + 1].x, points[currentTripletIndex + 1].y, secondMidpoint.x, secondMidpoint.y);
+            const nextMidpoint = DrawToCanvas.calcMidpoint(points[currentTripletIndex + 1], points[currentTripletIndex + 2]);
 
-            path.moveTo(firstMidpoint.x, firstMidpoint.y);
-            path.quadraticCurveTo(points[currentTripletIndex + 1].x, points[currentTripletIndex + 1].y, secondMidpoint.x, secondMidpoint.y);
+            DrawToCanvas.context.quadraticCurveTo(points[currentTripletIndex + 1].x, points[currentTripletIndex + 1].y, nextMidpoint.x, nextMidpoint.y);
+
+            path.quadraticCurveTo(points[currentTripletIndex + 1].x, points[currentTripletIndex + 1].y, nextMidpoint.x, nextMidpoint.y);
 
         }
         DrawToCanvas.context.stroke();
@@ -119,10 +121,9 @@ export default class DrawToCanvas {
             // The path2d object is just for record keeping of the points. I don't actually use it to draw since it reduces resolution for some reason.
 
             if (serializedPath.points.length >= DrawToCanvas.MIN_POINTS_IN_CLOSED_PATH && DrawToCanvas.calcDistance(serializedPath.points[0], serializedPath.points[serializedPath.points.length - 1]) < DrawToCanvas.CLOSE_PATH_RADIUS) {
+                console.log("HERE");
                 path.closePath();
-                DrawToCanvas.context.stroke(path);
-                DrawToCanvas.context.fill(path);
-                serializedPath.isPathClosed = true;
+                serializedPath.isClosed = true;
 
                 const uuid = crypto.randomUUID();
                 DrawToCanvas.currentTripletIndexFromMouse = 0;
@@ -157,9 +158,11 @@ export default class DrawToCanvas {
                 console.log('all paths');
                 console.log(DrawToCanvas.allPaths);
                 for (const [uuid, serializedPath] of Object.entries(DrawToCanvas.allPaths)) {
+                    console.log(serializedPath);
+                    console.log(DrawToCanvas.context.isPointInPath(serializedPath.path, currentX, currentY));
                     if (serializedPath.isClosed && DrawToCanvas.context.isPointInPath(serializedPath.path, currentX, currentY)) {
-                        console.log('stroking');
-                        DrawToCanvas.context.stroke(serializedPath.path);
+                        console.log('filling');
+                        DrawToCanvas.context.fill(serializedPath.path);
                     }
                 }
             }
@@ -173,6 +176,12 @@ export default class DrawToCanvas {
                 const currentX = e.offsetX;
                 const currentY = e.offsetY;
                 DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse].points.push({ x: currentX, y: currentY });
+                if (DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse].points.length === 2) {
+                    const midpoint = DrawToCanvas.calcMidpoint(DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse].points[0], DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse].points[1]);
+                    DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse].path.moveTo(midpoint.x, midpoint.y);
+                }
+
+
                 DrawToCanvas.drawRemainderOfPath(DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse], DrawToCanvas.currentTripletIndexFromMouse);
                 if (DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse].points.length >= 3) {
                     DrawToCanvas.currentTripletIndexFromMouse++;
@@ -189,6 +198,7 @@ export default class DrawToCanvas {
                 DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse].points.push({ x: currentX, y: currentY });
                 DrawToCanvas.drawRemainderOfPath(DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse], DrawToCanvas.currentTripletIndexFromMouse);
 
+                DrawToCanvas.context.fill(DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse].path, "evenodd");
                 DrawToCanvas.setIsDrawing(false);
             }
         }
