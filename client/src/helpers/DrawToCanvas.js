@@ -1,4 +1,5 @@
 import { setOldCanvasWidth, setOldCanvasHeight, getOldCanvasHeight, getOldCanvasWidth } from './CanvasResizingHelper.js';
+import getSocket from './socket.js';
 
 
 export default class DrawToCanvas {
@@ -18,6 +19,7 @@ export default class DrawToCanvas {
     static FREQUENCY_OF_DRAWING_UPDATES = 3;
     static diffFromPreviousAllPaths = {};
     static updatesSinceLastSync = 0;
+    static socket = getSocket();
 
 
     static calcMidpoint(point1, point2) {
@@ -63,7 +65,29 @@ export default class DrawToCanvas {
 
     static trackDiffsAndPushUpdates(pathUUID, point) {
         if (DrawToCanvas.updatesSinceLastSync === DrawToCanvas.FREQUENCY_OF_DRAWING_UPDATES) {
-            // Push to server //
+            DrawToCanvas.socket.emit('broadcast-drawing-paths-diff', DrawToCanvas.diffFromPreviousAllPaths);
+            DrawToCanvas.updatesSinceLastSync = 0;
+            DrawToCanvas.diffFromPreviousAllPaths = {};
+        }
+
+        if (pathUUID in DrawToCanvas.diffFromPreviousAllPaths) {
+            DrawToCanvas.diffFromPreviousAllPaths[pathUUID].push(point);
+        } else {
+            DrawToCanvas.diffFromPreviousAllPaths[pathUUID] = [point];
+        }
+
+        DrawToCanvas.updatesSinceLastSync++;
+    }
+
+    static addDrawingPathsDiffEventListener() {
+        DrawToCanvas.socket.on('updated-drawing-paths-diff', (pathsDiff) => {
+            for (const [uuid, serializedPath] of Object.entries(pathsDiff)) {
+
+                DrawToCanvas.allPaths
+            });
+
+        if (DrawToCanvas.updatesSinceLastSync === DrawToCanvas.FREQUENCY_OF_DRAWING_UPDATES) {
+            DrawToCanvas.socket.emit('broadcast-drawing-paths-diff', DrawToCanvas.diffFromPreviousAllPaths);
             DrawToCanvas.updatesSinceLastSync = 0;
             DrawToCanvas.diffFromPreviousAllPaths = {};
         }
