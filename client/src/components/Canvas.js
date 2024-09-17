@@ -24,7 +24,6 @@ export default function Canvas() {
     const openColorPickerButtonRef = useRef(null);
     const openDrawStrokePickerButtonRef = useRef(null);
     const openEraseStrokePickerButtonRef = useRef(null);
-    const fillButtonRef = useRef(null);
 
 
     const drawingCanvasRef = useRef(null);
@@ -92,14 +91,6 @@ export default function Canvas() {
         setSelectedPaletteOption('eraser');
     }
 
-    const fillButtonOnClick = () => {
-        console.log('clicked fill button');
-        setShowColorPicker(false);
-        setShowEraseStrokePicker(false);
-        setShowDrawStrokePicker(false);
-        setSelectedPaletteOption('fill');
-    }
-
     return (
         <DrawingContext.Provider value={{ currentColorClass, setCurrentColorClass, showColorPicker, setShowColorPicker, currentDrawStrokeSize, setCurrentDrawStrokeSize, currentEraseStrokeSize, setCurrentEraseStrokeSize, showEraseStrokePicker, setShowEraseStrokePicker, showDrawStrokePicker, setShowDrawStrokePicker, selectedPaletteOption, setSelectedPaletteOption }}>
             <div className="drawing-board-container">
@@ -121,12 +112,6 @@ export default function Canvas() {
                             0l-256 256c-18.745 18.745-18.745 49.137 0 67.882l96 96A48.004 48.004 0 0 0 144 480h356c6.627 0 12-5.373 
                             12-12v-40c0-6.627-5.373-12-12-12H355.883l142.058-142.059zm-302.627-62.627l137.373 137.373L265.373 
                             416H150.628l-80-80 124.686-124.686z"></path>
-                        </svg>
-                    </div>
-                    <div className={selectedPaletteOption === 'fill' ? "fill-icon-background-selected" : "fill-icon-background-unselected"} ref={fillButtonRef} onClick={fillButtonOnClick}>
-                        <svg viewBox="0 0 512 512" className="fill-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M205.22 22.09c-7.94-28.78-49.44-30.12-58.44 0C100.01 179.85 0 222.72 0 333.91 0 432.35 78.72 512 176 512s176-79.65 176-178.09c0-111.75-99.79-153.34-146.78-311.82zM176 448c-61.75 0-112-50.25-112-112 0-8.84 7.16-16 16-16s16 7.16 16 16c0 44.11 35.89 80 80 80 8.84 0 16 7.16 16 16s-7.16 16-16 16z">
-                            </path>
                         </svg>
                     </div>
                     <div className="color-picker-button-border" ref={openColorPickerButtonRef} onClick={colorPickerButtonOnClick}>

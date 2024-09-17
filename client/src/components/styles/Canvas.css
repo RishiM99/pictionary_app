@@ -85,23 +85,6 @@
     border: 3px solid black;
 }
 
-.fill-icon-background-unselected {
-    height: 40px;
-    width: 40px;
-    background-color: #bbb;
-    border-radius: 50%;
-    position: relative;
-}
-
-.fill-icon-background-selected {
-    height: 40px;
-    width: 40px;
-    background-color: #bbb;
-    border-radius: 50%;
-    position: relative;
-    border: 3px solid black;
-}
-
 .color-picker-button-border {
     width: 35x;
     height: 35px;
@@ -130,21 +113,13 @@
     transform: translate(-50%, -50%);
 }
 
-.fill-icon {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 60%;
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-}
-
 .black {
     height: 25px;
     width: 25px;
     background-color: black;
     border-radius: 50%;
     position: relative;
+    margin-left: 2px;
 }
 
 .gray {
@@ -256,6 +231,7 @@
     width: 25px;
     background-color: red;
     border-radius: 50%;
+    margin-right: 2px;
 }
 
 /* .maroon {
