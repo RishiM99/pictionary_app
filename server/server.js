@@ -51,38 +51,51 @@ await dbUtil.scheduleCleanUpOfExpiredSessions();
 
 app.use(sessionMiddleware);
 
-app.get('/', (req, res) => { 
-    res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'));
-  });
+app.get('/', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'));
+});
 
-app.post('/createUser', (req, res) => { 
-    req.session.userName = req.body.userName;
-    res.end();
-  });
+app.post('/createUser', (req, res) => {
+  req.session.userName = req.body.userName;
+  res.end();
+});
 app.get('/getUserName', (req, res) => {
-    res.json({userName: req.session.userName ?? null});
+  res.json({ userName: req.session.userName ?? null });
 });
 
 io.engine.use(sessionMiddleware);
 
 io.on('connection', async (socket) => {
-    const sessionId = socket.request.session.id;
-    console.log(`Session Id: ${sessionId}`);
-    await dbUtil.addSocketIntoSocketsToSessionsTable(socket.id, sessionId);
-    await dbUtil.addSocketToRelevantRoomsOnConnection(socket);
+  const sessionId = socket.request.session.id;
+  console.log(`Session Id: ${sessionId}`);
+  await dbUtil.addSocketIntoSocketsToSessionsTable(socket.id, sessionId);
+  await dbUtil.addSocketToRelevantRoomsOnConnection(socket);
+
+  socket.on('get-list-of-rooms-and-members', async () => {
     const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
-    io.emit('list-of-rooms-and-members', roomsAndMembersInfo); 
-  
-    socket.on('create-room', async (msg) => {
-      console.log(`Socket Id: ${socket.id}`);
-      const requestedRoomName = msg.roomName;
-      const dedupedRoomName = await dbUtil.createNewRoomWithDeduplicatedRoomName(requestedRoomName);
-      socket.join(dedupedRoomName);
-      dbUtil.addSocketToRoom(socket.id, dedupedRoomName);
-      const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
-      io.emit('list-of-rooms-and-members', roomsAndMembersInfo); 
-    });
+    io.emit('list-of-rooms-and-members', roomsAndMembersInfo);
   });
+
+  socket.on('create-room', async (msg) => {
+    console.log(`Socket Id: ${socket.id}`);
+    const requestedRoomName = msg.roomName;
+    const dedupedRoomName = await dbUtil.createNewRoomWithDeduplicatedRoomName(requestedRoomName);
+    socket.join(dedupedRoomName);
+    dbUtil.addSocketToRoom(socket.id, dedupedRoomName);
+    const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
+    io.emit('list-of-rooms-and-members', roomsAndMembersInfo);
+    socket.emit('name-of-new-room', { roomId: dedupedRoomName });
+  });
+
+  socket.on('join-room', async (msg) => {
+    console.log(`Socket Id: ${socket.id}`);
+    const roomName = msg.roomName;
+    socket.join(roomName);
+    dbUtil.addSocketToRoom(socket.id, roomName);
+    const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
+    io.emit('list-of-rooms-and-members', roomsAndMembersInfo);
+  });
+});
 
 server.listen(Constants.PORT, () => {
   console.log(`Server listening on ${Constants.PORT}`);

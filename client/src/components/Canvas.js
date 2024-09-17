@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import DrawToCanvas from '../DrawToCanvas.js';
+import DrawToCanvas from '../helpers/DrawToCanvas.js';
 import './styles/Canvas.css';
 import { DrawingContext } from '../contexts/DrawingContext.js';
 import ColorPicker from './ColorPicker.js';
 import DrawStrokePicker from './DrawStrokePicker.js';
 import EraseStrokePicker from './EraseStrokePicker.js';
-import { setOldCanvasHeight, setOldCanvasWidth } from '../CanvasResizingHelper.js';
+import { setOldCanvasHeight, setOldCanvasWidth } from '../helpers/CanvasResizingHelper.js';
 
 
 

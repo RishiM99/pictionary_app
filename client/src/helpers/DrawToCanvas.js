@@ -62,19 +62,19 @@ export default class DrawToCanvas {
     }
 
     static trackDiffsAndPushUpdates(pathUUID, point) {
-        if (this.updatesSinceLastSync === this.FREQUENCY_OF_DRAWING_UPDATES) {
+        if (DrawToCanvas.updatesSinceLastSync === DrawToCanvas.FREQUENCY_OF_DRAWING_UPDATES) {
             // Push to server //
-            this.updatesSinceLastSync = 0;
-            this.diffFromPreviousAllPaths = {};
+            DrawToCanvas.updatesSinceLastSync = 0;
+            DrawToCanvas.diffFromPreviousAllPaths = {};
         }
 
-        if (pathUUID in this.diffFromPreviousAllPaths) {
-            this.diffFromPreviousAllPaths[pathUUID].push(point);
+        if (pathUUID in DrawToCanvas.diffFromPreviousAllPaths) {
+            DrawToCanvas.diffFromPreviousAllPaths[pathUUID].push(point);
         } else {
-            this.diffFromPreviousAllPaths[pathUUID] = [point];
+            DrawToCanvas.diffFromPreviousAllPaths[pathUUID] = [point];
         }
 
-        this.updatesSinceLastSync++;
+        DrawToCanvas.updatesSinceLastSync++;
     }
 
     static mouseMoveEventListener(e) {
@@ -89,7 +89,7 @@ export default class DrawToCanvas {
                     DrawToCanvas.currentTripletIndexFromMouse++;
                 }
 
-                this.trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
+                DrawToCanvas.trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
             }
         }
     }
@@ -104,7 +104,7 @@ export default class DrawToCanvas {
 
                 DrawToCanvas.setIsDrawing(false);
 
-                this.trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
+                DrawToCanvas.trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
             }
         }
     }

@@ -15,7 +15,17 @@ export async function loader() {
   if (userName == null) {
     return redirect('/');
   }
-  return userName;
+
+  const socket = getSocket();
+  socket.emit('get-list-of-rooms-and-members');
+  const waitForRoomsAndMembers = function () {
+    return new Promise((resolve) => {
+      socket.on('list-of-rooms-and-members', (listOfRoomsAndMembers) => resolve(listOfRoomsAndMembers));
+    });
+  }
+
+  const initialListOfRoomsAndMembers = await waitForRoomsAndMembers();
+  return { userName, initialListOfRoomsAndMembers };
 }
 
 export async function action({ request }) {
@@ -23,20 +33,28 @@ export async function action({ request }) {
   switch (formData.formType) {
     case "create-new-room-form":
       socket.emit('create-room', { roomName: formData.roomName });
-      return null;
+      const waitForNameOfNewRoom = function () {
+        return new Promise((resolve) => {
+          socket.on('name-of-new-room', (newRoomName) => resolve(newRoomName));
+        })
+      };
+      const nameOfNewRoom = await waitForNameOfNewRoom();
+      return redirect(`/room/${nameOfNewRoom.roomId}`);
     case "join-room-form":
-      return null;
+      socket.emit('join-room', { roomName: formData.roomName });
+      return redirect(`/room/${formData.roomName}`);
     default:
       return null;
   }
 }
 
 export default function CreateOrJoinRooms() {
-  const userName = useLoaderData();
-  const [listOfRoomsAndMembers, setListOfRoomsAndMembers] = useState();
+  const { userName, initialListOfRoomsAndMembers } = useLoaderData();
+  const [listOfRoomsAndMembers, setListOfRoomsAndMembers] = useState(initialListOfRoomsAndMembers);
 
   useEffect(() => {
     function onGetListOfRoomsAndMembers(value) {
+      console.log("list of rooms and members:");
       console.log(value);
       setListOfRoomsAndMembers(value);
     }
@@ -78,6 +96,7 @@ export default function CreateOrJoinRooms() {
                 </div>
                 <Form method="post">
                   <input name="formType" hidden defaultValue="join-room-form" />
+                  <input name="roomName" hidden defaultValue={roomAndMembers.roomId} />
                   <button>Join</button>
                 </Form>
               </li>

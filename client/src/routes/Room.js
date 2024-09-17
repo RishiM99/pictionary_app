@@ -16,11 +16,13 @@ export async function loader({ params }) {
         return redirect('/');
     }
 
+    console.log(params);
+
     return params.roomId;
 }
 
 export default function Room() {
-    const { roomId } = useLoaderData();
+    const roomId = useLoaderData();
     const [copyUrlClicked, setCopyUrlClicked] = useState(false);
 
     useEffect(() => {
@@ -47,8 +49,8 @@ export default function Room() {
 
     return (
         <div className="container">
-            <div className="chat-name">
-                <p className="chat-name-text"> Example Chat Name </p>
+            <div className="room-name">
+                <p className="room-name-text"> {roomId} </p>
                 {copyUrlClicked ?
                     <p className="copy-url-copied-confirmation-text"> ✔ Room link has been copied </p> :
                     <div className="copy-url-show-tooltip">
