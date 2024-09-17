@@ -8,6 +8,18 @@ import { Server } from 'socket.io';
 import DBUtil from './DBUtil.js';
 import * as Constants from './Constants.js';
 
+declare module 'express-session' {
+  interface SessionData {
+    userName: string;
+  }
+}
+
+declare module 'http' {
+  interface IncomingMessage {
+    session: any;
+  }
+}
+
 // const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 // const __dirname = path.dirname(__filename); // get the name of the directory
 console.log(__dirname);

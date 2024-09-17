@@ -18,9 +18,6 @@
         "outDir": "compiled_javascript"
     },
     "include": [
-        "src/*",
+        "*",
     ],
-    "exclude": [
-        "node_modules",
-    ]
 }

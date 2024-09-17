@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "tsc server/Server.ts && node server/compiled_javascript/Server.js"
+    "start": "tsc server/Server.ts && tsc  && node server/compiled_javascript/Server.js"
   },
   "type": "module",
   "keywords": [],
@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/express-session": "^1.18.0",
     "@types/jest": "^29.5.13",
     "@types/node": "^22.5.5",
     "@types/react": "^18.3.6",

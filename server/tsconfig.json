@@ -6,6 +6,8 @@
         ],
         "module": "es2022",
         "preserveConstEnums": true,
+        "declarationMap": true,
+        "declaration": true,
         "moduleResolution": "node",
         "strict": true,
         "sourceMap": true,
