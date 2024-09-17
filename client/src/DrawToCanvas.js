@@ -14,6 +14,11 @@ export default class DrawToCanvas {
     static selectedPaletteOption = null;
     static currentPathUUIDFromMouse = null;
 
+    // How often to push updates of drawing
+    static FREQUENCY_OF_DRAWING_UPDATES = 3;
+    static diffFromPreviousAllPaths = {};
+    static updatesSinceLastSync = 0;
+
 
     static calcMidpoint(point1, point2) {
         return { x: 0.5 * point1.x + 0.5 * point2.x, y: 0.5 * point1.y + 0.5 * point2.y };
@@ -56,6 +61,22 @@ export default class DrawToCanvas {
         }
     }
 
+    static trackDiffsAndPushUpdates(pathUUID, point) {
+        if (this.updatesSinceLastSync === this.FREQUENCY_OF_DRAWING_UPDATES) {
+            // Push to server //
+            this.updatesSinceLastSync = 0;
+            this.diffFromPreviousAllPaths = {};
+        }
+
+        if (pathUUID in this.diffFromPreviousAllPaths) {
+            this.diffFromPreviousAllPaths[pathUUID].push(point);
+        } else {
+            this.diffFromPreviousAllPaths[pathUUID] = [point];
+        }
+
+        this.updatesSinceLastSync++;
+    }
+
     static mouseMoveEventListener(e) {
         if (DrawToCanvas.context) {
             if (DrawToCanvas.isDrawing) {
@@ -67,6 +88,8 @@ export default class DrawToCanvas {
                 if (DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse].points.length >= 3) {
                     DrawToCanvas.currentTripletIndexFromMouse++;
                 }
+
+                this.trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
             }
         }
     }
@@ -80,6 +103,8 @@ export default class DrawToCanvas {
                 DrawToCanvas.drawRemainderOfPath(DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse], DrawToCanvas.currentTripletIndexFromMouse);
 
                 DrawToCanvas.setIsDrawing(false);
+
+                this.trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
             }
         }
     }
