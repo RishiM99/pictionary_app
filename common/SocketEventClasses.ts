@@ -27,28 +27,50 @@ export class CreateRoom {
         return JSON.parse(JSON.stringify(this));
     }
 
-    static createFromJSON(serializedJSON: { roomName: string }): JoinRoom {
-        return new JoinRoom(serializedJSON.roomName);
+    static createFromJSON(serializedJSON: { roomName: string }): CreateRoom {
+        return new CreateRoom(serializedJSON.roomName);
     }
 }
 
-export class GetListOfRoomsAndMembers {
-    static EVENT_NAME: string = 'get-list-of-rooms-and-members';
+module ListOfRoomsAndMembersTypes {
+    export type roomAndMembers = {
+        roomId: any;
+        membersNames: any[];
+        displayTextForMembers: string;
+    };
 }
 
 export class ListOfRoomsAndMembers {
     static EVENT_NAME: string = 'list-of-rooms-and-members';
-    roomName: string;
 
-    constructor(roomName: string) {
-        this.roomName = roomName;
+    listOfRoomsAndMembers: ListOfRoomsAndMembersTypes.roomAndMembers[];
+
+    constructor(roomsAndMembersList: ListOfRoomsAndMembersTypes.roomAndMembers[]) {
+        this.listOfRoomsAndMembers = roomsAndMembersList;
     }
 
     convertToJSON(): JSON {
         return JSON.parse(JSON.stringify(this));
     }
 
-    static createFromJSON(serializedJSON: { roomName: string }): JoinRoom {
-        return new JoinRoom(serializedJSON.roomName);
+    static createFromJSON(serializedJSON: { listOfRoomsAndMembers: ListOfRoomsAndMembersTypes.roomAndMembers[] }): ListOfRoomsAndMembers {
+        return new ListOfRoomsAndMembers(serializedJSON.listOfRoomsAndMembers);
+    }
+}
+
+export class NameOfNewRoom {
+    static EVENT_NAME: string = 'name-of-new-room';
+    roomId: string;
+
+    constructor(roomId: string) {
+        this.roomId = roomId;
+    }
+
+    convertToJSON(): JSON {
+        return JSON.parse(JSON.stringify(this));
+    }
+
+    static createFromJSON(serializedJSON: { roomId: string }): NameOfNewRoom {
+        return new NameOfNewRoom(serializedJSON.roomId);
     }
 }

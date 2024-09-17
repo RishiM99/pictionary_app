@@ -7,6 +7,7 @@ import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import DBUtil from './DBUtil.js';
 import * as Constants from './Constants.js';
+import { JoinRoom, CreateRoom, ListOfRoomsAndMembers, NameOfNewRoom } from "../../common/SocketEventClasses.js";
 
 declare module 'express-session' {
   interface SessionData {
@@ -84,33 +85,33 @@ io.on('connection', async (socket) => {
 
   socket.on('get-list-of-rooms-and-members', async () => {
     const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
-    io.emit('list-of-rooms-and-members', roomsAndMembersInfo);
+    io.emit(ListOfRoomsAndMembers.EVENT_NAME, new ListOfRoomsAndMembers(roomsAndMembersInfo).convertToJSON());
   });
 
-  socket.on('create-room', async (msg) => {
+  socket.on(CreateRoom.EVENT_NAME, async (msg) => {
     console.log(`Socket Id: ${socket.id}`);
-    const requestedRoomName = msg.roomName;
+    const requestedRoomName = CreateRoom.createFromJSON(msg).roomName;
     const dedupedRoomName = await dbUtil.createNewRoomWithDeduplicatedRoomName(requestedRoomName);
     socket.join(dedupedRoomName);
     dbUtil.addSocketToRoom(socket.id, dedupedRoomName);
     const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
-    io.emit('list-of-rooms-and-members', roomsAndMembersInfo);
-    socket.emit('name-of-new-room', { roomId: dedupedRoomName });
+    io.emit(ListOfRoomsAndMembers.EVENT_NAME, new ListOfRoomsAndMembers(roomsAndMembersInfo).convertToJSON());
+    socket.emit(NameOfNewRoom.EVENT_NAME, new NameOfNewRoom(dedupedRoomName).convertToJSON());
   });
 
-  socket.on('join-room', async (msg) => {
+  socket.on(JoinRoom.EVENT_NAME, async (msg) => {
     console.log(`Socket Id: ${socket.id}`);
-    const roomName = msg.roomName;
+    const roomName = JoinRoom.createFromJSON(msg).roomName;
     socket.join(roomName);
     dbUtil.addSocketToRoom(socket.id, roomName);
     const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
-    io.emit('list-of-rooms-and-members', roomsAndMembersInfo);
+    io.emit(ListOfRoomsAndMembers.EVENT_NAME, new ListOfRoomsAndMembers(roomsAndMembersInfo).convertToJSON());
   });
 
-  socket.on('broadcast-drawing-paths-diff', async (msg) => {
-    const { pathsDiff, roomName } = msg;
-    io.to(roomName).emit('updated-drawing-paths-diff', pathsDiff);
-  });
+  // socket.on('broadcast-drawing-paths-diff', async (msg) => {
+  //   const { pathsDiff, roomName } = msg;
+  //   io.to(roomName).emit('updated-drawing-paths-diff', pathsDiff);
+  // });
 });
 
 server.listen(Constants.PORT, () => {
