@@ -1,29 +1,23 @@
 import * as Constants from './Constants.js';
 import assert from 'assert';
-import pg from 'pg';
-import { Socket } from 'socket.io';
-
 const MAX_NUMBER_OF_CHARS_FOR_MEMBER_NAMES = 25;
-
 export default class DBUtil {
-    pgPool: pg.Pool;
-
-    constructor(pgPool: pg.Pool) {
+    pgPool;
+    constructor(pgPool) {
         this.pgPool = pgPool;
     }
-
     // If no params, set to [].
-    async #selectAndExtractSingleColumn(sql: string, params: any[], column: string, sqlClient: pg.PoolClient | null = null) {
+    async #selectAndExtractSingleColumn(sql, params, column, sqlClient = null) {
         if (sqlClient == null) {
             return (await this.pgPool.query(sql, params)).rows.map((row) => row[column]);
-        } else {
+        }
+        else {
             return (await sqlClient.query(sql, params)).rows.map((row) => row[column]);
         }
     }
-
     async scheduleCleanUpOfExpiredSessions() {
         this.#cleanUpExpiredSessionsHelper();
-        setInterval(async () => { await this.#cleanUpExpiredSessionsHelper() }, Constants.MAX_AGE_OF_SESSION_MS);
+        setInterval(async () => { await this.#cleanUpExpiredSessionsHelper(); }, Constants.MAX_AGE_OF_SESSION_MS);
     }
     async #cleanUpExpiredSessionsHelper() {
         // extract(epoch from expire) returns number of seconds, need number of millseconds since that's what Javascript returns
@@ -36,33 +30,27 @@ export default class DBUtil {
             }
         }
         const socketsToRemove = await this.#selectAndExtractSingleColumn("SELECT socket_id FROM sockets_to_sessions WHERE session_id = ANY ($1)", [sessionsToRemove], "socket_id");
-
         await this.pgPool.query("DELETE FROM sockets_to_sessions WHERE session_id = ANY ($1)", [sessionsToRemove]);
-        await this.pgPool.query("DELETE FROM session WHERE sid = ANY ($1)", [sessionsToRemove])
-        await this.pgPool.query("DELETE FROM sockets_to_rooms WHERE socket_id = ANY ($1)", [socketsToRemove])
+        await this.pgPool.query("DELETE FROM session WHERE sid = ANY ($1)", [sessionsToRemove]);
+        await this.pgPool.query("DELETE FROM sockets_to_rooms WHERE socket_id = ANY ($1)", [socketsToRemove]);
     }
-
-    async addSocketIntoSocketsToSessionsTable(socketId: string, sessionId: string) {
+    async addSocketIntoSocketsToSessionsTable(socketId, sessionId) {
         await this.pgPool.query("INSERT INTO sockets_to_sessions (socket_id, session_id) VALUES ($1, $2)", [socketId, sessionId]);
     }
-
-    async addSocketToRelevantRoomsOnConnection(socket: Socket) {
+    async addSocketToRelevantRoomsOnConnection(socket) {
         const roomsSocketIsIn = await this.#selectAndExtractSingleColumn("SELECT room_id FROM sockets_to_rooms WHERE socket_id = $1", [socket.id], "room_id");
         for (const roomId of roomsSocketIsIn) {
             socket.join(roomId);
         }
     }
-
-    async addSocketToRoom(socketId: string, roomId: string) {
+    async addSocketToRoom(socketId, roomId) {
         await this.pgPool.query("INSERT INTO sockets_to_rooms (socket_id, room_id) VALUES ($1, $2)", [socketId, roomId]);
     }
-
-    async createNewRoomWithDeduplicatedRoomName(roomName: string): Promise<string> {
+    async createNewRoomWithDeduplicatedRoomName(roomName) {
         // Create individual client for transaction
         const client = await this.pgPool.connect();
         try {
             await client.query('BEGIN');
-
             const alreadyExistingRooms = await this.#selectAndExtractSingleColumn("SELECT room_id FROM rooms WHERE room_id = $1", [roomName], "room_id", client);
             let dedupedRoomName;
             if (alreadyExistingRooms.length > 0) {
@@ -73,22 +61,23 @@ export default class DBUtil {
                 await client.query("UPDATE room_id_base_to_duplicates_count SET duplicate_count = $1 WHERE room_id_base = $2", [newDedupSuffix, roomName]);
                 dedupedRoomName = roomName + newDedupSuffix;
                 await client.query("INSERT INTO rooms (room_id) VALUES ($1)", [dedupedRoomName]);
-            } else {
+            }
+            else {
                 await client.query("INSERT INTO rooms (room_id) VALUES ($1)", [roomName]);
                 await client.query("INSERT INTO room_id_base_to_duplicates_count (room_id_base, duplicate_count) VALUES ($1, $2)", [roomName, 0]);
                 dedupedRoomName = roomName;
             }
-
             await client.query('COMMIT');
             return dedupedRoomName;
-        } catch (e) {
+        }
+        catch (e) {
             await client.query('ROLLBACK');
             throw e;
-        } finally {
+        }
+        finally {
             client.release();
         }
     }
-
     async getRoomAndMembersInfo() {
         const rooms = await this.#selectAndExtractSingleColumn("SELECT room_id FROM rooms", [], "room_id");
         console.log(`Rooms: ${rooms}`);
@@ -130,4 +119,4 @@ export default class DBUtil {
         return roomAndMembersInfo;
     }
 }
-
+//# sourceMappingURL=DBUtil.js.map

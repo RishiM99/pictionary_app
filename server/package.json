@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "tsc src/Server.ts && tsc ../common/SocketEventClasses.ts && node compiled_javascript/Server.js"
+    "start": "tsc && cd ../common && tsc && cd ../server && node compiled_javascript/Server.js"
   },
   "type": "module",
   "keywords": [],
