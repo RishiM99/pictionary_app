@@ -2,208 +2,220 @@ import { setOldCanvasWidth, setOldCanvasHeight, getOldCanvasHeight, getOldCanvas
 import getSocket from './socket.js';
 
 
-export default class DrawToCanvas {
-    static allPaths = {};
-    static currentTripletIndexFromMouse = 0;
-    static drawingCanvas = null;
-    static context = null;
-    static currentColorClass = null;
-    static currentDrawStrokeSize = null;
-    static currentEraseStrokeSize = null;
-    static setIsDrawing = null;
-    static isDrawing = null;
-    static selectedPaletteOption = null;
-    static currentPathUUIDFromMouse = null;
+let allPaths = {};
+let currentTripletIndexFromMouse = 0;
+let drawingCanvas = null;
+let context = null;
+let currentColorClass = null;
+let currentDrawStrokeSize = null;
+let currentEraseStrokeSize = null;
+let setIsDrawing = null;
+let isDrawing = null;
+let selectedPaletteOption = null;
+let currentPathUUIDFromMouse = null;
 
-    // How often to push updates of drawing
-    static FREQUENCY_OF_DRAWING_UPDATES = 3;
-    static diffFromPreviousAllPaths = {};
-    static updatesSinceLastSync = 0;
-    static socket = getSocket();
+// How often to push updates of drawing
+const FREQUENCY_OF_DRAWING_UPDATES = 3;
+let diffFromPreviousAllPaths = {};
+let updatesSinceLastSync = 0;
+const socket = getSocket();
 
 
-    static calcMidpoint(point1, point2) {
-        return { x: 0.5 * point1.x + 0.5 * point2.x, y: 0.5 * point1.y + 0.5 * point2.y };
+function calcMidpoint(point1, point2) {
+    return { x: 0.5 * point1.x + 0.5 * point2.x, y: 0.5 * point1.y + 0.5 * point2.y };
+}
+
+
+// Draws remainder of path from tripletStartIndex to end of serializedPath.points
+function drawRemainderOfPath(serializedPath, tripletStartIndex) {
+    const { lineWidth, strokeStyle, points } = serializedPath;
+    context.lineWidth = lineWidth;
+    context.strokeStyle = strokeStyle;
+
+    context.beginPath();
+
+
+    for (let currentTripletIndex = tripletStartIndex; currentTripletIndex <= points.length - 3; currentTripletIndex++) {
+        const firstMidpoint = calcMidpoint(points[currentTripletIndex], points[currentTripletIndex + 1]);
+        context.moveTo(firstMidpoint.x, firstMidpoint.y);
+        const nextMidpoint = calcMidpoint(points[currentTripletIndex + 1], points[currentTripletIndex + 2]);
+
+        context.quadraticCurveTo(points[currentTripletIndex + 1].x, points[currentTripletIndex + 1].y, nextMidpoint.x, nextMidpoint.y);
+    }
+    context.stroke();
+}
+
+
+function mouseDownEventListener(e) {
+    if (context) {
+        const currentX = e.offsetX;
+        const currentY = e.offsetY;
+
+        const lineWidth = selectedPaletteOption === 'eraser' ? currentEraseStrokeSize : currentDrawStrokeSize;
+        const strokeStyle = selectedPaletteOption === 'eraser' ? 'white' : getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
+
+        const uuid = crypto.randomUUID();
+        currentTripletIndexFromMouse = 0;
+        allPaths[uuid] = { points: [{ x: currentX, y: currentY }], lineWidth, strokeStyle };
+        currentPathUUIDFromMouse = uuid;
+        setIsDrawing(true);
+    }
+}
+
+function trackDiffsAndPushUpdates(pathUUID, point) {
+    if (updatesSinceLastSync === FREQUENCY_OF_DRAWING_UPDATES) {
+        socket.emit('broadcast-drawing-paths-diff', { diff: diffFromPreviousAllPaths, x: getOldCanvasWidth(), y: getOldCanvasHeight() });
+        updatesSinceLastSync = 0;
+        diffFromPreviousAllPaths = {};
     }
 
-
-    // Draws remainder of path from tripletStartIndex to end of serializedPath.points
-    static drawRemainderOfPath(serializedPath, tripletStartIndex) {
-        const { lineWidth, strokeStyle, points } = serializedPath;
-        DrawToCanvas.context.lineWidth = lineWidth;
-        DrawToCanvas.context.strokeStyle = strokeStyle;
-
-        DrawToCanvas.context.beginPath();
-
-
-        for (let currentTripletIndex = tripletStartIndex; currentTripletIndex <= points.length - 3; currentTripletIndex++) {
-            const firstMidpoint = DrawToCanvas.calcMidpoint(points[currentTripletIndex], points[currentTripletIndex + 1]);
-            DrawToCanvas.context.moveTo(firstMidpoint.x, firstMidpoint.y);
-            const nextMidpoint = DrawToCanvas.calcMidpoint(points[currentTripletIndex + 1], points[currentTripletIndex + 2]);
-
-            DrawToCanvas.context.quadraticCurveTo(points[currentTripletIndex + 1].x, points[currentTripletIndex + 1].y, nextMidpoint.x, nextMidpoint.y);
-        }
-        DrawToCanvas.context.stroke();
+    if (pathUUID in diffFromPreviousAllPaths) {
+        diffFromPreviousAllPaths[pathUUID].push(point);
+    } else {
+        diffFromPreviousAllPaths[pathUUID] = [point];
     }
 
+    updatesSinceLastSync++;
+}
 
-    static mouseDownEventListener(e) {
-        if (DrawToCanvas.context) {
+// function addDrawingPathsDiffEventListener() {
+//     socket.on('updated-drawing-paths-diff', (msg) => {
+//         const pathsDiff = msg.diff;
+//         const { x, y } = msg;
+//         for (const [uuid, serializedPath] of Object.entries(pathsDiff)) {
+
+//             allPaths
+//         });
+
+//     if (updatesSinceLastSync === FREQUENCY_OF_DRAWING_UPDATES) {
+//         socket.emit('broadcast-drawing-paths-diff', diffFromPreviousAllPaths);
+//         updatesSinceLastSync = 0;
+//         diffFromPreviousAllPaths = {};
+//     }
+
+//     if (pathUUID in diffFromPreviousAllPaths) {
+//         diffFromPreviousAllPaths[pathUUID].push(point);
+//     } else {
+//         diffFromPreviousAllPaths[pathUUID] = [point];
+//     }
+
+//     updatesSinceLastSync++;
+// }
+
+function mouseMoveEventListener(e) {
+    if (context) {
+        if (isDrawing) {
             const currentX = e.offsetX;
             const currentY = e.offsetY;
+            allPaths[currentPathUUIDFromMouse].points.push({ x: currentX, y: currentY });
+            drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
 
-            const lineWidth = DrawToCanvas.selectedPaletteOption === 'eraser' ? DrawToCanvas.currentEraseStrokeSize : DrawToCanvas.currentDrawStrokeSize;
-            const strokeStyle = DrawToCanvas.selectedPaletteOption === 'eraser' ? 'white' : getComputedStyle(document.querySelector(`.${DrawToCanvas.currentColorClass}`))["background-color"];
-
-            const uuid = crypto.randomUUID();
-            DrawToCanvas.currentTripletIndexFromMouse = 0;
-            DrawToCanvas.allPaths[uuid] = { points: [{ x: currentX, y: currentY }], lineWidth, strokeStyle };
-            DrawToCanvas.currentPathUUIDFromMouse = uuid;
-            DrawToCanvas.setIsDrawing(true);
-        }
-    }
-
-    static trackDiffsAndPushUpdates(pathUUID, point) {
-        if (DrawToCanvas.updatesSinceLastSync === DrawToCanvas.FREQUENCY_OF_DRAWING_UPDATES) {
-            DrawToCanvas.socket.emit('broadcast-drawing-paths-diff', DrawToCanvas.diffFromPreviousAllPaths);
-            DrawToCanvas.updatesSinceLastSync = 0;
-            DrawToCanvas.diffFromPreviousAllPaths = {};
-        }
-
-        if (pathUUID in DrawToCanvas.diffFromPreviousAllPaths) {
-            DrawToCanvas.diffFromPreviousAllPaths[pathUUID].push(point);
-        } else {
-            DrawToCanvas.diffFromPreviousAllPaths[pathUUID] = [point];
-        }
-
-        DrawToCanvas.updatesSinceLastSync++;
-    }
-
-    static addDrawingPathsDiffEventListener() {
-        DrawToCanvas.socket.on('updated-drawing-paths-diff', (pathsDiff) => {
-            for (const [uuid, serializedPath] of Object.entries(pathsDiff)) {
-
-                DrawToCanvas.allPaths
-            });
-
-        if (DrawToCanvas.updatesSinceLastSync === DrawToCanvas.FREQUENCY_OF_DRAWING_UPDATES) {
-            DrawToCanvas.socket.emit('broadcast-drawing-paths-diff', DrawToCanvas.diffFromPreviousAllPaths);
-            DrawToCanvas.updatesSinceLastSync = 0;
-            DrawToCanvas.diffFromPreviousAllPaths = {};
-        }
-
-        if (pathUUID in DrawToCanvas.diffFromPreviousAllPaths) {
-            DrawToCanvas.diffFromPreviousAllPaths[pathUUID].push(point);
-        } else {
-            DrawToCanvas.diffFromPreviousAllPaths[pathUUID] = [point];
-        }
-
-        DrawToCanvas.updatesSinceLastSync++;
-    }
-
-    static mouseMoveEventListener(e) {
-        if (DrawToCanvas.context) {
-            if (DrawToCanvas.isDrawing) {
-                const currentX = e.offsetX;
-                const currentY = e.offsetY;
-                DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse].points.push({ x: currentX, y: currentY });
-                DrawToCanvas.drawRemainderOfPath(DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse], DrawToCanvas.currentTripletIndexFromMouse);
-
-                if (DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse].points.length >= 3) {
-                    DrawToCanvas.currentTripletIndexFromMouse++;
-                }
-
-                DrawToCanvas.trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
+            if (allPaths[currentPathUUIDFromMouse].points.length >= 3) {
+                currentTripletIndexFromMouse++;
             }
+
+            trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
         }
     }
-
-    static mouseUpEventListener(e) {
-        if (DrawToCanvas.context) {
-            if (DrawToCanvas.isDrawing) {
-                const currentX = e.offsetX;
-                const currentY = e.offsetY;
-                DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse].points.push({ x: currentX, y: currentY });
-                DrawToCanvas.drawRemainderOfPath(DrawToCanvas.allPaths[DrawToCanvas.currentPathUUIDFromMouse], DrawToCanvas.currentTripletIndexFromMouse);
-
-                DrawToCanvas.setIsDrawing(false);
-
-                DrawToCanvas.trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
-            }
-        }
-    }
-
-    static scaleAllPathsAndRedrawAllCurves(scaleX, scaleY) {
-        let newAllPaths = {};
-        for (const [uuid, serializedPath] of Object.entries(DrawToCanvas.allPaths)) {
-            const scaledPoints = serializedPath.points.map(((point) => ({ x: point.x * scaleX, y: point.y * scaleY })));
-
-            let newSerializedPath = { points: scaledPoints, lineWidth: serializedPath.lineWidth, strokeStyle: serializedPath.strokeStyle };
-
-            DrawToCanvas.drawRemainderOfPath(newSerializedPath, 0, true);
-
-            newAllPaths[crypto.randomUUID()] = newSerializedPath;
-        }
-
-        DrawToCanvas.allPaths = newAllPaths;
-    }
-
-
-    static windowResizeListener(e) {
-
-        if (DrawToCanvas.drawingCanvas) {
-            DrawToCanvas.drawingCanvas.height = parseInt(window.getComputedStyle(DrawToCanvas.drawingCanvas).getPropertyValue("height"), 10);
-            DrawToCanvas.drawingCanvas.width = parseInt(window.getComputedStyle(DrawToCanvas.drawingCanvas).getPropertyValue("width"), 10);
-
-            const xScale = DrawToCanvas.drawingCanvas.width / getOldCanvasWidth();
-            const yScale = DrawToCanvas.drawingCanvas.height / getOldCanvasHeight();
-            DrawToCanvas.scaleAllPathsAndRedrawAllCurves(xScale, yScale);
-            setOldCanvasWidth(DrawToCanvas.drawingCanvas.width);
-            setOldCanvasHeight(DrawToCanvas.drawingCanvas.height);
-        }
-    }
-
-
-    static setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, currentDrawStrokeSize, setIsDrawing, isDrawing, selectedPaletteOption, currentEraseStrokeSize }) {
-
-        DrawToCanvas.drawingCanvas = drawingCanvasRef?.current;
-        DrawToCanvas.context = DrawToCanvas.drawingCanvas?.getContext("2d");
-        DrawToCanvas.currentColorClass = currentColorClass;
-        DrawToCanvas.currentDrawStrokeSize = currentDrawStrokeSize;
-        DrawToCanvas.currentEraseStrokeSize = currentEraseStrokeSize;
-        DrawToCanvas.setIsDrawing = setIsDrawing;
-        DrawToCanvas.isDrawing = isDrawing;
-        DrawToCanvas.selectedPaletteOption = selectedPaletteOption;
-
-        if (DrawToCanvas.drawingCanvas) {
-            if (DrawToCanvas.selectedPaletteOption === 'color-picker') {
-                DrawToCanvas.drawingCanvas.removeEventListener("mousedown", DrawToCanvas.mouseDownEventListener);
-                DrawToCanvas.drawingCanvas.removeEventListener("mousemove", DrawToCanvas.mouseMoveEventListener);
-                DrawToCanvas.drawingCanvas.removeEventListener("mouseup", DrawToCanvas.mouseUpEventListener);
-                window.removeEventListener("resize", DrawToCanvas.windowResizeListener)
-                // Do nothing for drawing, and remove event listeners
-            } else {
-                DrawToCanvas.drawingCanvas.addEventListener("mousedown", DrawToCanvas.mouseDownEventListener);
-                DrawToCanvas.drawingCanvas.addEventListener("mousemove", DrawToCanvas.mouseMoveEventListener);
-                DrawToCanvas.drawingCanvas.addEventListener("mouseup", DrawToCanvas.mouseUpEventListener);
-                window.addEventListener("resize", DrawToCanvas.windowResizeListener)
-            }
-        }
-
-        return () => {
-            if (DrawToCanvas.drawingCanvas) {
-                DrawToCanvas.drawingCanvas.removeEventListener("mousedown", DrawToCanvas.mouseDownEventListener);
-                DrawToCanvas.drawingCanvas.removeEventListener("mousemove", DrawToCanvas.mouseMoveEventListener);
-                DrawToCanvas.drawingCanvas.removeEventListener("mouseup", DrawToCanvas.mouseUpEventListener);
-                window.removeEventListener("resize", DrawToCanvas.windowResizeListener)
-            }
-        }
-    }
-
-
-
-
 }
+
+function mouseUpEventListener(e) {
+    if (context) {
+        if (isDrawing) {
+            const currentX = e.offsetX;
+            const currentY = e.offsetY;
+            allPaths[currentPathUUIDFromMouse].points.push({ x: currentX, y: currentY });
+            drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
+
+            setIsDrawing(false);
+
+            trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
+        }
+    }
+}
+
+// function redrawAllCurves() {
+//     for (const [uuid, serializedPath] of Object.entries(allPaths)) {
+//         drawRemainderOfPath(newSerializedPath, 0);
+//     }
+// }
+
+// function scaleAllPathsInPlace(scaleX, scaleY) {
+//     for (const [uuid, serializedPath] of Object.entries(allPaths)) {
+//         const scaledPoints = serializedPath.points.map(((point) => ({ x: point.x * scaleX, y: point.y * scaleY })));
+//         serializedPaths.points = scaledPoints;
+//     }
+// }
+
+function scaleAllPathsAndRedrawAllCurves(scaleX, scaleY) {
+    let newAllPaths = {};
+    for (const [uuid, serializedPath] of Object.entries(allPaths)) {
+        const scaledPoints = serializedPath.points.map(((point) => ({ x: point.x * scaleX, y: point.y * scaleY })));
+
+        let newSerializedPath = { points: scaledPoints, lineWidth: serializedPath.lineWidth, strokeStyle: serializedPath.strokeStyle };
+
+        drawRemainderOfPath(newSerializedPath, 0, true);
+
+        newAllPaths[crypto.randomUUID()] = newSerializedPath;
+    }
+
+    allPaths = newAllPaths;
+}
+
+
+function windowResizeListener(e) {
+
+    if (drawingCanvas) {
+        drawingCanvas.height = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("height"), 10);
+        drawingCanvas.width = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("width"), 10);
+
+        const xScale = drawingCanvas.width / getOldCanvasWidth();
+        const yScale = drawingCanvas.height / getOldCanvasHeight();
+        scaleAllPathsAndRedrawAllCurves(xScale, yScale);
+        setOldCanvasWidth(drawingCanvas.width);
+        setOldCanvasHeight(drawingCanvas.height);
+    }
+}
+
+
+function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, currentDrawStrokeSize, setIsDrawing, isDrawing, selectedPaletteOption, currentEraseStrokeSize }) {
+
+    drawingCanvas = drawingCanvasRef?.current;
+    context = drawingCanvas?.getContext("2d");
+    currentColorClass = currentColorClass;
+    currentDrawStrokeSize = currentDrawStrokeSize;
+    currentEraseStrokeSize = currentEraseStrokeSize;
+    setIsDrawing = setIsDrawing;
+    isDrawing = isDrawing;
+    selectedPaletteOption = selectedPaletteOption;
+
+    if (drawingCanvas) {
+        if (selectedPaletteOption === 'color-picker') {
+            drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
+            drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
+            drawingCanvas.removeEventListener("mouseup", mouseUpEventListener);
+            window.removeEventListener("resize", windowResizeListener)
+            // Do nothing for drawing, and remove event listeners
+        } else {
+            drawingCanvas.addEventListener("mousedown", mouseDownEventListener);
+            drawingCanvas.addEventListener("mousemove", mouseMoveEventListener);
+            drawingCanvas.addEventListener("mouseup", mouseUpEventListener);
+            window.addEventListener("resize", windowResizeListener)
+        }
+    }
+
+    return () => {
+        if (drawingCanvas) {
+            drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
+            drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
+            drawingCanvas.removeEventListener("mouseup", mouseUpEventListener);
+            window.removeEventListener("resize", windowResizeListener)
+        }
+    }
+}
+
+
+export default setUpDrawingForCanvas;
 
 
 

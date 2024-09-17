@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import DrawToCanvas from '../helpers/DrawToCanvas.js';
+import setUpDrawingForCanvas from '../helpers/DrawToCanvas.js';
 import './styles/Canvas.css';
 import { DrawingContext } from '../contexts/DrawingContext.js';
 import ColorPicker from './ColorPicker.js';
@@ -42,7 +42,7 @@ export default function Canvas() {
     }, []);
 
     useEffect(() => {
-        const setUpDrawingCanvasCleanup = DrawToCanvas.setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, currentDrawStrokeSize, isDrawing, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption });
+        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, currentDrawStrokeSize, isDrawing, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption });
 
         return () => {
             setUpDrawingCanvasCleanup();
