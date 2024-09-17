@@ -1,0 +1,3 @@
+declare module 'google-spreadsheet' {
+    // define the types...
+}

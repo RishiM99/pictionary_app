@@ -2,15 +2,14 @@ import session from 'express-session';
 import connect_pg from 'connect-pg-simple';
 import express from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import pg from 'pg';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import DBUtil from './DBUtil.js';
 import * as Constants from './Constants.js';
 
-const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
-const __dirname = path.dirname(__filename); // get the name of the directory
+// const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+// const __dirname = path.dirname(__filename); // get the name of the directory
 console.log(__dirname);
 
 const pgSession = connect_pg(session);
