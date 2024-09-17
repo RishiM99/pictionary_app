@@ -15,10 +15,12 @@
         "types": [
             "node"
         ],
-        "outDir": "compiled_javascript"
+        "outDir": "compiled_javascript",
+        "jsx": "react-jsx",
+        "noImplicitAny": false
     },
     "include": [
-        "src/*",
+        "**/*.tsx",
     ],
     "exclude": [
         "node_modules",

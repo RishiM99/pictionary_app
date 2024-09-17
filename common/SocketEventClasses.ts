@@ -32,7 +32,7 @@ export class CreateRoom {
     }
 }
 
-module ListOfRoomsAndMembersTypes {
+export module ListOfRoomsAndMembersTypes {
     export type roomAndMembers = {
         roomId: any;
         membersNames: any[];

@@ -15,7 +15,7 @@
         "types": [
             "node"
         ],
-        "outDir": "compiled_javascript"
+        "outDir": "compiled_javascript",
     },
     "include": [
         "src/*",

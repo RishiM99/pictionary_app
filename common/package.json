@@ -1,0 +1,13 @@
+{
+    "name": "common_resources",
+    "version": "1.0.0",
+    "type": "module",
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "typescript": "^5.6.2"
+    },
+    "outDir": "compiled_javascript"
+}
