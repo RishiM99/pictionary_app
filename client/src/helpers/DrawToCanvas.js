@@ -13,6 +13,9 @@ let setIsDrawing = null;
 let isDrawing = null;
 let selectedPaletteOption = null;
 let currentPathUUIDFromMouse = null;
+let paletteRef = null;
+let paletteBoundingRect = null;
+let drawingCanvasBoundingRect = null;
 
 // How often to push updates of drawing
 const FREQUENCY_OF_DRAWING_UPDATES = 3;
@@ -36,31 +39,63 @@ function drawRemainderOfPath(serializedPath, tripletStartIndex) {
 
 
     for (let currentTripletIndex = tripletStartIndex; currentTripletIndex <= points.length - 3; currentTripletIndex++) {
-        const firstMidpoint = calcMidpoint(points[currentTripletIndex], points[currentTripletIndex + 1]);
-        context.moveTo(firstMidpoint.x, firstMidpoint.y);
-        const nextMidpoint = calcMidpoint(points[currentTripletIndex + 1], points[currentTripletIndex + 2]);
+        const firstPoint = { x: points[currentTripletIndex].x - drawingCanvasBoundingRect.left, y: points[currentTripletIndex].y - drawingCanvasBoundingRect.top };
+        const secondPoint = { x: points[currentTripletIndex + 1].x - drawingCanvasBoundingRect.left, y: points[currentTripletIndex + 1].y - drawingCanvasBoundingRect.top };
+        const thirdPoint = { x: points[currentTripletIndex + 2].x - drawingCanvasBoundingRect.left, y: points[currentTripletIndex + 2].y - drawingCanvasBoundingRect.top };
 
-        context.quadraticCurveTo(points[currentTripletIndex + 1].x, points[currentTripletIndex + 1].y, nextMidpoint.x, nextMidpoint.y);
+        const firstMidpoint = calcMidpoint(firstPoint, secondPoint);
+        context.moveTo(firstMidpoint.x, firstMidpoint.y);
+        const nextMidpoint = calcMidpoint(secondPoint, thirdPoint);
+
+        context.quadraticCurveTo(secondPoint.x, secondPoint.y, nextMidpoint.x, nextMidpoint.y);
     }
     context.stroke();
 }
 
 
-function mouseDownEventListener(e) {
-    if (context) {
-        const currentX = e.offsetX;
-        const currentY = e.offsetY;
-        console.log(currentColorClass);
+function capPointOnSidesToCanvas(point) {
+    let cappedPoint = {};
 
-        const lineWidth = selectedPaletteOption === 'eraser' ? currentEraseStrokeSize : currentDrawStrokeSize;
-        const strokeStyle = selectedPaletteOption === 'eraser' ? 'white' : getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
-
-        const uuid = crypto.randomUUID();
-        currentTripletIndexFromMouse = 0;
-        allPaths[uuid] = { points: [{ x: currentX, y: currentY }], lineWidth, strokeStyle };
-        currentPathUUIDFromMouse = uuid;
-        setIsDrawing(true);
+    if (point.x <= drawingCanvasBoundingRect.left) {
+        cappedPoint.x = drawingCanvasBoundingRect.left;
+    } else if (point.x >= drawingCanvasBoundingRect.right) {
+        cappedPoint.x = drawingCanvasBoundingRect.right;
+    } else {
+        cappedPoint.x = point.x;
     }
+
+    if (point.y <= drawingCanvasBoundingRect.top) {
+        cappedPoint.y = drawingCanvasBoundingRect.top;
+    } else if (point.y >= drawingCanvasBoundingRect.bottom) {
+        cappedPoint.y = drawingCanvasBoundingRect.bottom;
+    } else {
+        cappedPoint.y = point.y;
+    }
+
+    return cappedPoint;
+
+}
+
+function ifPointIsUnderPaletteStopDrawing(point) {
+    if (point.x >= paletteBoundingRect.left && point.x <= paletteBoundingRect.right && point.y >= paletteBoundingRect.top && point.y <= paletteBoundingRect.bottom) {
+        setIsDrawing(false);
+    }
+}
+
+
+function mouseDownEventListener(e) {
+    ifPointIsUnderPaletteStopDrawing({ x: e.clientX, y: e.clientY });
+    const { x, y } = capPointOnSidesToCanvas({ x: e.clientX, y: e.clientY });
+    console.log(currentColorClass);
+
+    const lineWidth = selectedPaletteOption === 'eraser' ? currentEraseStrokeSize : currentDrawStrokeSize;
+    const strokeStyle = selectedPaletteOption === 'eraser' ? 'white' : getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
+
+    const uuid = crypto.randomUUID();
+    currentTripletIndexFromMouse = 0;
+    allPaths[uuid] = { points: [{ x, y }], lineWidth, strokeStyle };
+    currentPathUUIDFromMouse = uuid;
+    setIsDrawing(true);
 }
 
 // function trackDiffsAndPushUpdates(pathUUID, point) {
@@ -103,35 +138,32 @@ function mouseDownEventListener(e) {
 //     updatesSinceLastSync++;
 // }
 
+
 function mouseMoveEventListener(e) {
-    if (context) {
-        if (isDrawing) {
-            const currentX = e.offsetX;
-            const currentY = e.offsetY;
-            allPaths[currentPathUUIDFromMouse].points.push({ x: currentX, y: currentY });
-            drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
+    if (isDrawing) {
+        ifPointIsUnderPaletteStopDrawing({ x: e.clientX, y: e.clientY });
+        const { x, y } = capPointOnSidesToCanvas({ x: e.clientX, y: e.clientY });
+        allPaths[currentPathUUIDFromMouse].points.push({ x, y });
+        drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
 
-            if (allPaths[currentPathUUIDFromMouse].points.length >= 3) {
-                currentTripletIndexFromMouse++;
-            }
-
-            //trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
+        if (allPaths[currentPathUUIDFromMouse].points.length >= 3) {
+            currentTripletIndexFromMouse++;
         }
+
+        //trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
     }
 }
 
 function mouseUpEventListener(e) {
-    if (context) {
-        if (isDrawing) {
-            const currentX = e.offsetX;
-            const currentY = e.offsetY;
-            allPaths[currentPathUUIDFromMouse].points.push({ x: currentX, y: currentY });
-            drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
+    if (isDrawing) {
+        ifPointIsUnderPaletteStopDrawing({ x: e.clientX, y: e.clientY });
+        const { x, y } = capPointOnSidesToCanvas({ x: e.clientX, y: e.clientY });
+        allPaths[currentPathUUIDFromMouse].points.push({ x, y });
+        drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
 
-            setIsDrawing(false);
+        setIsDrawing(false);
 
-            //trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
-        }
+        //trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
     }
 }
 
@@ -165,51 +197,52 @@ function scaleAllPathsAndRedrawAllCurves(scaleX, scaleY) {
 
 
 function windowResizeListener(e) {
+    drawingCanvas.height = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("height"), 10);
+    drawingCanvas.width = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("width"), 10);
 
-    if (drawingCanvas) {
-        drawingCanvas.height = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("height"), 10);
-        drawingCanvas.width = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("width"), 10);
-
-        const xScale = drawingCanvas.width / getOldCanvasWidth();
-        const yScale = drawingCanvas.height / getOldCanvasHeight();
-        scaleAllPathsAndRedrawAllCurves(xScale, yScale);
-        setOldCanvasWidth(drawingCanvas.width);
-        setOldCanvasHeight(drawingCanvas.height);
-    }
+    const xScale = drawingCanvas.width / getOldCanvasWidth();
+    const yScale = drawingCanvas.height / getOldCanvasHeight();
+    scaleAllPathsAndRedrawAllCurves(xScale, yScale);
+    setOldCanvasWidth(drawingCanvas.width);
+    setOldCanvasHeight(drawingCanvas.height);
 }
 
 
-function setUpDrawingForCanvas({ drawingCanvasRef, currColorClass, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize }) {
+function setUpDrawingForCanvas({ drawingCanvasRef, currColorClass, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar }) {
 
-    drawingCanvas = drawingCanvasRef?.current;
-    context = drawingCanvas?.getContext("2d");
+    drawingCanvas = drawingCanvasRef.current;
+    context = drawingCanvas.getContext("2d");
     currentColorClass = currColorClass;
     currentDrawStrokeSize = currDrawStrokeSize;
     currentEraseStrokeSize = currEraseStrokeSize;
     setIsDrawing = setIsDrawingFn;
     isDrawing = isDrawingVar;
     selectedPaletteOption = selectedPaletteOptionVar;
+    paletteRef = paletteRefVar;
+
+    paletteBoundingRect = paletteRef.current.getBoundingClientRect();
+    drawingCanvasBoundingRect = drawingCanvas.getBoundingClientRect();
 
     if (drawingCanvas) {
         if (selectedPaletteOption === 'color-picker') {
-            drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
-            drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
-            drawingCanvas.removeEventListener("mouseup", mouseUpEventListener);
+            window.removeEventListener("mousedown", mouseDownEventListener);
+            window.removeEventListener("mousemove", mouseMoveEventListener);
+            window.removeEventListener("mouseup", mouseUpEventListener);
             window.removeEventListener("resize", windowResizeListener)
             // Do nothing for drawing, and remove event listeners
         } else {
-            drawingCanvas.addEventListener("mousedown", mouseDownEventListener);
-            drawingCanvas.addEventListener("mousemove", mouseMoveEventListener);
-            drawingCanvas.addEventListener("mouseup", mouseUpEventListener);
+            window.addEventListener("mousedown", mouseDownEventListener);
+            window.addEventListener("mousemove", mouseMoveEventListener);
+            window.addEventListener("mouseup", mouseUpEventListener);
             window.addEventListener("resize", windowResizeListener)
         }
     }
 
     return () => {
         if (drawingCanvas) {
-            drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
-            drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
-            drawingCanvas.removeEventListener("mouseup", mouseUpEventListener);
+            window.removeEventListener("mousedown", mouseDownEventListener);
+            window.removeEventListener("mousemove", mouseMoveEventListener);
+            window.removeEventListener("mouseup", mouseUpEventListener);
             window.removeEventListener("resize", windowResizeListener)
         }
     }

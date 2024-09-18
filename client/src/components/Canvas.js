@@ -27,6 +27,7 @@ export default function Canvas() {
 
 
     const drawingCanvasRef = useRef(null);
+    const paletteRef = useRef(null);
 
     useEffect(() => {
         const drawingCanvas = drawingCanvasRef.current;
@@ -42,12 +43,12 @@ export default function Canvas() {
     }, []);
 
     useEffect(() => {
-        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currColorClass: currentColorClass, currDrawStrokeSize: currentDrawStrokeSize, isDrawingVar: isDrawing, setIsDrawingFn: setIsDrawing, currEraseStrokeSize: currentEraseStrokeSize, selectedPaletteOptionVar: selectedPaletteOption });
+        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currColorClass: currentColorClass, currDrawStrokeSize: currentDrawStrokeSize, isDrawingVar: isDrawing, setIsDrawingFn: setIsDrawing, currEraseStrokeSize: currentEraseStrokeSize, selectedPaletteOptionVar: selectedPaletteOption, paletteRefVar: paletteRef });
 
         return () => {
             setUpDrawingCanvasCleanup();
         }
-    }, [currentDrawStrokeSize, currentColorClass, isDrawing, drawingCanvasRef, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption]);
+    }, [currentDrawStrokeSize, currentColorClass, isDrawing, drawingCanvasRef, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption, paletteRef]);
 
     const colorPickerButtonOnClick = () => {
         if (!showColorPicker && showDrawStrokePicker) {
@@ -95,7 +96,7 @@ export default function Canvas() {
         <DrawingContext.Provider value={{ currentColorClass, setCurrentColorClass, showColorPicker, setShowColorPicker, currentDrawStrokeSize, setCurrentDrawStrokeSize, currentEraseStrokeSize, setCurrentEraseStrokeSize, showEraseStrokePicker, setShowEraseStrokePicker, showDrawStrokePicker, setShowDrawStrokePicker, selectedPaletteOption, setSelectedPaletteOption }}>
             <div className="drawing-board-container">
                 <canvas className="drawing-canvas" ref={drawingCanvasRef} />
-                <div className="palette">
+                <div className="palette" ref={paletteRef}>
                     <div className={selectedPaletteOption === 'pen' ? "draw-icon-background-selected" : "draw-icon-background-unselected"} ref={openDrawStrokePickerButtonRef} onClick={penButtonOnClick}>
                         <svg viewBox="0 0 512 512" className="draw-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg">
                             <path d="M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3 0-17l46.1-46.1c18.7-18.7 
