@@ -44,6 +44,9 @@ body {
     /* Position the tooltip */
     position: absolute;
     z-index: 1;
+    margin-top: 5px;
+    -ms-transform: translateX(-28px);
+    transform: translateX(-28px);
 }
 
 .copy-url-show-tooltip:hover span {

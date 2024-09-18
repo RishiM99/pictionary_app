@@ -1,3 +1,36 @@
+.circular-cursor-small {
+    background-color: black;
+    border: 1px solid black;
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    position: absolute;
+}
+
+.circular-cursor-medium {
+    background-color: transparent;
+    border: 1px solid black;
+    height: 6px;
+    width: 6px;
+    border-radius: 50%;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    position: absolute;
+    z-index: 1;
+}
+
+.circular-cursor-large {
+    background-color: transparent;
+    border: 1px solid black;
+    height: 9px;
+    width: 9px;
+    border-radius: 50%;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    position: absolute;
+    z-index: 1;
+}
+
 .drawing-board-container {
     background-color: white;
     height: 100%;

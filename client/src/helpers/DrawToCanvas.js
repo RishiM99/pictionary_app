@@ -16,6 +16,7 @@ let currentPathUUIDFromMouse = null;
 let paletteRef = null;
 let paletteBoundingRect = null;
 let drawingCanvasBoundingRect = null;
+let cursor = null;
 
 // How often to push updates of drawing
 const FREQUENCY_OF_DRAWING_UPDATES = 3;
@@ -53,27 +54,10 @@ function drawRemainderOfPath(serializedPath, tripletStartIndex) {
 }
 
 
-function capPointOnSidesToCanvas(point) {
-    let cappedPoint = {};
-
-    if (point.x <= drawingCanvasBoundingRect.left) {
-        cappedPoint.x = drawingCanvasBoundingRect.left;
-    } else if (point.x >= drawingCanvasBoundingRect.right) {
-        cappedPoint.x = drawingCanvasBoundingRect.right;
-    } else {
-        cappedPoint.x = point.x;
+function ifPointGoesOutsideOfCanvasStopDrawing(point) {
+    if (point.x <= drawingCanvasBoundingRect.left || point.x >= drawingCanvasBoundingRect.right || point.y <= drawingCanvasBoundingRect.top || point.y >= drawingCanvasBoundingRect.bottom) {
+        setIsDrawing(false);
     }
-
-    if (point.y <= drawingCanvasBoundingRect.top) {
-        cappedPoint.y = drawingCanvasBoundingRect.top;
-    } else if (point.y >= drawingCanvasBoundingRect.bottom) {
-        cappedPoint.y = drawingCanvasBoundingRect.bottom;
-    } else {
-        cappedPoint.y = point.y;
-    }
-
-    return cappedPoint;
-
 }
 
 function ifPointIsUnderPaletteStopDrawing(point) {
@@ -85,7 +69,7 @@ function ifPointIsUnderPaletteStopDrawing(point) {
 
 function mouseDownEventListener(e) {
     ifPointIsUnderPaletteStopDrawing({ x: e.clientX, y: e.clientY });
-    const { x, y } = capPointOnSidesToCanvas({ x: e.clientX, y: e.clientY });
+    ifPointGoesOutsideOfCanvasStopDrawing({ x: e.clientX, y: e.clientY });
     console.log(currentColorClass);
 
     const lineWidth = selectedPaletteOption === 'eraser' ? currentEraseStrokeSize : currentDrawStrokeSize;
@@ -93,7 +77,7 @@ function mouseDownEventListener(e) {
 
     const uuid = crypto.randomUUID();
     currentTripletIndexFromMouse = 0;
-    allPaths[uuid] = { points: [{ x, y }], lineWidth, strokeStyle };
+    allPaths[uuid] = { points: [{ x: e.clientX, y: e.clientY }], lineWidth, strokeStyle };
     currentPathUUIDFromMouse = uuid;
     setIsDrawing(true);
 }
@@ -142,8 +126,8 @@ function mouseDownEventListener(e) {
 function mouseMoveEventListener(e) {
     if (isDrawing) {
         ifPointIsUnderPaletteStopDrawing({ x: e.clientX, y: e.clientY });
-        const { x, y } = capPointOnSidesToCanvas({ x: e.clientX, y: e.clientY });
-        allPaths[currentPathUUIDFromMouse].points.push({ x, y });
+        ifPointGoesOutsideOfCanvasStopDrawing({ x: e.clientX, y: e.clientY });
+        allPaths[currentPathUUIDFromMouse].points.push({ x: e.clientX, y: e.clientY });
         drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
 
         if (allPaths[currentPathUUIDFromMouse].points.length >= 3) {
@@ -152,13 +136,17 @@ function mouseMoveEventListener(e) {
 
         //trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
     }
+
+    //Move cursor anyways
+    // cursor.style.left = e.clientX;
+    // cursor.style.top = e.clientY;
 }
 
 function mouseUpEventListener(e) {
     if (isDrawing) {
         ifPointIsUnderPaletteStopDrawing({ x: e.clientX, y: e.clientY });
-        const { x, y } = capPointOnSidesToCanvas({ x: e.clientX, y: e.clientY });
-        allPaths[currentPathUUIDFromMouse].points.push({ x, y });
+        ifPointGoesOutsideOfCanvasStopDrawing({ x: e.clientX, y: e.clientY });
+        allPaths[currentPathUUIDFromMouse].points.push({ x: e.clientX, y: e.clientY });
         drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
 
         setIsDrawing(false);
@@ -208,8 +196,10 @@ function windowResizeListener(e) {
 }
 
 
-function setUpDrawingForCanvas({ drawingCanvasRef, currColorClass, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar }) {
+function setUpDrawingForCanvas({ drawingCanvasRef, currColorClass, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef }) {
 
+    cursor = cursorRef.current;
+    console.log(`cursor ref ${cursorRef}`);
     drawingCanvas = drawingCanvasRef.current;
     context = drawingCanvas.getContext("2d");
     currentColorClass = currColorClass;

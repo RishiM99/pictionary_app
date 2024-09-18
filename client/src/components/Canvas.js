@@ -28,6 +28,7 @@ export default function Canvas() {
 
     const drawingCanvasRef = useRef(null);
     const paletteRef = useRef(null);
+    const cursorRef = useRef(null);
 
     useEffect(() => {
         const drawingCanvas = drawingCanvasRef.current;
@@ -43,7 +44,7 @@ export default function Canvas() {
     }, []);
 
     useEffect(() => {
-        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currColorClass: currentColorClass, currDrawStrokeSize: currentDrawStrokeSize, isDrawingVar: isDrawing, setIsDrawingFn: setIsDrawing, currEraseStrokeSize: currentEraseStrokeSize, selectedPaletteOptionVar: selectedPaletteOption, paletteRefVar: paletteRef });
+        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currColorClass: currentColorClass, currDrawStrokeSize: currentDrawStrokeSize, isDrawingVar: isDrawing, setIsDrawingFn: setIsDrawing, currEraseStrokeSize: currentEraseStrokeSize, selectedPaletteOptionVar: selectedPaletteOption, paletteRefVar: paletteRef, cursorRef });
 
         return () => {
             setUpDrawingCanvasCleanup();
@@ -92,9 +93,20 @@ export default function Canvas() {
         setSelectedPaletteOption('eraser');
     }
 
+    let cursorClass = null;
+    if (currentDrawStrokeSize === 2 || currentEraseStrokeSize === 2) {
+        cursorClass = ".circular-cursor-small";
+    } else if (currentDrawStrokeSize === 6 || currentEraseStrokeSize === 6) {
+        cursorClass = ".circular-cursor-medium";
+    } else {
+        cursorClass = ".circular-cursor-large";
+    }
+    console.log(`Cursor class ${cursorClass}`);
+
     return (
         <DrawingContext.Provider value={{ currentColorClass, setCurrentColorClass, showColorPicker, setShowColorPicker, currentDrawStrokeSize, setCurrentDrawStrokeSize, currentEraseStrokeSize, setCurrentEraseStrokeSize, showEraseStrokePicker, setShowEraseStrokePicker, showDrawStrokePicker, setShowDrawStrokePicker, selectedPaletteOption, setSelectedPaletteOption }}>
             <div className="drawing-board-container">
+                <div className={cursorClass} ref={cursorRef} />
                 <canvas className="drawing-canvas" ref={drawingCanvasRef} />
                 <div className="palette" ref={paletteRef}>
                     <div className={selectedPaletteOption === 'pen' ? "draw-icon-background-selected" : "draw-icon-background-unselected"} ref={openDrawStrokePickerButtonRef} onClick={penButtonOnClick}>

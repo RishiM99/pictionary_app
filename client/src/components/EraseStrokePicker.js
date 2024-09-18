@@ -3,7 +3,7 @@ import './styles/EraseStrokePicker.css';
 import { DrawingContext } from '../contexts/DrawingContext.js';
 
 const eraseStrokeClassToPixelSize = {
-    "small": 3,
+    "small": 2,
     "medium": 6,
     "large": 9,
 }
