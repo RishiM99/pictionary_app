@@ -50,7 +50,8 @@ app.get('/getUserName', (req, res) => {
 });
 io.engine.use(sessionMiddleware);
 io.on('connection', async (socket) => {
-    const sessionId = socket.request.session.id;
+    const request = socket.request;
+    const sessionId = request.session.id;
     console.log(`Session Id: ${sessionId}`);
     await dbUtil.addSocketIntoSocketsToSessionsTable(socket.id, sessionId);
     await dbUtil.addSocketToRelevantRoomsOnConnection(socket);

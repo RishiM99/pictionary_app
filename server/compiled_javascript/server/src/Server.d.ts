@@ -3,10 +3,5 @@ declare module 'express-session' {
         userName: string;
     }
 }
-declare module 'http' {
-    interface IncomingMessage {
-        session: any;
-    }
-}
 export {};
 //# sourceMappingURL=Server.d.ts.map

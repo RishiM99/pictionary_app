@@ -8,16 +8,12 @@ import { Server } from 'socket.io';
 import DBUtil from './DBUtil.js';
 import * as Constants from './Constants.js';
 import { JoinRoom, CreateRoom, ListOfRoomsAndMembers, NameOfNewRoom } from "../../common/SocketEventClasses.js";
+import { type Request } from "express";
+
 
 declare module 'express-session' {
   interface SessionData {
     userName: string;
-  }
-}
-
-declare module 'http' {
-  interface IncomingMessage {
-    session: any;
   }
 }
 
@@ -78,7 +74,8 @@ app.get('/getUserName', (req, res) => {
 io.engine.use(sessionMiddleware);
 
 io.on('connection', async (socket) => {
-  const sessionId = socket.request.session.id;
+  const request = socket.request as Request;
+  const sessionId = request.session.id;
   console.log(`Session Id: ${sessionId}`);
   await dbUtil.addSocketIntoSocketsToSessionsTable(socket.id, sessionId);
   await dbUtil.addSocketToRelevantRoomsOnConnection(socket);
