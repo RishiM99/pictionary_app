@@ -1,5 +1,5 @@
 import { setOldCanvasWidth, setOldCanvasHeight, getOldCanvasHeight, getOldCanvasWidth } from './CanvasResizingHelper.js';
-import getSocket from './socket.js';
+import getSocket from './socket.ts';
 
 
 let allPaths = {};
@@ -50,6 +50,7 @@ function mouseDownEventListener(e) {
     if (context) {
         const currentX = e.offsetX;
         const currentY = e.offsetY;
+        console.log(currentColorClass);
 
         const lineWidth = selectedPaletteOption === 'eraser' ? currentEraseStrokeSize : currentDrawStrokeSize;
         const strokeStyle = selectedPaletteOption === 'eraser' ? 'white' : getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
@@ -62,21 +63,21 @@ function mouseDownEventListener(e) {
     }
 }
 
-function trackDiffsAndPushUpdates(pathUUID, point) {
-    if (updatesSinceLastSync === FREQUENCY_OF_DRAWING_UPDATES) {
-        socket.emit('broadcast-drawing-paths-diff', { diff: diffFromPreviousAllPaths, x: getOldCanvasWidth(), y: getOldCanvasHeight() });
-        updatesSinceLastSync = 0;
-        diffFromPreviousAllPaths = {};
-    }
+// function trackDiffsAndPushUpdates(pathUUID, point) {
+//     if (updatesSinceLastSync === FREQUENCY_OF_DRAWING_UPDATES) {
+//         socket.emit('broadcast-drawing-paths-diff', { diff: diffFromPreviousAllPaths, x: getOldCanvasWidth(), y: getOldCanvasHeight() });
+//         updatesSinceLastSync = 0;
+//         diffFromPreviousAllPaths = {};
+//     }
 
-    if (pathUUID in diffFromPreviousAllPaths) {
-        diffFromPreviousAllPaths[pathUUID].push(point);
-    } else {
-        diffFromPreviousAllPaths[pathUUID] = [point];
-    }
+//     if (pathUUID in diffFromPreviousAllPaths) {
+//         diffFromPreviousAllPaths[pathUUID].push(point);
+//     } else {
+//         diffFromPreviousAllPaths[pathUUID] = [point];
+//     }
 
-    updatesSinceLastSync++;
-}
+//     updatesSinceLastSync++;
+// }
 
 // function addDrawingPathsDiffEventListener() {
 //     socket.on('updated-drawing-paths-diff', (msg) => {
@@ -114,7 +115,7 @@ function mouseMoveEventListener(e) {
                 currentTripletIndexFromMouse++;
             }
 
-            trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
+            //trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
         }
     }
 }
@@ -129,7 +130,7 @@ function mouseUpEventListener(e) {
 
             setIsDrawing(false);
 
-            trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
+            //trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
         }
     }
 }
@@ -178,16 +179,16 @@ function windowResizeListener(e) {
 }
 
 
-function setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, currentDrawStrokeSize, setIsDrawing, isDrawing, selectedPaletteOption, currentEraseStrokeSize }) {
+function setUpDrawingForCanvas({ drawingCanvasRef, currColorClass, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize }) {
 
     drawingCanvas = drawingCanvasRef?.current;
     context = drawingCanvas?.getContext("2d");
-    currentColorClass = currentColorClass;
-    currentDrawStrokeSize = currentDrawStrokeSize;
-    currentEraseStrokeSize = currentEraseStrokeSize;
-    setIsDrawing = setIsDrawing;
-    isDrawing = isDrawing;
-    selectedPaletteOption = selectedPaletteOption;
+    currentColorClass = currColorClass;
+    currentDrawStrokeSize = currDrawStrokeSize;
+    currentEraseStrokeSize = currEraseStrokeSize;
+    setIsDrawing = setIsDrawingFn;
+    isDrawing = isDrawingVar;
+    selectedPaletteOption = selectedPaletteOptionVar;
 
     if (drawingCanvas) {
         if (selectedPaletteOption === 'color-picker') {

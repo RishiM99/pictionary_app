@@ -7,8 +7,8 @@ import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import DBUtil from './DBUtil.js';
 import * as Constants from './Constants.js';
-import { JoinRoom, CreateRoom, ListOfRoomsAndMembers, NameOfNewRoom } from "../../client/src/common/SocketEventClasses.js";
 import { type Request } from "express";
+import { ClientToServerEvents, ServerToClientEvents } from "../../client/src/common/SocketEvents.js";
 
 
 declare module 'express-session' {
@@ -35,7 +35,7 @@ const app = express();
 const server = createServer(app)
 
 // socket.io Server
-const io = new Server(server)
+const io = new Server<ClientToServerEvents, ServerToClientEvents>(server)
 
 // Have Node serve the files for our built React app
 app.use(express.static(path.resolve(__dirname, '../../client/build')));
@@ -78,32 +78,28 @@ io.on('connection', async (socket) => {
   await dbUtil.addSocketIntoSocketsToSessionsTable(socket.id, sessionId);
   await dbUtil.addSocketToRelevantRoomsOnConnection(socket);
 
-  socket.on('get-list-of-rooms-and-members', async () => {
+  socket.on('getListOfRoomsAndMembers', async () => {
     const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
-    io.emit(ListOfRoomsAndMembers.EVENT_NAME, new ListOfRoomsAndMembers(roomsAndMembersInfo).convertToJSON());
+    io.emit('listOfRoomsAndMembers', roomsAndMembersInfo);
   });
 
-  socket.on(CreateRoom.EVENT_NAME, async (msg) => {
-    console.log(msg);
-    console.log(typeof (msg));
+  socket.on('createRoom', async (requestedRoomName: string) => {
     console.log(`Socket Id: ${socket.id}`);
-    const requestedRoomName = CreateRoom.createFromJSON(msg).roomName;
     console.log(`requested room name ${requestedRoomName}`);
     const dedupedRoomName = await dbUtil.createNewRoomWithDeduplicatedRoomName(requestedRoomName);
     socket.join(dedupedRoomName);
     dbUtil.addSocketToRoom(socket.id, dedupedRoomName);
     const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
-    io.emit(ListOfRoomsAndMembers.EVENT_NAME, new ListOfRoomsAndMembers(roomsAndMembersInfo).convertToJSON());
-    socket.emit(NameOfNewRoom.EVENT_NAME, new NameOfNewRoom(dedupedRoomName).convertToJSON());
+    io.emit('listOfRoomsAndMembers', roomsAndMembersInfo);
+    socket.emit('nameOfNewRoom', dedupedRoomName);
   });
 
-  socket.on(JoinRoom.EVENT_NAME, async (msg) => {
+  socket.on('joinRoom', async (roomName: string) => {
     console.log(`Socket Id: ${socket.id}`);
-    const roomName = JoinRoom.createFromJSON(msg).roomName;
     socket.join(roomName);
     dbUtil.addSocketToRoom(socket.id, roomName);
     const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
-    io.emit(ListOfRoomsAndMembers.EVENT_NAME, new ListOfRoomsAndMembers(roomsAndMembersInfo).convertToJSON());
+    io.emit('listOfRoomsAndMembers', roomsAndMembersInfo);
   });
 
   // socket.on('broadcast-drawing-paths-diff', async (msg) => {

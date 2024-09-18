@@ -42,7 +42,7 @@ export default function Canvas() {
     }, []);
 
     useEffect(() => {
-        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currentColorClass, currentDrawStrokeSize, isDrawing, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption });
+        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currColorClass: currentColorClass, currDrawStrokeSize: currentDrawStrokeSize, isDrawingVar: isDrawing, setIsDrawingFn: setIsDrawing, currEraseStrokeSize: currentEraseStrokeSize, selectedPaletteOptionVar: selectedPaletteOption });
 
         return () => {
             setUpDrawingCanvasCleanup();

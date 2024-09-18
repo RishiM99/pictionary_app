@@ -1,14 +1,14 @@
 import './styles/CreateOrJoinRooms.css';
-import getSocket from '../helpers/socket.js';
+import getSocket from '../helpers/socket.ts';
 import { useEffect, useState } from "react";
 import { redirect, useLoaderData, Form } from "react-router-dom";
-import { ListOfRoomsAndMembers, NameOfNewRoom, CreateRoom, JoinRoom } from './../common/SocketEventClasses.ts';
+import { RoomAndMembers } from './../common/SocketEvents.ts';
 
 const socket = getSocket();
 
 type loaderData = {
   userName: string;
-  initialListOfRoomsAndMembers: ListOfRoomsAndMembers;
+  initialListOfRoomsAndMembers: RoomAndMembers[];
 };
 
 export async function loader(): Promise<loaderData | Response> {
@@ -24,10 +24,10 @@ export async function loader(): Promise<loaderData | Response> {
   }
 
   const socket = getSocket();
-  socket.emit('get-list-of-rooms-and-members');
+  socket.emit('getListOfRoomsAndMembers');
   const waitForRoomsAndMembers = function () {
-    return new Promise<ListOfRoomsAndMembers>((resolve) => {
-      socket.on(ListOfRoomsAndMembers.EVENT_NAME, (listOfRoomsAndMembers) => resolve(ListOfRoomsAndMembers.createFromJSON(listOfRoomsAndMembers)));
+    return new Promise<RoomAndMembers[]>((resolve) => {
+      socket.on('listOfRoomsAndMembers', (listOfRoomsAndMembers) => resolve(listOfRoomsAndMembers));
     });
   }
 
@@ -39,17 +39,16 @@ export async function action({ request }) {
   const formData = Object.fromEntries(await request.formData());
   switch (formData.formType) {
     case "create-new-room-form":
-      console.log(new CreateRoom(formData.roomName).convertToJSON());
-      socket.emit(CreateRoom.EVENT_NAME, new CreateRoom(formData.roomName).convertToJSON);
+      socket.emit('createRoom', formData.roomName);
       const waitForNameOfNewRoom = function () {
-        return new Promise<NameOfNewRoom>((resolve) => {
-          socket.on(NameOfNewRoom.EVENT_NAME, (newRoomName) => resolve(NameOfNewRoom.createFromJSON(newRoomName)));
+        return new Promise<string>((resolve) => {
+          socket.on('nameOfNewRoom', (newRoomName) => resolve(newRoomName));
         })
       };
       const nameOfNewRoom = await waitForNameOfNewRoom();
-      return redirect(`/room/${nameOfNewRoom.roomId}`);
+      return redirect(`/room/${nameOfNewRoom}`);
     case "join-room-form":
-      socket.emit(JoinRoom.EVENT_NAME, new JoinRoom(formData.roomName).convertToJSON());
+      socket.emit('joinRoom', formData.roomName);
       return redirect(`/room/${formData.roomName}`);
     default:
       return null;
@@ -58,19 +57,19 @@ export async function action({ request }) {
 
 export default function CreateOrJoinRooms() {
   const { userName, initialListOfRoomsAndMembers } = useLoaderData() as loaderData;
-  const [listOfRoomsAndMembers, setListOfRoomsAndMembers] = useState(initialListOfRoomsAndMembers.listOfRoomsAndMembers);
+  const [listOfRoomsAndMembers, setListOfRoomsAndMembers] = useState(initialListOfRoomsAndMembers);
 
   useEffect(() => {
-    function onGetListOfRoomsAndMembers(value) {
+    function onGetListOfRoomsAndMembers(listOfRoomsAndMembers) {
       console.log("list of rooms and members:");
-      console.log(value);
-      setListOfRoomsAndMembers(ListOfRoomsAndMembers.createFromJSON(value).listOfRoomsAndMembers);
+      console.log(listOfRoomsAndMembers);
+      setListOfRoomsAndMembers(listOfRoomsAndMembers);
     }
 
-    socket.on(ListOfRoomsAndMembers.EVENT_NAME, onGetListOfRoomsAndMembers);
+    socket.on('listOfRoomsAndMembers', onGetListOfRoomsAndMembers);
 
     return () => {
-      socket.off('list-of-rooms-and-members', onGetListOfRoomsAndMembers);
+      socket.off('listOfRoomsAndMembers', onGetListOfRoomsAndMembers);
     };
   })
 
