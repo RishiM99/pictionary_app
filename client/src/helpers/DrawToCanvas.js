@@ -54,22 +54,20 @@ function drawRemainderOfPath(serializedPath, tripletStartIndex) {
 }
 
 
-function ifPointGoesOutsideOfCanvasStopDrawing(point) {
-    if (point.x <= drawingCanvasBoundingRect.left || point.x >= drawingCanvasBoundingRect.right || point.y <= drawingCanvasBoundingRect.top || point.y >= drawingCanvasBoundingRect.bottom) {
-        setIsDrawing(false);
-    }
+function isPointOutsideOfCanvas(point) {
+    return (point.x <= drawingCanvasBoundingRect.left || point.x >= drawingCanvasBoundingRect.right || point.y <= drawingCanvasBoundingRect.top || point.y >= drawingCanvasBoundingRect.bottom);
 }
 
-function ifPointIsUnderPaletteStopDrawing(point) {
-    if (point.x >= paletteBoundingRect.left && point.x <= paletteBoundingRect.right && point.y >= paletteBoundingRect.top && point.y <= paletteBoundingRect.bottom) {
-        setIsDrawing(false);
-    }
+function isPointUnderPalette(point) {
+    return (point.x >= paletteBoundingRect.left && point.x <= paletteBoundingRect.right && point.y >= paletteBoundingRect.top && point.y <= paletteBoundingRect.bottom);
 }
 
 
 function mouseDownEventListener(e) {
-    ifPointIsUnderPaletteStopDrawing({ x: e.clientX, y: e.clientY });
-    ifPointGoesOutsideOfCanvasStopDrawing({ x: e.clientX, y: e.clientY });
+
+    if (isPointUnderPalette({ x: e.clientX, y: e.clientY }) || isPointOutsideOfCanvas({ x: e.clientX, y: e.clientY })) {
+        setIsDrawing(false);
+    }
     console.log(currentColorClass);
 
     const lineWidth = selectedPaletteOption === 'eraser' ? currentEraseStrokeSize : currentDrawStrokeSize;
@@ -125,8 +123,9 @@ function mouseDownEventListener(e) {
 
 function mouseMoveEventListener(e) {
     if (isDrawing) {
-        ifPointIsUnderPaletteStopDrawing({ x: e.clientX, y: e.clientY });
-        ifPointGoesOutsideOfCanvasStopDrawing({ x: e.clientX, y: e.clientY });
+        if (isPointUnderPalette({ x: e.clientX, y: e.clientY }) || isPointOutsideOfCanvas({ x: e.clientX, y: e.clientY })) {
+            setIsDrawing(false);
+        }
         allPaths[currentPathUUIDFromMouse].points.push({ x: e.clientX, y: e.clientY });
         drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
 
@@ -138,14 +137,17 @@ function mouseMoveEventListener(e) {
     }
 
     //Move cursor anyways
-    // cursor.style.left = e.clientX;
-    // cursor.style.top = e.clientY;
+    if (!isPointOutsideOfCanvas({ x: e.clientX, y: e.clientY })) {
+        cursor.style.left = `${e.offsetX}px`;
+        cursor.style.top = `${e.offsetY}px`;
+    }
 }
 
 function mouseUpEventListener(e) {
     if (isDrawing) {
-        ifPointIsUnderPaletteStopDrawing({ x: e.clientX, y: e.clientY });
-        ifPointGoesOutsideOfCanvasStopDrawing({ x: e.clientX, y: e.clientY });
+        if (isPointUnderPalette({ x: e.clientX, y: e.clientY }) || isPointOutsideOfCanvas({ x: e.clientX, y: e.clientY })) {
+            setIsDrawing(false);
+        }
         allPaths[currentPathUUIDFromMouse].points.push({ x: e.clientX, y: e.clientY });
         drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
 

@@ -95,18 +95,18 @@ export default function Canvas() {
 
     let cursorClass = null;
     if (currentDrawStrokeSize === 2 || currentEraseStrokeSize === 2) {
-        cursorClass = ".circular-cursor-small";
+        cursorClass = "circular-cursor-small";
     } else if (currentDrawStrokeSize === 6 || currentEraseStrokeSize === 6) {
-        cursorClass = ".circular-cursor-medium";
+        cursorClass = "circular-cursor-medium";
     } else {
-        cursorClass = ".circular-cursor-large";
+        cursorClass = "circular-cursor-large";
     }
     console.log(`Cursor class ${cursorClass}`);
 
     return (
         <DrawingContext.Provider value={{ currentColorClass, setCurrentColorClass, showColorPicker, setShowColorPicker, currentDrawStrokeSize, setCurrentDrawStrokeSize, currentEraseStrokeSize, setCurrentEraseStrokeSize, showEraseStrokePicker, setShowEraseStrokePicker, showDrawStrokePicker, setShowDrawStrokePicker, selectedPaletteOption, setSelectedPaletteOption }}>
             <div className="drawing-board-container">
-                <div className={cursorClass} ref={cursorRef} />
+                <div className={cursorClass} ref={cursorRef}> </div>
                 <canvas className="drawing-canvas" ref={drawingCanvasRef} />
                 <div className="palette" ref={paletteRef}>
                     <div className={selectedPaletteOption === 'pen' ? "draw-icon-background-selected" : "draw-icon-background-unselected"} ref={openDrawStrokePickerButtonRef} onClick={penButtonOnClick}>
