@@ -15,14 +15,12 @@
         "types": [
             "node"
         ],
-        "outDir": "compiled_javascript",
         "jsx": "react-jsx",
-        "noImplicitAny": false
+        "noImplicitAny": false,
+        "allowImportingTsExtensions": true,
+        "noEmit": true,
     },
     "include": [
-        "**/*.tsx",
+        "./src/**/*",
     ],
-    "exclude": [
-        "node_modules",
-    ]
 }

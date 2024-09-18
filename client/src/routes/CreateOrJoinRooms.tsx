@@ -2,7 +2,7 @@ import './styles/CreateOrJoinRooms.css';
 import getSocket from '../helpers/socket.js';
 import { useEffect, useState } from "react";
 import { redirect, useLoaderData, Form } from "react-router-dom";
-import { ListOfRoomsAndMembers, NameOfNewRoom, CreateRoom, JoinRoom } from '../../../common/SocketEventClasses.js';
+import { ListOfRoomsAndMembers, NameOfNewRoom, CreateRoom, JoinRoom } from './../common/SocketEventClasses.ts';
 
 const socket = getSocket();
 
@@ -16,8 +16,9 @@ export async function loader(): Promise<loaderData | Response> {
   if (!response.ok) {
     throw new Error(`Response status: ${response.status}`);
   }
-  const { userName } = (await response as any).json();
-  console.log(userName);
+  console.log(response);
+  const userName = ((await response.json()) as any).userName;
+  console.log(`USERNAME: ${userName}`);
   if (userName == null) {
     return redirect('/');
   }
@@ -38,6 +39,7 @@ export async function action({ request }) {
   const formData = Object.fromEntries(await request.formData());
   switch (formData.formType) {
     case "create-new-room-form":
+      console.log(new CreateRoom(formData.roomName).convertToJSON());
       socket.emit(CreateRoom.EVENT_NAME, new CreateRoom(formData.roomName).convertToJSON);
       const waitForNameOfNewRoom = function () {
         return new Promise<NameOfNewRoom>((resolve) => {

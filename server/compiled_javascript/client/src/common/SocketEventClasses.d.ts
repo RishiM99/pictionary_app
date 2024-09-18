@@ -12,9 +12,7 @@ export declare class CreateRoom {
     roomName: string;
     constructor(roomName: string);
     convertToJSON(): JSON;
-    static createFromJSON(serializedJSON: {
-        roomName: string;
-    }): CreateRoom;
+    static createFromJSON(serializedJSON: any): CreateRoom;
 }
 export declare namespace ListOfRoomsAndMembersTypes {
     type roomAndMembers = {

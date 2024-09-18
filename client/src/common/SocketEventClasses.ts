@@ -27,7 +27,8 @@ export class CreateRoom {
         return JSON.parse(JSON.stringify(this));
     }
 
-    static createFromJSON(serializedJSON: { roomName: string }): CreateRoom {
+    static createFromJSON(serializedJSON: any): CreateRoom {
+        console.log(`Serialized JSON ${serializedJSON}`);
         return new CreateRoom(serializedJSON.roomName);
     }
 }

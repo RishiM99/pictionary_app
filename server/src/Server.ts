@@ -7,7 +7,7 @@ import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import DBUtil from './DBUtil.js';
 import * as Constants from './Constants.js';
-import { JoinRoom, CreateRoom, ListOfRoomsAndMembers, NameOfNewRoom } from "../../common/SocketEventClasses.js";
+import { JoinRoom, CreateRoom, ListOfRoomsAndMembers, NameOfNewRoom } from "../../client/src/common/SocketEventClasses.js";
 import { type Request } from "express";
 
 
@@ -17,9 +17,7 @@ declare module 'express-session' {
   }
 }
 
-// const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
-// const __dirname = path.dirname(__filename); // get the name of the directory
-console.log(__dirname);
+const __dirname = import.meta.dirname;
 
 const pgSession = connect_pg(session);
 
@@ -86,8 +84,11 @@ io.on('connection', async (socket) => {
   });
 
   socket.on(CreateRoom.EVENT_NAME, async (msg) => {
+    console.log(msg);
+    console.log(typeof (msg));
     console.log(`Socket Id: ${socket.id}`);
     const requestedRoomName = CreateRoom.createFromJSON(msg).roomName;
+    console.log(`requested room name ${requestedRoomName}`);
     const dedupedRoomName = await dbUtil.createNewRoomWithDeduplicatedRoomName(requestedRoomName);
     socket.join(dedupedRoomName);
     dbUtil.addSocketToRoom(socket.id, dedupedRoomName);
