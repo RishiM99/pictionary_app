@@ -68,20 +68,15 @@ function isPointUnderPalette(point) {
 }
 
 function isPointUnderColorPicker(point) {
-    console.log(`color picker bounding rect ${colorPickerBoundingRect}`);
-    const x = showColorPicker && colorPickerBoundingRect != null && (point.x >= colorPickerBoundingRect.left && point.x <= colorPickerBoundingRect.right && point.y >= colorPickerBoundingRect.top && point.y <= colorPickerBoundingRect.bottom);
-    console.log(x);
-    return x;
+    return showColorPicker && colorPickerBoundingRect != null && (point.x >= colorPickerBoundingRect.left && point.x <= colorPickerBoundingRect.right && point.y >= colorPickerBoundingRect.top && point.y <= colorPickerBoundingRect.bottom);
 }
 
 function isPointUnderDrawStrokePicker(point) {
-    console.log(`draw picker bounding rect ${drawStrokePickerBoundingRect}`);
 
     return showDrawStrokePicker && drawStrokePickerBoundingRect != null && (point.x >= drawStrokePickerBoundingRect.left && point.x <= drawStrokePickerBoundingRect.right && point.y >= drawStrokePickerBoundingRect.top && point.y <= drawStrokePickerBoundingRect.bottom);
 }
 
 function isPointUnderEraseStrokePicker(point) {
-    console.log(`erase picker bounding rect ${eraseStrokePickerBoundingRect}`);
 
     return showEraseStrokePicker && eraseStrokePickerBoundingRect != null && (point.x >= eraseStrokePickerBoundingRect.left && point.x <= eraseStrokePickerBoundingRect.right && point.y >= eraseStrokePickerBoundingRect.top && point.y <= eraseStrokePickerBoundingRect.bottom);
 }
@@ -251,18 +246,10 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColorClass, currDrawStrok
 
 
     if (drawingCanvas) {
-        if (selectedPaletteOption === 'color-picker') {
-            window.removeEventListener("mousedown", mouseDownEventListener);
-            window.removeEventListener("mousemove", mouseMoveEventListener);
-            window.removeEventListener("mouseup", mouseUpEventListener);
-            window.removeEventListener("resize", windowResizeListener)
-            // Do nothing for drawing, and remove event listeners
-        } else {
-            window.addEventListener("mousedown", mouseDownEventListener);
-            window.addEventListener("mousemove", mouseMoveEventListener);
-            window.addEventListener("mouseup", mouseUpEventListener);
-            window.addEventListener("resize", windowResizeListener)
-        }
+        window.addEventListener("mousedown", mouseDownEventListener);
+        window.addEventListener("mousemove", mouseMoveEventListener);
+        window.addEventListener("mouseup", mouseUpEventListener);
+        window.addEventListener("resize", windowResizeListener)
     }
 
     return () => {
