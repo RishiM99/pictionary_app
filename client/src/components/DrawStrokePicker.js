@@ -1,12 +1,7 @@
 import React, { useContext, useEffect, forwardRef } from 'react';
 import './styles/DrawStrokePicker.css';
 import { DrawingContext } from '../contexts/DrawingContext.js';
-
-const drawStrokeClassToPixelSize = {
-    "small": 2,
-    "medium": 6,
-    "large": 9,
-}
+import { DRAW_STROKE_CLASS_TO_PIXEL_MAPPING } from '../helpers/DrawAndEraseStrokeSizeMapping.js';
 
 
 const DrawStrokePicker = forwardRef(function DrawStrokePicker(props, drawStrokePickerRef) {
@@ -44,11 +39,9 @@ const DrawStrokePicker = forwardRef(function DrawStrokePicker(props, drawStrokeP
 
     return (
         <div className="draw-stroke-picker-container" ref={drawStrokePickerRef}>
-            {Object.keys(drawStrokeClassToPixelSize).map((drawStrokeClass, index) => {
-                console.log("HERE");
-                console.log(drawStrokeClass);
+            {Object.keys(DRAW_STROKE_CLASS_TO_PIXEL_MAPPING).map((drawStrokeClass, index) => {
                 return (<div className={drawStrokeClass} key={index} onClick={(e) => {
-                    setCurrentDrawStrokeSize(drawStrokeClassToPixelSize[e.target.className]);
+                    setCurrentDrawStrokeSize(DRAW_STROKE_CLASS_TO_PIXEL_MAPPING[drawStrokeClass].penSize);
                     setShowDrawStrokePicker(false);
                 }} />);
             })}

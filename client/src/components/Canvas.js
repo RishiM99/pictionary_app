@@ -6,6 +6,8 @@ import ColorPicker from './ColorPicker.js';
 import DrawStrokePicker from './DrawStrokePicker.js';
 import EraseStrokePicker from './EraseStrokePicker.js';
 import { setOldCanvasHeight, setOldCanvasWidth } from '../helpers/CanvasResizingHelper.js';
+import { DRAW_STROKE_CLASS_TO_PIXEL_MAPPING, ERASER_STROKE_CLASS_TO_PIXEL_MAPPING } from '../helpers/DrawAndEraseStrokeSizeMapping.js';
+
 
 
 
@@ -22,8 +24,8 @@ export default function Canvas() {
     const [selectedPaletteOption, setSelectedPaletteOption] = useState('pen');
 
     const [currentColorClass, setCurrentColorClass] = useState('black');
-    const [currentDrawStrokeSize, setCurrentDrawStrokeSize] = useState(2);
-    const [currentEraseStrokeSize, setCurrentEraseStrokeSize] = useState(2);
+    const [currentDrawStrokeSize, setCurrentDrawStrokeSize] = useState("small");
+    const [currentEraseStrokeSize, setCurrentEraseStrokeSize] = useState("small");
 
     const openColorPickerButtonRef = useRef(null);
     const openDrawStrokePickerButtonRef = useRef(null);
@@ -94,21 +96,9 @@ export default function Canvas() {
 
     let cursorClass = null;
     if (selectedPaletteOption === 'pen') {
-        if (currentDrawStrokeSize === 2) {
-            cursorClass = "circular-cursor-small";
-        } else if (currentDrawStrokeSize === 6) {
-            cursorClass = "circular-cursor-medium";
-        } else {
-            cursorClass = "circular-cursor-large";
-        }
+        cursorClass = DRAW_STROKE_CLASS_TO_PIXEL_MAPPING[currentDrawStrokeSize].cursorClass;
     } else {
-        if (currentEraseStrokeSize === 2) {
-            cursorClass = "circular-cursor-small";
-        } else if (currentEraseStrokeSize === 6) {
-            cursorClass = "circular-cursor-medium";
-        } else {
-            cursorClass = "circular-cursor-large";
-        }
+        cursorClass = ERASER_STROKE_CLASS_TO_PIXEL_MAPPING[currentEraseStrokeSize].cursorClass;
     }
 
     console.log(cursorClass);

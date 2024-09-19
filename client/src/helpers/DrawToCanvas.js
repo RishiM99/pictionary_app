@@ -1,5 +1,6 @@
 import { setOldCanvasWidth, setOldCanvasHeight, getOldCanvasHeight, getOldCanvasWidth } from './CanvasResizingHelper.js';
 import getSocket from './socket.ts';
+import { DRAW_STROKE_CLASS_TO_PIXEL_MAPPING, ERASER_STROKE_CLASS_TO_PIXEL_MAPPING } from '../helpers/DrawAndEraseStrokeSizeMapping.js';
 
 
 let allPaths = {};
@@ -88,7 +89,7 @@ function mouseDownEventListener(e) {
         setIsDrawing(false);
     }
 
-    const lineWidth = selectedPaletteOption === 'eraser' ? currentEraseStrokeSize : currentDrawStrokeSize;
+    const lineWidth = selectedPaletteOption === 'eraser' ? ERASER_STROKE_CLASS_TO_PIXEL_MAPPING[currentEraseStrokeSize].eraserSize : DRAW_STROKE_CLASS_TO_PIXEL_MAPPING[currentDrawStrokeSize].penSize;
     const strokeStyle = selectedPaletteOption === 'eraser' ? 'white' : getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
 
     const uuid = crypto.randomUUID();
