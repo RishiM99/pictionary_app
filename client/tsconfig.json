@@ -10,7 +10,7 @@
         "declarationMap": true,
         "declaration": true,
         "moduleResolution": "node",
-        "strict": true,
+        "strict": false,
         "sourceMap": true,
         "target": "es2022",
         "types": [

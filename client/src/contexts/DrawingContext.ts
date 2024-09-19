@@ -16,4 +16,6 @@ export const DrawingContext = createContext({
     openColorPickerButtonRef: null,
     openDrawStrokePickerButtonRef: null,
     openEraseStrokePickerButtonRef: null,
+    selectedPaletteOption: null,
+    setSelectedPaletteOption: null,
 });

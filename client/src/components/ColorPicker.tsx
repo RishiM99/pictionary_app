@@ -1,22 +1,9 @@
 import React, { useRef, useContext, forwardRef, useEffect } from 'react';
 import './styles/ColorPicker.css';
-import { DrawingContext } from '../contexts/DrawingContext.js';
-
-const colorClassesForColorPicker = [
-    "black",
-    "gray",
-    "purple",
-    "blue",
-    "teal",
-    "green",
-    "yellow",
-    "orange",
-    "brown",
-    "red",
-];
+import { DrawingContext } from '../contexts/DrawingContext.ts';
 
 
-const ColorPicker = forwardRef(function ColorPicker(props, colorPickerRef) {
+const ColorPicker = forwardRef(function ColorPicker(props, colorPickerRef: React.MutableRefObject<HTMLDivElement>) {
     const { setCurrentColorClass, setShowColorPicker, setSelectedPaletteOption, openColorPickerButtonRef } = useContext(DrawingContext);
 
     useEffect(() => {

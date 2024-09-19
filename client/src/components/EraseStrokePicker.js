@@ -1,7 +1,7 @@
 import React, { forwardRef, useContext, useEffect } from 'react';
 import './styles/EraseStrokePicker.css';
 import { DrawingContext } from '../contexts/DrawingContext.js';
-import { ERASER_STROKE_CLASS_TO_PIXEL_MAPPING } from '../helpers/DrawAndEraseStrokeSizeMapping.js';
+import { ERASER_STROKE_CLASS_TO_PIXEL_MAPPING } from '../helpers/StrokeInfoMapping.js';
 
 
 const EraseStrokePicker = forwardRef(function EraseStrokePicker(props, eraseStrokePickerRef) {

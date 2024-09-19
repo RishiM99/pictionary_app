@@ -1,6 +1,6 @@
 import { setOldCanvasWidth, setOldCanvasHeight, getOldCanvasHeight, getOldCanvasWidth } from './CanvasResizingHelper.js';
 import getSocket from './socket.ts';
-import { DRAW_STROKE_CLASS_TO_PIXEL_MAPPING, ERASER_STROKE_CLASS_TO_PIXEL_MAPPING } from '../helpers/DrawAndEraseStrokeSizeMapping.js';
+import { DRAW_STROKE_CLASS_TO_PIXEL_MAPPING, ERASER_STROKE_CLASS_TO_PIXEL_MAPPING } from './StrokeInfoMapping.js';
 
 
 let allPaths = {};

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, forwardRef } from 'react';
 import './styles/DrawStrokePicker.css';
 import { DrawingContext } from '../contexts/DrawingContext.js';
-import { DRAW_STROKE_CLASS_TO_PIXEL_MAPPING } from '../helpers/DrawAndEraseStrokeSizeMapping.js';
+import { DRAW_STROKE_CLASS_TO_PIXEL_MAPPING } from '../helpers/StrokeInfoMapping.js';
 
 
 const DrawStrokePicker = forwardRef(function DrawStrokePicker(props, drawStrokePickerRef) {
