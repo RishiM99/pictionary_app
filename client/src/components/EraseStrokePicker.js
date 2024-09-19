@@ -9,9 +9,10 @@ const eraseStrokeClassToPixelSize = {
 }
 
 
-export default function EraseStrokePicker({ openEraseStrokePickerButtonRef }) {
-    const { setShowEraseStrokePicker, setCurrentEraseStrokeSize } = useContext(DrawingContext);
+export default function EraseStrokePicker() {
+    const { setShowEraseStrokePicker, setCurrentEraseStrokeSize, openEraseStrokePickerButtonRef, setEraseStrokePickerRef } = useContext(DrawingContext);
     const eraseStrokePickerRef = useRef(null);
+    setEraseStrokePickerRef(eraseStrokePickerRef);
 
     useEffect(() => {
         function handleClickOutsideEraseStrokePicker() {
@@ -39,7 +40,7 @@ export default function EraseStrokePicker({ openEraseStrokePickerButtonRef }) {
         return () => {
             handleClickOutsideEraseStrokePickerCleanup();
         }
-    }, [openEraseStrokePickerButtonRef, setShowEraseStrokePicker]);
+    }, [openEraseStrokePickerButtonRef, setShowEraseStrokePicker, eraseStrokePickerRef]);
 
     return (
         <div className="erase-stroke-picker-container" ref={eraseStrokePickerRef}>

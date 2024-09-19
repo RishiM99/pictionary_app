@@ -16,9 +16,10 @@ const colorClassesForColorPicker = [
 ];
 
 
-export default function ColorPicker({ openColorPickerButtonRef }) {
-    const { setCurrentColorClass, setShowColorPicker, setSelectedPaletteOption } = useContext(DrawingContext);
+export default function ColorPicker() {
+    const { setCurrentColorClass, setShowColorPicker, setSelectedPaletteOption, openColorPickerButtonRef, setColorPickerRef } = useContext(DrawingContext);
     const colorPickerRef = useRef(null);
+    setColorPickerRef(colorPickerRef);
 
 
     useEffect(() => {
@@ -48,7 +49,7 @@ export default function ColorPicker({ openColorPickerButtonRef }) {
         return () => {
             handleClickOutsideColorPickerCleanup();
         }
-    }, [setShowColorPicker, openColorPickerButtonRef, setSelectedPaletteOption]);
+    }, [setShowColorPicker, openColorPickerButtonRef, setSelectedPaletteOption, colorPickerRef]);
 
     return (
         <div className="color-picker-container" ref={colorPickerRef}>

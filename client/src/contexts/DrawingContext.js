@@ -13,4 +13,13 @@ export const DrawingContext = createContext({
     showDrawStrokePicker: null,
     setShowEraseStrokePicker: null,
     showEraseStrokePicker: null,
+    openColorPickerButtonRef: null,
+    openDrawStrokePickerButtonRef: null,
+    openEraseStrokePickerButtonRef: null,
+    colorPickerRef: null,
+    setColorPickerRef: null,
+    drawStrokePickerRef: null,
+    setDrawStrokePickerRef: null,
+    eraseStrokePickerRef: null,
+    setEraseStrokePickerRef: null,
 });

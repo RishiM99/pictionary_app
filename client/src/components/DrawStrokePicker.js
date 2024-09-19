@@ -9,9 +9,10 @@ const drawStrokeClassToPixelSize = {
 }
 
 
-export default function DrawStrokePicker({ openDrawStrokePickerButtonRef }) {
-    const { setShowDrawStrokePicker, setCurrentDrawStrokeSize } = useContext(DrawingContext);
+export default function DrawStrokePicker() {
+    const { setShowDrawStrokePicker, setCurrentDrawStrokeSize, openDrawStrokePickerButtonRef, setDrawStrokePickerRef } = useContext(DrawingContext);
     const drawStrokePickerRef = useRef(null);
+    setDrawStrokePickerRef(drawStrokePickerRef);
 
 
     useEffect(() => {
@@ -41,7 +42,7 @@ export default function DrawStrokePicker({ openDrawStrokePickerButtonRef }) {
         return () => {
             handleClickOutsideDrawStrokePickerCleanup();
         }
-    }, [openDrawStrokePickerButtonRef, setShowDrawStrokePicker]);
+    }, [openDrawStrokePickerButtonRef, setShowDrawStrokePicker, drawStrokePickerRef]);
 
     return (
         <div className="draw-stroke-picker-container" ref={drawStrokePickerRef}>

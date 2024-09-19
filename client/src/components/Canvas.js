@@ -14,6 +14,10 @@ export default function Canvas() {
     const [showDrawStrokePicker, setShowDrawStrokePicker] = useState(false);
     const [showEraseStrokePicker, setShowEraseStrokePicker] = useState(false);
     const [isDrawing, setIsDrawing] = useState(false);
+    const [colorPickerRef, setColorPickerRef] = useState(null);
+    const [drawStrokePickerRef, setDrawStrokePickerRef] = useState(null);
+    const [eraseStrokePickerRef, setEraseStrokePickerRef] = useState(null);
+
 
     const [selectedPaletteOption, setSelectedPaletteOption] = useState('pen');
 
@@ -35,8 +39,6 @@ export default function Canvas() {
         if (drawingCanvas) {
             drawingCanvas.height = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("height"), 10);
             drawingCanvas.width = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("width"), 10);
-            console.log(drawingCanvas.height);
-            console.log(drawingCanvas.width);
             setOldCanvasHeight(drawingCanvas.height);
             setOldCanvasWidth(drawingCanvas.width);
         }
@@ -44,12 +46,12 @@ export default function Canvas() {
     }, []);
 
     useEffect(() => {
-        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currColorClass: currentColorClass, currDrawStrokeSize: currentDrawStrokeSize, isDrawingVar: isDrawing, setIsDrawingFn: setIsDrawing, currEraseStrokeSize: currentEraseStrokeSize, selectedPaletteOptionVar: selectedPaletteOption, paletteRefVar: paletteRef, cursorRef });
+        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currColorClass: currentColorClass, currDrawStrokeSize: currentDrawStrokeSize, isDrawingVar: isDrawing, setIsDrawingFn: setIsDrawing, currEraseStrokeSize: currentEraseStrokeSize, selectedPaletteOptionVar: selectedPaletteOption, paletteRefVar: paletteRef, cursorRef, colorPickerRef, drawStrokePickerRef, eraseStrokePickerRef, showColorPickerVar: showColorPicker, showDrawStrokePickerVar: showDrawStrokePicker, showEraseStrokePickerVar: showEraseStrokePicker });
 
         return () => {
             setUpDrawingCanvasCleanup();
         }
-    }, [currentDrawStrokeSize, currentColorClass, isDrawing, drawingCanvasRef, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption, paletteRef]);
+    }, [currentDrawStrokeSize, currentColorClass, isDrawing, drawingCanvasRef, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption, paletteRef, colorPickerRef, drawStrokePickerRef, eraseStrokePickerRef]);
 
     const colorPickerButtonOnClick = () => {
         if (!showColorPicker && showDrawStrokePicker) {
@@ -80,9 +82,6 @@ export default function Canvas() {
 
 
     const eraserButtonOnClick = () => {
-        console.log(showEraseStrokePicker);
-        console.log(showColorPicker);
-        console.log(showDrawStrokePicker);
         if (!showEraseStrokePicker && showColorPicker) {
             setShowColorPicker(false);
         }
@@ -101,10 +100,9 @@ export default function Canvas() {
     } else {
         cursorClass = "circular-cursor-large";
     }
-    console.log(`Cursor class ${cursorClass}`);
 
     return (
-        <DrawingContext.Provider value={{ currentColorClass, setCurrentColorClass, showColorPicker, setShowColorPicker, currentDrawStrokeSize, setCurrentDrawStrokeSize, currentEraseStrokeSize, setCurrentEraseStrokeSize, showEraseStrokePicker, setShowEraseStrokePicker, showDrawStrokePicker, setShowDrawStrokePicker, selectedPaletteOption, setSelectedPaletteOption }}>
+        <DrawingContext.Provider value={{ currentColorClass, setCurrentColorClass, showColorPicker, setShowColorPicker, currentDrawStrokeSize, setCurrentDrawStrokeSize, currentEraseStrokeSize, setCurrentEraseStrokeSize, showEraseStrokePicker, setShowEraseStrokePicker, showDrawStrokePicker, setShowDrawStrokePicker, selectedPaletteOption, setSelectedPaletteOption, openColorPickerButtonRef, openDrawStrokePickerButtonRef, openEraseStrokePickerButtonRef, colorPickerRef, setColorPickerRef, drawStrokePickerRef, setDrawStrokePickerRef, eraseStrokePickerRef, setEraseStrokePickerRef }}>
             <div className="drawing-board-container">
                 <div className={cursorClass} ref={cursorRef}> </div>
                 <canvas className="drawing-canvas" ref={drawingCanvasRef} />
@@ -131,9 +129,9 @@ export default function Canvas() {
                         <div className={currentColorClass} style={{ "height": "25px", "width": "25px" }} />
                     </div>
                 </div>
-                {showColorPicker && <ColorPicker openColorPickerButtonRef={openColorPickerButtonRef} />}
-                {showDrawStrokePicker && <DrawStrokePicker openDrawStrokePickerButtonRef={openDrawStrokePickerButtonRef} />}
-                {showEraseStrokePicker && <EraseStrokePicker openEraseStrokePickerButtonRef={openEraseStrokePickerButtonRef} />}
+                {showColorPicker && <ColorPicker />}
+                {showDrawStrokePicker && <DrawStrokePicker />}
+                {showEraseStrokePicker && <EraseStrokePicker />}
             </div>
         </DrawingContext.Provider >
     );

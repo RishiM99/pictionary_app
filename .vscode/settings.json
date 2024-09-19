@@ -1,6 +1,7 @@
 {
     // Controls if the editor should automatically format the line after typing
     "beautify.onSave": true,
-  
     "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+    "editor.wordWrapColumn": 100,
 }

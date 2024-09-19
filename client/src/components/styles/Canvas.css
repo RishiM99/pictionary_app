@@ -59,6 +59,7 @@
     align-items: center;
     flex-direction: row;
     justify-content: space-around;
+    cursor: auto;
 }
 
 .draw-icon-background-unselected {

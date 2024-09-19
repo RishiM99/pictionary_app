@@ -13,10 +13,15 @@ let setIsDrawing = null;
 let isDrawing = null;
 let selectedPaletteOption = null;
 let currentPathUUIDFromMouse = null;
-let paletteRef = null;
 let paletteBoundingRect = null;
 let drawingCanvasBoundingRect = null;
 let cursor = null;
+let drawStrokePickerBoundingRect = null;
+let eraseStrokePickerBoundingRect = null;
+let colorPickerBoundingRect = null;
+let showColorPicker = null;
+let showDrawStrokePicker = null;
+let showEraseStrokePicker = null;
 
 // How often to push updates of drawing
 const FREQUENCY_OF_DRAWING_UPDATES = 3;
@@ -62,13 +67,31 @@ function isPointUnderPalette(point) {
     return (point.x >= paletteBoundingRect.left && point.x <= paletteBoundingRect.right && point.y >= paletteBoundingRect.top && point.y <= paletteBoundingRect.bottom);
 }
 
+function isPointUnderColorPicker(point) {
+    console.log(`color picker bounding rect ${colorPickerBoundingRect}`);
+    const x = showColorPicker && colorPickerBoundingRect != null && (point.x >= colorPickerBoundingRect.left && point.x <= colorPickerBoundingRect.right && point.y >= colorPickerBoundingRect.top && point.y <= colorPickerBoundingRect.bottom);
+    console.log(x);
+    return x;
+}
+
+function isPointUnderDrawStrokePicker(point) {
+    console.log(`draw picker bounding rect ${drawStrokePickerBoundingRect}`);
+
+    return showDrawStrokePicker && drawStrokePickerBoundingRect != null && (point.x >= drawStrokePickerBoundingRect.left && point.x <= drawStrokePickerBoundingRect.right && point.y >= drawStrokePickerBoundingRect.top && point.y <= drawStrokePickerBoundingRect.bottom);
+}
+
+function isPointUnderEraseStrokePicker(point) {
+    console.log(`erase picker bounding rect ${eraseStrokePickerBoundingRect}`);
+
+    return showEraseStrokePicker && eraseStrokePickerBoundingRect != null && (point.x >= eraseStrokePickerBoundingRect.left && point.x <= eraseStrokePickerBoundingRect.right && point.y >= eraseStrokePickerBoundingRect.top && point.y <= eraseStrokePickerBoundingRect.bottom);
+}
+
 
 function mouseDownEventListener(e) {
 
     if (isPointUnderPalette({ x: e.clientX, y: e.clientY }) || isPointOutsideOfCanvas({ x: e.clientX, y: e.clientY })) {
         setIsDrawing(false);
     }
-    console.log(currentColorClass);
 
     const lineWidth = selectedPaletteOption === 'eraser' ? currentEraseStrokeSize : currentDrawStrokeSize;
     const strokeStyle = selectedPaletteOption === 'eraser' ? 'white' : getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
@@ -122,11 +145,12 @@ function mouseDownEventListener(e) {
 
 
 function mouseMoveEventListener(e) {
+    const point = { x: e.clientX, y: e.clientY };
     if (isDrawing) {
-        if (isPointUnderPalette({ x: e.clientX, y: e.clientY }) || isPointOutsideOfCanvas({ x: e.clientX, y: e.clientY })) {
+        if (isPointUnderPalette(point) || isPointOutsideOfCanvas(point)) {
             setIsDrawing(false);
         }
-        allPaths[currentPathUUIDFromMouse].points.push({ x: e.clientX, y: e.clientY });
+        allPaths[currentPathUUIDFromMouse].points.push(point);
         drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
 
         if (allPaths[currentPathUUIDFromMouse].points.length >= 3) {
@@ -137,7 +161,10 @@ function mouseMoveEventListener(e) {
     }
 
     //Move cursor anyways
-    if (!isPointOutsideOfCanvas({ x: e.clientX, y: e.clientY })) {
+    if (isPointOutsideOfCanvas(point) || isPointUnderPalette(point) || isPointUnderColorPicker(point) || isPointUnderDrawStrokePicker(point) || isPointUnderEraseStrokePicker(point)) {
+        cursor.style.visibility = "hidden";
+    } else {
+        cursor.style.visibility = "visible";
         cursor.style.left = `${e.offsetX}px`;
         cursor.style.top = `${e.offsetY}px`;
     }
@@ -198,10 +225,9 @@ function windowResizeListener(e) {
 }
 
 
-function setUpDrawingForCanvas({ drawingCanvasRef, currColorClass, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef }) {
+function setUpDrawingForCanvas({ drawingCanvasRef, currColorClass, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef, drawStrokePickerRef, eraseStrokePickerRef, colorPickerRef, showColorPickerVar, showEraseStrokePickerVar, showDrawStrokePickerVar }) {
 
     cursor = cursorRef.current;
-    console.log(`cursor ref ${cursorRef}`);
     drawingCanvas = drawingCanvasRef.current;
     context = drawingCanvas.getContext("2d");
     currentColorClass = currColorClass;
@@ -210,10 +236,19 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColorClass, currDrawStrok
     setIsDrawing = setIsDrawingFn;
     isDrawing = isDrawingVar;
     selectedPaletteOption = selectedPaletteOptionVar;
-    paletteRef = paletteRefVar;
 
-    paletteBoundingRect = paletteRef.current.getBoundingClientRect();
+    paletteBoundingRect = paletteRefVar.current.getBoundingClientRect();
     drawingCanvasBoundingRect = drawingCanvas.getBoundingClientRect();
+
+    drawStrokePickerBoundingRect = drawStrokePickerRef?.current?.getBoundingClientRect();
+    eraseStrokePickerBoundingRect = eraseStrokePickerRef?.current?.getBoundingClientRect();
+    colorPickerBoundingRect = colorPickerRef?.current?.getBoundingClientRect();
+
+    showColorPicker = showColorPickerVar;
+    showDrawStrokePicker = showDrawStrokePickerVar;
+    showEraseStrokePicker = showEraseStrokePickerVar;
+
+
 
     if (drawingCanvas) {
         if (selectedPaletteOption === 'color-picker') {
