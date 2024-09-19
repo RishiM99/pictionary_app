@@ -39,7 +39,7 @@ const EraseStrokePicker = forwardRef(function EraseStrokePicker(props, eraseStro
         <div className="erase-stroke-picker-container" ref={eraseStrokePickerRef}>
             {Object.keys(ERASER_STROKE_CLASS_TO_PIXEL_MAPPING).map((eraseStrokeClass, index) => {
                 return (<div className={eraseStrokeClass} key={index} onClick={(e) => {
-                    setCurrentEraseStrokeSize(ERASER_STROKE_CLASS_TO_PIXEL_MAPPING[eraseStrokeClass].eraserSize);
+                    setCurrentEraseStrokeSize(eraseStrokeClass);
                     setShowEraseStrokePicker(false);
                 }} />);
             })}

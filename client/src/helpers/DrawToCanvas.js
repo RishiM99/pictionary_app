@@ -143,9 +143,6 @@ function mouseDownEventListener(e) {
 function mouseMoveEventListener(e) {
     const point = { x: e.clientX, y: e.clientY };
     if (isDrawing) {
-        if (isPointUnderPalette(point) || isPointOutsideOfCanvas(point)) {
-            setIsDrawing(false);
-        }
         allPaths[currentPathUUIDFromMouse].points.push(point);
         drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
 

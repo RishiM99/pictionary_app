@@ -41,7 +41,7 @@ const DrawStrokePicker = forwardRef(function DrawStrokePicker(props, drawStrokeP
         <div className="draw-stroke-picker-container" ref={drawStrokePickerRef}>
             {Object.keys(DRAW_STROKE_CLASS_TO_PIXEL_MAPPING).map((drawStrokeClass, index) => {
                 return (<div className={drawStrokeClass} key={index} onClick={(e) => {
-                    setCurrentDrawStrokeSize(DRAW_STROKE_CLASS_TO_PIXEL_MAPPING[drawStrokeClass].penSize);
+                    setCurrentDrawStrokeSize(drawStrokeClass);
                     setShowDrawStrokePicker(false);
                 }} />);
             })}
