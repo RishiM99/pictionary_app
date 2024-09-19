@@ -93,13 +93,25 @@ export default function Canvas() {
     }
 
     let cursorClass = null;
-    if (currentDrawStrokeSize === 2 || currentEraseStrokeSize === 2) {
-        cursorClass = "circular-cursor-small";
-    } else if (currentDrawStrokeSize === 6 || currentEraseStrokeSize === 6) {
-        cursorClass = "circular-cursor-medium";
+    if (selectedPaletteOption === 'pen') {
+        if (currentDrawStrokeSize === 2) {
+            cursorClass = "circular-cursor-small";
+        } else if (currentDrawStrokeSize === 6) {
+            cursorClass = "circular-cursor-medium";
+        } else {
+            cursorClass = "circular-cursor-large";
+        }
     } else {
-        cursorClass = "circular-cursor-large";
+        if (currentEraseStrokeSize === 2) {
+            cursorClass = "circular-cursor-small";
+        } else if (currentEraseStrokeSize === 6) {
+            cursorClass = "circular-cursor-medium";
+        } else {
+            cursorClass = "circular-cursor-large";
+        }
     }
+
+    console.log(cursorClass);
 
     return (
         <DrawingContext.Provider value={{ currentColorClass, setCurrentColorClass, showColorPicker, setShowColorPicker, currentDrawStrokeSize, setCurrentDrawStrokeSize, currentEraseStrokeSize, setCurrentEraseStrokeSize, showEraseStrokePicker, setShowEraseStrokePicker, showDrawStrokePicker, setShowDrawStrokePicker, selectedPaletteOption, setSelectedPaletteOption, openColorPickerButtonRef, openDrawStrokePickerButtonRef, openEraseStrokePickerButtonRef }}>
