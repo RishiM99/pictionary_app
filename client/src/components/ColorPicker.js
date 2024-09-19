@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useEffect } from 'react';
+import React, { useRef, useContext, forwardRef, useEffect } from 'react';
 import './styles/ColorPicker.css';
 import { DrawingContext } from '../contexts/DrawingContext.js';
 
@@ -16,11 +16,8 @@ const colorClassesForColorPicker = [
 ];
 
 
-export default function ColorPicker() {
-    const { setCurrentColorClass, setShowColorPicker, setSelectedPaletteOption, openColorPickerButtonRef, setColorPickerRef } = useContext(DrawingContext);
-    const colorPickerRef = useRef(null);
-    setColorPickerRef(colorPickerRef);
-
+const ColorPicker = forwardRef(function ColorPicker(props, colorPickerRef) {
+    const { setCurrentColorClass, setShowColorPicker, setSelectedPaletteOption, openColorPickerButtonRef } = useContext(DrawingContext);
 
     useEffect(() => {
         function handleClickOutsideColorPicker() {
@@ -64,5 +61,7 @@ export default function ColorPicker() {
             ))}
         </div>
     );
-}
+});
+
+export default ColorPicker;
 

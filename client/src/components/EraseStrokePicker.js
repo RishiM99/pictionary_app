@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useEffect } from 'react';
+import React, { forwardRef, useContext, useEffect } from 'react';
 import './styles/EraseStrokePicker.css';
 import { DrawingContext } from '../contexts/DrawingContext.js';
 
@@ -9,10 +9,8 @@ const eraseStrokeClassToPixelSize = {
 }
 
 
-export default function EraseStrokePicker() {
-    const { setShowEraseStrokePicker, setCurrentEraseStrokeSize, openEraseStrokePickerButtonRef, setEraseStrokePickerRef } = useContext(DrawingContext);
-    const eraseStrokePickerRef = useRef(null);
-    setEraseStrokePickerRef(eraseStrokePickerRef);
+const EraseStrokePicker = forwardRef(function EraseStrokePicker(props, eraseStrokePickerRef) {
+    const { setShowEraseStrokePicker, setCurrentEraseStrokeSize, openEraseStrokePickerButtonRef } = useContext(DrawingContext);
 
     useEffect(() => {
         function handleClickOutsideEraseStrokePicker() {
@@ -52,4 +50,6 @@ export default function EraseStrokePicker() {
             })}
         </div>
     );
-}
+});
+
+export default EraseStrokePicker;

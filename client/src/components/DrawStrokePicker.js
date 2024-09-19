@@ -1,4 +1,4 @@
-import React, { useRef, useContext, useEffect } from 'react';
+import React, { useContext, useEffect, forwardRef } from 'react';
 import './styles/DrawStrokePicker.css';
 import { DrawingContext } from '../contexts/DrawingContext.js';
 
@@ -9,10 +9,8 @@ const drawStrokeClassToPixelSize = {
 }
 
 
-export default function DrawStrokePicker() {
-    const { setShowDrawStrokePicker, setCurrentDrawStrokeSize, openDrawStrokePickerButtonRef, setDrawStrokePickerRef } = useContext(DrawingContext);
-    const drawStrokePickerRef = useRef(null);
-    setDrawStrokePickerRef(drawStrokePickerRef);
+const DrawStrokePicker = forwardRef(function DrawStrokePicker(props, drawStrokePickerRef) {
+    const { setShowDrawStrokePicker, setCurrentDrawStrokeSize, openDrawStrokePickerButtonRef } = useContext(DrawingContext);
 
 
     useEffect(() => {
@@ -56,5 +54,7 @@ export default function DrawStrokePicker() {
             })}
         </div>
     );
-}
+});
+
+export default DrawStrokePicker;
 
