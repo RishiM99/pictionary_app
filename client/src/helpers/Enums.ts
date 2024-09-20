@@ -28,3 +28,7 @@ export function getColorValues(): string[] {
         return isNaN(Number(item));
     }).map((x) => x.toLowerCase());
 }
+
+export function convertColorToString(color: Color): string {
+    return Color[color].toLowerCase();
+}
