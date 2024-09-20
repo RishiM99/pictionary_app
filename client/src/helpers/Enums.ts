@@ -5,20 +5,26 @@ export enum PaletteOption {
 }
 
 export enum Color {
-    Black = "black",
-    Gray = "gray",
-    Purple = "purple",
-    Blue = "blue",
-    Teal = "teal",
-    Green = "green",
-    Yellow = "yellow",
-    Orange = "orange",
-    Brown = "brown",
-    Red = "red",
+    Black,
+    Gray,
+    Purple,
+    Blue,
+    Teal,
+    Green,
+    Yellow,
+    Orange,
+    Brown,
+    Red
 }
 
 export enum StrokeSize {
     Small = "small",
     Medium = "medium",
     Large = "large"
+}
+
+export function getColorValues(): string[] {
+    return Object.keys(Color).filter((item) => {
+        return isNaN(Number(item));
+    }).map((x) => x.toLowerCase());
 }

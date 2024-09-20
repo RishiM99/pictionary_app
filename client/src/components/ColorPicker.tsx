@@ -1,6 +1,7 @@
 import React, { useRef, useContext, forwardRef, useEffect } from 'react';
 import './styles/ColorPicker.css';
 import { DrawingContext } from '../contexts/DrawingContext.ts';
+import { getColorValues } from '../helpers/Enums.ts';
 
 
 const ColorPicker = forwardRef(function ColorPicker(props, colorPickerRef: React.MutableRefObject<HTMLDivElement>) {
@@ -37,10 +38,10 @@ const ColorPicker = forwardRef(function ColorPicker(props, colorPickerRef: React
 
     return (
         <div className="color-picker-container" ref={colorPickerRef}>
-            {colorClassesForColorPicker.map((colorClass, index) => (
+            {getColorValues().map((colorClass, index) => (
                 <div className={colorClass} key={index} onClick={(e) => {
-                    console.log(e.target.className);
-                    setCurrentColorClass(e.target.className);
+                    console.log(colorClass);
+                    setCurrentColorClass(colorClass);
                     setShowColorPicker(false);
                     setSelectedPaletteOption('pen');
                 }
