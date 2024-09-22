@@ -1,7 +1,7 @@
-import { setOldCanvasWidth, setOldCanvasHeight, getOldCanvasHeight, getOldCanvasWidth } from './CanvasResizingHelper.js';
+import { setOldCanvasWidth, setOldCanvasHeight, getOldCanvasHeight, getOldCanvasWidth } from './CanvasResizingHelper.ts';
 import { Color, convertColorToString, PaletteOption, StrokeSize } from './Enums.ts';
 import getSocket from './socket.ts';
-import { StrokeInfo } from './StrokeInfoMapping.js';
+import { StrokeInfo } from './StrokeInfoMapping.ts';
 
 type Point = {
     x: number,
@@ -101,12 +101,12 @@ function mouseDownEventListener(e) {
         setIsDrawing(false);
     }
 
-    const lineWidth = selectedPaletteOption === PaletteOption.Eraser ? StrokeInfo[currentEraseStrokeSize].pixelSize : StrokeInfo[currentDrawStrokeSize].pixelSize;
+    const lineWidth = selectedPaletteOption === PaletteOption.Eraser ? StrokeInfo.get(currentEraseStrokeSize).pixelSize : StrokeInfo.get(currentDrawStrokeSize).pixelSize;
     const strokeStyle = selectedPaletteOption === PaletteOption.Eraser ? 'white' : getComputedStyle(document.querySelector(`.${convertColorToString(currentColor)}`))["background-color"];
 
     const uuid = crypto.randomUUID();
     currentTripletIndexFromMouse = 0;
-    allPaths[uuid] = { points: [{ x: e.clientX, y: e.clientY }], lineWidth, strokeStyle };
+    allPaths.set(uuid, { points: [{ x: e.clientX, y: e.clientY }], lineWidth, strokeStyle });
     currentPathUUIDFromMouse = uuid;
     setIsDrawing(true);
 }
@@ -155,10 +155,10 @@ function mouseDownEventListener(e) {
 function mouseMoveEventListener(e) {
     const point = { x: e.clientX, y: e.clientY };
     if (isDrawing) {
-        allPaths[currentPathUUIDFromMouse].points.push(point);
-        drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
+        allPaths.get(currentPathUUIDFromMouse).points.push(point);
+        drawRemainderOfPath(allPaths.get(currentPathUUIDFromMouse), currentTripletIndexFromMouse);
 
-        if (allPaths[currentPathUUIDFromMouse].points.length >= 3) {
+        if (allPaths.get(currentPathUUIDFromMouse).points.length >= 3) {
             currentTripletIndexFromMouse++;
         }
 
@@ -180,8 +180,8 @@ function mouseUpEventListener(e) {
         if (isPointUnderPalette({ x: e.clientX, y: e.clientY }) || isPointOutsideOfCanvas({ x: e.clientX, y: e.clientY })) {
             setIsDrawing(false);
         }
-        allPaths[currentPathUUIDFromMouse].points.push({ x: e.clientX, y: e.clientY });
-        drawRemainderOfPath(allPaths[currentPathUUIDFromMouse], currentTripletIndexFromMouse);
+        allPaths.get(currentPathUUIDFromMouse).points.push({ x: e.clientX, y: e.clientY });
+        drawRemainderOfPath(allPaths.get(currentPathUUIDFromMouse), currentTripletIndexFromMouse);
 
         setIsDrawing(false);
 
@@ -204,15 +204,17 @@ function mouseUpEventListener(e) {
 
 function scaleAllPathsAndRedrawAllCurves(scaleX, scaleY) {
     let newAllPaths = new Map();
-    for (const [uuid, serializedPath] of Object.entries(allPaths)) {
+    for (const [uuid, serializedPath] of allPaths) {
         const scaledPoints = serializedPath.points.map(((point) => ({ x: point.x * scaleX, y: point.y * scaleY })));
 
         let newSerializedPath = { points: scaledPoints, lineWidth: serializedPath.lineWidth, strokeStyle: serializedPath.strokeStyle };
 
         drawRemainderOfPath(newSerializedPath, 0);
 
-        newAllPaths[crypto.randomUUID()] = newSerializedPath;
+        newAllPaths.set(crypto.randomUUID(), newSerializedPath);
     }
+
+    console.log(newAllPaths);
 
     allPaths = newAllPaths;
 }

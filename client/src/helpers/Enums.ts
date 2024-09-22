@@ -18,9 +18,9 @@ export enum Color {
 }
 
 export enum StrokeSize {
-    Small = "small",
-    Medium = "medium",
-    Large = "large"
+    small,
+    medium,
+    large
 }
 
 export function getColorStrings(): string[] {
@@ -29,10 +29,24 @@ export function getColorStrings(): string[] {
     });
 }
 
+export function getStrokeSizeStrings(): string[] {
+    return Object.keys(StrokeSize).filter((item) => {
+        return isNaN(Number(item));
+    });
+}
+
 export function convertColorToString(color: Color): string {
     return Color[color];
 }
 
+export function convertStrokeSizeToString(strokeSize: StrokeSize): string {
+    return StrokeSize[strokeSize];
+}
+
 export function convertStringToColor(colorStr: string): Color {
     return Color[colorStr];
+}
+
+export function convertStringToStrokeSize(strokeSizeStr: string): StrokeSize {
+    return StrokeSize[strokeSizeStr];
 }

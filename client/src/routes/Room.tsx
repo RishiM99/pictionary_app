@@ -22,7 +22,7 @@ export async function loader({ params }) {
 }
 
 export default function Room() {
-    const roomId = useLoaderData();
+    const roomId = useLoaderData() as string;
     const [copyUrlClicked, setCopyUrlClicked] = useState(false);
 
     useEffect(() => {

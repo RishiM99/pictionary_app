@@ -1,10 +1,10 @@
 import React, { forwardRef, useContext, useEffect } from 'react';
 import './styles/EraseStrokePicker.css';
-import { DrawingContext } from '../contexts/DrawingContext.js';
-import { ERASER_STROKE_CLASS_TO_PIXEL_MAPPING } from '../helpers/StrokeInfoMapping.js';
+import { DrawingContext } from '../contexts/DrawingContext.ts';
+import { getStrokeSizeStrings, convertStringToStrokeSize } from '../helpers/Enums.ts';
 
 
-const EraseStrokePicker = forwardRef(function EraseStrokePicker(props, eraseStrokePickerRef) {
+const EraseStrokePicker = forwardRef(function EraseStrokePicker(props, eraseStrokePickerRef: React.MutableRefObject<HTMLDivElement>) {
     const { setShowEraseStrokePicker, setCurrentEraseStrokeSize, openEraseStrokePickerButtonRef } = useContext(DrawingContext);
 
     useEffect(() => {
@@ -37,9 +37,9 @@ const EraseStrokePicker = forwardRef(function EraseStrokePicker(props, eraseStro
 
     return (
         <div className="erase-stroke-picker-container" ref={eraseStrokePickerRef}>
-            {Object.keys(ERASER_STROKE_CLASS_TO_PIXEL_MAPPING).map((eraseStrokeClass, index) => {
-                return (<div className={eraseStrokeClass} key={index} onClick={(e) => {
-                    setCurrentEraseStrokeSize(eraseStrokeClass);
+            {getStrokeSizeStrings().map((eraseStrokeString, index) => {
+                return (<div className={eraseStrokeString} key={index} onClick={(e) => {
+                    setCurrentEraseStrokeSize(convertStringToStrokeSize(eraseStrokeString));
                     setShowEraseStrokePicker(false);
                 }} />);
             })}

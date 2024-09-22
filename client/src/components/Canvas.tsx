@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import setUpDrawingForCanvas from '../helpers/DrawToCanvas.js';
+import setUpDrawingForCanvas from '../helpers/DrawToCanvas.ts';
 import './styles/Canvas.css';
-import { DrawingContext } from '../contexts/DrawingContext.js';
+import { DrawingContext } from '../contexts/DrawingContext.ts';
 import ColorPicker from './ColorPicker.tsx';
-import DrawStrokePicker from './DrawStrokePicker.js';
-import EraseStrokePicker from './EraseStrokePicker.js';
-import { setOldCanvasHeight, setOldCanvasWidth } from '../helpers/CanvasResizingHelper.js';
-import { StrokeInfo } from '../helpers/StrokeInfoMapping.js';
+import DrawStrokePicker from './DrawStrokePicker.tsx';
+import EraseStrokePicker from './EraseStrokePicker.tsx';
+import { setOldCanvasHeight, setOldCanvasWidth } from '../helpers/CanvasResizingHelper.ts';
+import { StrokeInfo } from '../helpers/StrokeInfoMapping.ts';
 import { PaletteOption, Color, StrokeSize, convertColorToString } from '../helpers/Enums.ts';
 
 
@@ -25,8 +25,8 @@ export default function Canvas() {
     const [selectedPaletteOption, setSelectedPaletteOption] = useState<PaletteOption>(PaletteOption.Pen);
 
     const [currentColor, setCurrentColor] = useState<Color>(Color.black);
-    const [currentDrawStrokeSize, setCurrentDrawStrokeSize] = useState<StrokeSize>(StrokeSize.Small);
-    const [currentEraseStrokeSize, setCurrentEraseStrokeSize] = useState<StrokeSize>(StrokeSize.Small);
+    const [currentDrawStrokeSize, setCurrentDrawStrokeSize] = useState<StrokeSize>(StrokeSize.small);
+    const [currentEraseStrokeSize, setCurrentEraseStrokeSize] = useState<StrokeSize>(StrokeSize.small);
 
     const openColorPickerButtonRef = useRef(null);
     const openDrawStrokePickerButtonRef = useRef(null);
@@ -95,7 +95,7 @@ export default function Canvas() {
         setSelectedPaletteOption(PaletteOption.Eraser);
     }
 
-    const cursorClass = StrokeInfo[selectedPaletteOption === PaletteOption.Pen ? currentDrawStrokeSize : currentEraseStrokeSize].cursorClass;
+    const cursorClass = StrokeInfo.get(selectedPaletteOption === PaletteOption.Pen ? currentDrawStrokeSize : currentEraseStrokeSize).cursorClass;
 
     console.log(cursorClass);
 
@@ -109,19 +109,19 @@ export default function Canvas() {
                     <div className={selectedPaletteOption === PaletteOption.Pen ? "draw-icon-background-selected" : "draw-icon-background-unselected"} ref={openDrawStrokePickerButtonRef} onClick={penButtonOnClick} >
                         <svg viewBox="0 0 512 512" className="draw-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg" >
                             <path d="M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3 0-17l46.1-46.1c18.7-18.7 
-49.1 - 18.7 67.9 0l60.1 60.1c18.8 18.7 18.8 49.1 0 67.9zM284.2 99.8L21.6 362.4.4 483.9c - 2.9 16.4 11.4
-30.6 27.8 27.8l121.5 - 21.3 262.6 - 262.6c4.7 - 4.7 4.7 - 12.3 0 - 17l - 111 - 111c - 4.8 - 4.7 - 12.4 - 4.7 - 17.1 0zM124.1
-339.9c - 5.5 - 5.5 - 5.5 - 14.3 0 - 19.8l154 - 154c5.5 - 5.5 14.3 - 5.5 19.8 0s5.5 14.3 0 19.8l - 154 154c - 5.5 5.5 - 14.3
-5.5 - 19.8 0zM88 424h48v36.3l - 64.5 11.3 - 31.1 - 31.1L51.7 376H88v48z"></path>
+                            49.1-18.7 67.9 0l60.1 60.1c18.8 18.7 18.8 49.1 0 67.9zM284.2 99.8L21.6 362.4.4 483.9c-2.9 16.4 11.4 
+                            30.6 27.8 27.8l121.5-21.3 262.6-262.6c4.7-4.7 4.7-12.3 0-17l-111-111c-4.8-4.7-12.4-4.7-17.1 0zM124.1 
+                            339.9c-5.5-5.5-5.5-14.3 0-19.8l154-154c5.5-5.5 14.3-5.5 19.8 0s5.5 14.3 0 19.8l-154 154c-5.5 5.5-14.3 
+                            5.5-19.8 0zM88 424h48v36.3l-64.5 11.3-31.1-31.1L51.7 376H88v48z"></path>
                         </svg>
                     </div>
 
                     < div className={selectedPaletteOption === PaletteOption.Eraser ? "erase-icon-background-selected" : "erase-icon-background-unselected"} ref={openEraseStrokePickerButtonRef} onClick={eraserButtonOnClick} >
                         <svg viewBox="0 0 512 512" className="erase-icon" height="70%" width="70%" xmlns="http://www.w3.org/2000/svg" >
                             <path d="M497.941 273.941c18.745-18.745 18.745-49.137 0-67.882l-160-160c-18.745-18.745-49.136-18.746-67.883 
-0l - 256 256c - 18.745 18.745 - 18.745 49.137 0 67.882l96 96A48.004 48.004 0 0 0 144 480h356c6.627 0 12 - 5.373
-12 - 12v - 40c0 - 6.627 - 5.373 - 12 - 12 - 12H355.883l142.058 - 142.059zm - 302.627 - 62.627l137.373 137.373L265.373
-416H150.628l - 80 - 80 124.686 - 124.686z"></path>
+                            0l-256 256c-18.745 18.745-18.745 49.137 0 67.882l96 96A48.004 48.004 0 0 0 144 480h356c6.627 0 12-5.373 
+                            12-12v-40c0-6.627-5.373-12-12-12H355.883l142.058-142.059zm-302.627-62.627l137.373 137.373L265.373 
+                            416H150.628l-80-80 124.686-124.686z"></path>
                         </svg>
                     </div>
                     < div className="color-picker-button-border" ref={openColorPickerButtonRef} onClick={colorPickerButtonOnClick} >

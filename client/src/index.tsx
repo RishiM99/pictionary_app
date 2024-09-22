@@ -1,15 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import reportWebVitals from './helpers/reportWebVitals';
+import reportWebVitals from './helpers/reportWebVitals.js';
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import EnterName, { action as enterNameAction, loader as enterNameLoader } from "./routes/EnterName.js";
+import EnterName, { action as enterNameAction, loader as enterNameLoader } from "./routes/EnterName.tsx";
 import RouteErrorPage from "./routes/RouteErrorPage.js";
 import CreateOrJoinRooms, { loader as createOrJoinRoomsLoader, action as createOrJoinRoomsAction } from "./routes/CreateOrJoinRooms.tsx";
-import Room, { loader as roomLoader } from './routes/Room.js';
+import Room, { loader as roomLoader } from './routes/Room.tsx';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 

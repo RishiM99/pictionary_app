@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, forwardRef } from 'react';
 import './styles/DrawStrokePicker.css';
-import { DrawingContext } from '../contexts/DrawingContext.js';
-import { DRAW_STROKE_CLASS_TO_PIXEL_MAPPING } from '../helpers/StrokeInfoMapping.js';
+import { DrawingContext } from '../contexts/DrawingContext.ts';
+import { convertStringToStrokeSize, getStrokeSizeStrings } from '../helpers/Enums.ts';
 
 
-const DrawStrokePicker = forwardRef(function DrawStrokePicker(props, drawStrokePickerRef) {
+const DrawStrokePicker = forwardRef(function DrawStrokePicker(props, drawStrokePickerRef: React.MutableRefObject<HTMLDivElement>) {
     const { setShowDrawStrokePicker, setCurrentDrawStrokeSize, openDrawStrokePickerButtonRef } = useContext(DrawingContext);
 
 
@@ -39,9 +39,9 @@ const DrawStrokePicker = forwardRef(function DrawStrokePicker(props, drawStrokeP
 
     return (
         <div className="draw-stroke-picker-container" ref={drawStrokePickerRef}>
-            {Object.keys(DRAW_STROKE_CLASS_TO_PIXEL_MAPPING).map((drawStrokeClass, index) => {
-                return (<div className={drawStrokeClass} key={index} onClick={(e) => {
-                    setCurrentDrawStrokeSize(drawStrokeClass);
+            {getStrokeSizeStrings().map((drawStrokeString, index) => {
+                return (<div className={drawStrokeString} key={index} onClick={(e) => {
+                    setCurrentDrawStrokeSize(convertStringToStrokeSize(drawStrokeString));
                     setShowDrawStrokePicker(false);
                 }} />);
             })}

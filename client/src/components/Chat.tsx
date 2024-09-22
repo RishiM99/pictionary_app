@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import './styles/Chat.css';
 
 export default function Chat() {
@@ -8,7 +8,7 @@ export default function Chat() {
         { user: 'Emily Johnson', text: 'Hey! Ready for the meeting?' }
     ]);
 
-    const [newMessage, setNewMessage] = useState('');
+    const [newMessage, setNewMessage] = useState<string>('');
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -29,15 +29,15 @@ export default function Chat() {
                     ))}
                 </div>
                 <form className="message-input" onSubmit={handleSubmit}>
-                    <input 
-                        type="text" 
-                        value={newMessage} 
-                        onChange={(e) => setNewMessage(e.target.value)} 
-                        placeholder="Type a message..." 
-                        required 
+                    <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type a message..."
+                        required
                     />
                 </form>
             </div>
-        </div>  
+        </div>
     );
 }
