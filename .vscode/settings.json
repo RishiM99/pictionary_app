@@ -4,4 +4,5 @@
     "editor.formatOnSave": true,
     "editor.wordWrap": "on",
     "editor.wordWrapColumn": 100,
+    "editor.lightbulb.enabled": "onCode",
 }

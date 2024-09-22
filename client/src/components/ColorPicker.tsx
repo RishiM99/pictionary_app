@@ -1,11 +1,11 @@
 import React, { useRef, useContext, forwardRef, useEffect } from 'react';
 import './styles/ColorPicker.css';
 import { DrawingContext } from '../contexts/DrawingContext.ts';
-import { getColorValues } from '../helpers/Enums.ts';
+import { getColorStrings, convertStringToColor, PaletteOption } from '../helpers/Enums.ts';
 
 
 const ColorPicker = forwardRef(function ColorPicker(props, colorPickerRef: React.MutableRefObject<HTMLDivElement>) {
-    const { setCurrentColorClass, setShowColorPicker, setSelectedPaletteOption, openColorPickerButtonRef } = useContext(DrawingContext);
+    const { setCurrentColor, setShowColorPicker, setSelectedPaletteOption, openColorPickerButtonRef } = useContext(DrawingContext);
 
     useEffect(() => {
         function handleClickOutsideColorPicker() {
@@ -20,7 +20,7 @@ const ColorPicker = forwardRef(function ColorPicker(props, colorPickerRef: React
 
                     if (outsideColorPicker && outsideColorPickerButton) {
                         setShowColorPicker(false);
-                        setSelectedPaletteOption('pen'); //default option
+                        setSelectedPaletteOption(PaletteOption.Pen); //default option
                     }
                 }
             }
@@ -38,12 +38,12 @@ const ColorPicker = forwardRef(function ColorPicker(props, colorPickerRef: React
 
     return (
         <div className="color-picker-container" ref={colorPickerRef}>
-            {getColorValues().map((colorClass, index) => (
-                <div className={colorClass} key={index} onClick={(e) => {
-                    console.log(colorClass);
-                    setCurrentColorClass(colorClass);
+            {getColorStrings().map((colorStr, index) => (
+                <div className={colorStr} key={index} onClick={(e) => {
+                    console.log(colorStr);
+                    setCurrentColor(convertStringToColor(colorStr));
                     setShowColorPicker(false);
-                    setSelectedPaletteOption('pen');
+                    setSelectedPaletteOption(PaletteOption.Pen);
                 }
                 } />
             ))}

@@ -1,28 +1,40 @@
 import { setOldCanvasWidth, setOldCanvasHeight, getOldCanvasHeight, getOldCanvasWidth } from './CanvasResizingHelper.js';
+import { Color, convertColorToString, PaletteOption, StrokeSize } from './Enums.ts';
 import getSocket from './socket.ts';
-import { DRAW_STROKE_CLASS_TO_PIXEL_MAPPING, ERASER_STROKE_CLASS_TO_PIXEL_MAPPING } from './StrokeInfoMapping.js';
+import { StrokeInfo } from './StrokeInfoMapping.js';
+
+type Point = {
+    x: number,
+    y: number
+};
+
+type SerializedPath = {
+    lineWidth: number,
+    strokeStyle: string,
+    points: Point[];
+};
 
 
-let allPaths = {};
-let currentTripletIndexFromMouse = 0;
-let drawingCanvas = null;
-let context = null;
-let currentColorClass = null;
-let currentDrawStrokeSize = null;
-let currentEraseStrokeSize = null;
-let setIsDrawing = null;
-let isDrawing = null;
-let selectedPaletteOption = null;
+let allPaths: Map<any, SerializedPath> = new Map();
+let currentTripletIndexFromMouse: number = 0;
+let drawingCanvas: HTMLCanvasElement = null;
+let context: CanvasRenderingContext2D = null;
+let currentColor: Color = null;
+let currentDrawStrokeSize: StrokeSize = null;
+let currentEraseStrokeSize: StrokeSize = null;
+let setIsDrawing: React.Dispatch<React.SetStateAction<boolean>> = null;
+let isDrawing: boolean = null;
+let selectedPaletteOption: PaletteOption = null;
 let currentPathUUIDFromMouse = null;
-let paletteBoundingRect = null;
-let drawingCanvasBoundingRect = null;
-let cursor = null;
-let drawStrokePickerBoundingRect = null;
-let eraseStrokePickerBoundingRect = null;
-let colorPickerBoundingRect = null;
-let showColorPicker = null;
-let showDrawStrokePicker = null;
-let showEraseStrokePicker = null;
+let paletteBoundingRect: DOMRect = null;
+let drawingCanvasBoundingRect: DOMRect = null;
+let cursor: HTMLDivElement = null;
+let drawStrokePickerBoundingRect: DOMRect = null;
+let eraseStrokePickerBoundingRect: DOMRect = null;
+let colorPickerBoundingRect: DOMRect = null;
+let showColorPicker: boolean = null;
+let showDrawStrokePicker: boolean = null;
+let showEraseStrokePicker: boolean = null;
 
 // How often to push updates of drawing
 const FREQUENCY_OF_DRAWING_UPDATES = 3;
@@ -89,8 +101,8 @@ function mouseDownEventListener(e) {
         setIsDrawing(false);
     }
 
-    const lineWidth = selectedPaletteOption === 'eraser' ? ERASER_STROKE_CLASS_TO_PIXEL_MAPPING[currentEraseStrokeSize].eraserSize : DRAW_STROKE_CLASS_TO_PIXEL_MAPPING[currentDrawStrokeSize].penSize;
-    const strokeStyle = selectedPaletteOption === 'eraser' ? 'white' : getComputedStyle(document.querySelector(`.${currentColorClass}`))["background-color"];
+    const lineWidth = selectedPaletteOption === PaletteOption.Eraser ? StrokeInfo[currentEraseStrokeSize].pixelSize : StrokeInfo[currentDrawStrokeSize].pixelSize;
+    const strokeStyle = selectedPaletteOption === PaletteOption.Eraser ? 'white' : getComputedStyle(document.querySelector(`.${convertColorToString(currentColor)}`))["background-color"];
 
     const uuid = crypto.randomUUID();
     currentTripletIndexFromMouse = 0;
@@ -191,13 +203,13 @@ function mouseUpEventListener(e) {
 // }
 
 function scaleAllPathsAndRedrawAllCurves(scaleX, scaleY) {
-    let newAllPaths = {};
+    let newAllPaths = new Map();
     for (const [uuid, serializedPath] of Object.entries(allPaths)) {
         const scaledPoints = serializedPath.points.map(((point) => ({ x: point.x * scaleX, y: point.y * scaleY })));
 
         let newSerializedPath = { points: scaledPoints, lineWidth: serializedPath.lineWidth, strokeStyle: serializedPath.strokeStyle };
 
-        drawRemainderOfPath(newSerializedPath, 0, true);
+        drawRemainderOfPath(newSerializedPath, 0);
 
         newAllPaths[crypto.randomUUID()] = newSerializedPath;
     }
@@ -217,13 +229,31 @@ function windowResizeListener(e) {
     setOldCanvasHeight(drawingCanvas.height);
 }
 
+type SetUpDrawingForCanvasParamsType = {
+    drawingCanvasRef: React.MutableRefObject<HTMLCanvasElement>,
+    currColor: Color,
+    currDrawStrokeSize: StrokeSize,
+    setIsDrawingFn: React.Dispatch<React.SetStateAction<boolean>>,
+    isDrawingVar: boolean,
+    selectedPaletteOptionVar: PaletteOption,
+    currEraseStrokeSize: StrokeSize,
+    paletteRefVar: React.MutableRefObject<HTMLDivElement>,
+    cursorRef: React.MutableRefObject<HTMLDivElement>,
+    drawStrokePickerRef: React.MutableRefObject<HTMLDivElement>,
+    eraseStrokePickerRef: React.MutableRefObject<HTMLDivElement>,
+    colorPickerRef: React.MutableRefObject<HTMLDivElement>,
+    showColorPickerVar: boolean,
+    showEraseStrokePickerVar: boolean,
+    showDrawStrokePickerVar: boolean,
+}
 
-function setUpDrawingForCanvas({ drawingCanvasRef, currColorClass, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef, drawStrokePickerRef, eraseStrokePickerRef, colorPickerRef, showColorPickerVar, showEraseStrokePickerVar, showDrawStrokePickerVar }) {
+
+function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef, drawStrokePickerRef, eraseStrokePickerRef, colorPickerRef, showColorPickerVar, showEraseStrokePickerVar, showDrawStrokePickerVar }: SetUpDrawingForCanvasParamsType) {
 
     cursor = cursorRef.current;
     drawingCanvas = drawingCanvasRef.current;
     context = drawingCanvas.getContext("2d");
-    currentColorClass = currColorClass;
+    currentColor = currColor;
     currentDrawStrokeSize = currDrawStrokeSize;
     currentEraseStrokeSize = currEraseStrokeSize;
     setIsDrawing = setIsDrawingFn;

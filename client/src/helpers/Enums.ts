@@ -5,16 +5,16 @@ export enum PaletteOption {
 }
 
 export enum Color {
-    Black,
-    Gray,
-    Purple,
-    Blue,
-    Teal,
-    Green,
-    Yellow,
-    Orange,
-    Brown,
-    Red
+    black,
+    gray,
+    purple,
+    blue,
+    teal,
+    green,
+    yellow,
+    orange,
+    brown,
+    red
 }
 
 export enum StrokeSize {
@@ -23,12 +23,16 @@ export enum StrokeSize {
     Large = "large"
 }
 
-export function getColorValues(): string[] {
+export function getColorStrings(): string[] {
     return Object.keys(Color).filter((item) => {
         return isNaN(Number(item));
-    }).map((x) => x.toLowerCase());
+    });
 }
 
 export function convertColorToString(color: Color): string {
-    return Color[color].toLowerCase();
+    return Color[color];
+}
+
+export function convertStringToColor(colorStr: string): Color {
+    return Color[colorStr];
 }
