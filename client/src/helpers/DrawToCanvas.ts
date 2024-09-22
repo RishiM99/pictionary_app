@@ -3,6 +3,8 @@ import { Color, convertColorToString, PaletteOption, StrokeSize } from './Enums.
 import getSocket from './socket.ts';
 import { StrokeInfo } from './StrokeInfoMapping.ts';
 
+const MAXIMUM_CURSOR_MOVE_DISTANCE: number = 300;
+
 type Point = {
     x: number,
     y: number
@@ -169,9 +171,17 @@ function mouseMoveEventListener(e) {
     if (isPointOutsideOfCanvas(point) || isPointUnderPalette(point) || isPointUnderColorPicker(point) || isPointUnderDrawStrokePicker(point) || isPointUnderEraseStrokePicker(point)) {
         cursor.style.visibility = "hidden";
     } else {
+        if (window.getComputedStyle(cursor).getPropertyValue("visibility") === "hidden") {
+            console.log('here');
+            cursor.style.left = `${e.offsetX}px`;
+            cursor.style.top = `${e.offsetY}px`;
+        } else {
+            if (Math.abs(e.offsetX - parseInt(window.getComputedStyle(cursor).getPropertyValue("left"), 10)) <= MAXIMUM_CURSOR_MOVE_DISTANCE && Math.abs(e.offsetY - parseInt(window.getComputedStyle(cursor).getPropertyValue("top"), 10)) <= MAXIMUM_CURSOR_MOVE_DISTANCE) {
+                cursor.style.left = `${e.offsetX}px`;
+                cursor.style.top = `${e.offsetY}px`;
+            }
+        }
         cursor.style.visibility = "visible";
-        cursor.style.left = `${e.offsetX}px`;
-        cursor.style.top = `${e.offsetY}px`;
     }
 }
 
