@@ -82,7 +82,7 @@ export default function Room() {
             </div>
             <div className="game-play-area">
                 <CurrentPlayersList ref={currentPlayersSidebarRef} />
-                <Canvas roomNameHeaderHeight={roomNameHeaderHeight} currentPlayersSidebarWidth={currentPlayersSidebarWidth} />
+                <Canvas roomNameHeaderHeight={roomNameHeaderHeight} currentPlayersSidebarWidth={currentPlayersSidebarWidth} roomId={roomId} />
                 <Chat />
             </div>
         </div>
