@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import './styles/CurrentPlayersList.css';
 
 const currentPlayerList = ["Emily Johnson", "Jane Smith", "John Doe"];
 
 
-export default function CurrentPlayersList() {
+const CurrentPlayersList = forwardRef(function CurrentPlayersList(props, currentPlayersListRef: React.MutableRefObject<HTMLDivElement>) {
     return (
-        <div className="current-players-list">
+        <div className="current-players-list" ref={currentPlayersListRef}>
             {currentPlayerList.map((player, index) => (
                 <div className="current-player" key={index}>
                     <p>
@@ -16,4 +16,6 @@ export default function CurrentPlayersList() {
             ))}
         </div>
     );
-}
+});
+
+export default CurrentPlayersList;

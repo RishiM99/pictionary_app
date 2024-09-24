@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './styles/Room.css';
 import Canvas from '../components/Canvas';
 import CurrentPlayersList from '../components/CurrentPlayersList';
@@ -24,6 +24,15 @@ export async function loader({ params }) {
 export default function Room() {
     const roomId = useLoaderData() as string;
     const [copyUrlClicked, setCopyUrlClicked] = useState(false);
+    const [currentPlayersSidebarWidth, setCurrentPlayersSidebarWidth] = useState<number>(null);
+    const [roomNameHeaderHeight, setRoomNameHeaderHeight] = useState<number>(null);
+
+
+    const currentPlayersSidebarRef = useRef<HTMLDivElement>(null);
+    const roomNameHeaderRef = useRef<HTMLDivElement>(null);
+
+
+
 
     useEffect(() => {
         function handleCopyUrlClicked() {
@@ -47,9 +56,16 @@ export default function Room() {
     }, [copyUrlClicked]);
 
 
+    useEffect(() => {
+        setRoomNameHeaderHeight(roomNameHeaderRef.current.getBoundingClientRect().height);
+        setCurrentPlayersSidebarWidth(currentPlayersSidebarRef.current.getBoundingClientRect().width);
+    }, [roomNameHeaderRef, currentPlayersSidebarRef]);
+
+
+
     return (
         <div className="container">
-            <div className="room-name">
+            <div className="room-name" ref={roomNameHeaderRef}>
                 <p className="room-name-text"> {roomId} </p>
                 {copyUrlClicked ?
                     <p className="copy-url-copied-confirmation-text"> ✔ Room link has been copied </p> :
@@ -63,8 +79,8 @@ export default function Room() {
                 }
             </div>
             <div className="game-play-area">
-                <CurrentPlayersList />
-                <Canvas />
+                <CurrentPlayersList ref={currentPlayersSidebarRef} />
+                <Canvas roomNameHeaderHeight={roomNameHeaderHeight} currentPlayersSidebarWidth={currentPlayersSidebarWidth} />
                 <Chat />
             </div>
         </div>

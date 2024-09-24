@@ -9,10 +9,13 @@ import { setOldCanvasHeight, setOldCanvasWidth } from '../helpers/CanvasResizing
 import { StrokeInfo } from '../helpers/StrokeInfoMapping.ts';
 import { PaletteOption, Color, StrokeSize, convertColorToString } from '../helpers/Enums.ts';
 
+type Props = {
+    roomNameHeaderHeight: number;
+    currentPlayersSidebarWidth: number;
+}
 
 
-
-export default function Canvas() {
+export default function Canvas({ roomNameHeaderHeight, currentPlayersSidebarWidth }: Props) {
     const [showColorPicker, setShowColorPicker] = useState(false);
     const [showDrawStrokePicker, setShowDrawStrokePicker] = useState(false);
     const [showEraseStrokePicker, setShowEraseStrokePicker] = useState(false);
@@ -49,12 +52,12 @@ export default function Canvas() {
     }, []);
 
     useEffect(() => {
-        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currColor: currentColor, currDrawStrokeSize: currentDrawStrokeSize, isDrawingVar: isDrawing, setIsDrawingFn: setIsDrawing, currEraseStrokeSize: currentEraseStrokeSize, selectedPaletteOptionVar: selectedPaletteOption, paletteRefVar: paletteRef, cursorRef, colorPickerRef, drawStrokePickerRef, eraseStrokePickerRef, showColorPickerVar: showColorPicker, showDrawStrokePickerVar: showDrawStrokePicker, showEraseStrokePickerVar: showEraseStrokePicker });
+        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currColor: currentColor, currDrawStrokeSize: currentDrawStrokeSize, isDrawingVar: isDrawing, setIsDrawingFn: setIsDrawing, currEraseStrokeSize: currentEraseStrokeSize, selectedPaletteOptionVar: selectedPaletteOption, paletteRefVar: paletteRef, cursorRef, colorPickerRef, drawStrokePickerRef, eraseStrokePickerRef, showColorPickerVar: showColorPicker, showDrawStrokePickerVar: showDrawStrokePicker, showEraseStrokePickerVar: showEraseStrokePicker, roomNameHeaderHeightVar: roomNameHeaderHeight, currentPlayersSidebarWidthVar: currentPlayersSidebarWidth });
 
         return () => {
             setUpDrawingCanvasCleanup();
         }
-    }, [currentDrawStrokeSize, currentColor, isDrawing, drawingCanvasRef, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption, paletteRef, colorPickerRef, drawStrokePickerRef, eraseStrokePickerRef, showColorPicker, showDrawStrokePicker, showEraseStrokePicker]);
+    }, [currentDrawStrokeSize, currentColor, isDrawing, drawingCanvasRef, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption, paletteRef, colorPickerRef, drawStrokePickerRef, eraseStrokePickerRef, showColorPicker, showDrawStrokePicker, showEraseStrokePicker, roomNameHeaderHeight, currentPlayersSidebarWidth]);
 
     const colorPickerButtonOnClick = () => {
         if (!showColorPicker && showDrawStrokePicker) {
