@@ -73,10 +73,10 @@ io.on('connection', async (socket) => {
         const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
         io.emit('listOfRoomsAndMembers', roomsAndMembersInfo);
     });
-    // socket.on('broadcast-drawing-paths-diff', async (msg) => {
-    //   const { pathsDiff, roomName } = msg;
-    //   io.to(roomName).emit('updated-drawing-paths-diff', pathsDiff);
-    // });
+    socket.on('drawingPathsDiffFromClient', async (msg) => {
+        const { pathsDiff, width, height, roomId } = msg;
+        socket.broadcast.to(roomId).emit('broadcastDrawingPathsDiff', { pathsDiff, width, height });
+    });
 });
 server.listen(Constants.PORT, () => {
     console.log(`Server listening on ${Constants.PORT}`);

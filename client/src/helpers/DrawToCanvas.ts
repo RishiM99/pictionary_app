@@ -3,9 +3,8 @@ import { Color, convertColorToString, PaletteOption, StrokeSize } from './Enums.
 import getSocket from './socket.ts';
 import { StrokeInfo } from './StrokeInfoMapping.ts';
 import assert from 'assert';
-import { SerializedPath } from './Types.ts';
-
-const MAXIMUM_CURSOR_MOVE_DISTANCE: number = 300;
+import { SerializedPath, UUIDandSerializedPath } from './Types.ts';
+import { BroadcastDrawingPathsDiffType } from '../common/SocketEvents.ts';
 
 
 let allPaths: Map<any, SerializedPath> = new Map();
@@ -92,6 +91,7 @@ function isPointUnderEraseStrokePicker(point) {
 
 
 function mouseDownEventListener(e) {
+    console.log('mousedown');
 
     if (isPointUnderPalette({ x: e.clientX, y: e.clientY }) || isPointOutsideOfCanvas({ x: e.clientX, y: e.clientY })) {
         setIsDrawing(false);
@@ -108,33 +108,57 @@ function mouseDownEventListener(e) {
     trackDiffsAndPushUpdates(uuid, { x: e.clientX, y: e.clientY }, { lineWidth, strokeStyle });
 }
 
+function convertPathsDiffMapToArray(pathsDiffMap: Map<any, SerializedPath>): UUIDandSerializedPath[] {
+    return [...pathsDiffMap].map(([uuid, serializedPath]) => ({ 'uuid': uuid, 'serializedPath': serializedPath }));
+}
+
+function convertPathsDiffArrayToMap(pathsDiffArr: UUIDandSerializedPath[]): Map<any, SerializedPath> {
+    const arrToConvertToMap = pathsDiffArr.map((uuidAndSerializedPath) => [uuidAndSerializedPath.uuid, uuidAndSerializedPath.serializedPath]) as [any, SerializedPath][];
+    return new Map(arrToConvertToMap);
+}
+
 function trackDiffsAndPushUpdates(pathUUID, point, newPathOptions?: { lineWidth: number, strokeStyle: string }) {
     if (updatesSinceLastSync === FREQUENCY_OF_DRAWING_UPDATES) {
-        socket.emit('drawingPathsDiffFromClient', { pathsDiff: diffFromPreviousAllPaths, width: getOldCanvasWidth(), height: getOldCanvasHeight(), roomId });
+        console.log(`sentmap`);
+        console.log(diffFromPreviousAllPaths);
+        socket.emit('drawingPathsDiffFromClient', { pathsDiff: convertPathsDiffMapToArray(diffFromPreviousAllPaths), width: getOldCanvasWidth(), height: getOldCanvasHeight(), roomId });
         updatesSinceLastSync = 0;
         diffFromPreviousAllPaths = new Map();
     }
 
-    if (pathUUID in diffFromPreviousAllPaths) {
-        assert(typeof newPathOptions === 'undefined');
+    if (diffFromPreviousAllPaths.has(pathUUID)) {
         diffFromPreviousAllPaths.get(pathUUID).points.push(point);
-    } else {
-        assert(typeof newPathOptions !== 'undefined');
-        diffFromPreviousAllPaths.set(pathUUID, { points: [point], lineWidth: newPathOptions.lineWidth, strokeStyle: newPathOptions.strokeStyle });
+    }
+    if (!(diffFromPreviousAllPaths.has(pathUUID))) {
+        diffFromPreviousAllPaths.set(pathUUID, { points: [point], lineWidth: 2, strokeStyle: "black" });
     }
 
     updatesSinceLastSync++;
 }
 
-function addDrawingPathsDiffEventListener() {
-    socket.on('broadcastDrawingPathsDiff', (msg) => {
-        const { pathsDiff, width, height } = msg;
+function drawingPathsDiffEventListener(msg: BroadcastDrawingPathsDiffType) {
+    const { pathsDiff, width, height } = msg;
+    const pathsDiffMap = convertPathsDiffArrayToMap(pathsDiff);
+    console.log(`receivedmap`);
+    console.log(pathsDiffMap);
 
-        const xScale = getOldCanvasWidth() / width;
-        const yScale = getOldCanvasHeight() / height;
-        for (let [uuid, serializedPath] of pathsDiff) {
-            serializedPath.points.map(((point) => ({ x: point.x * xScale, y: point.y * yScale })));
-            // FINISH
+    const xScale = getOldCanvasWidth() / width;
+    const yScale = getOldCanvasHeight() / height;
+    pathsDiffMap.forEach((serializedPath, uuid) => {
+        serializedPath.points.map(((point) => ({ x: point.x * xScale, y: point.y * yScale })));
+        if (allPaths.has(uuid)) {
+            allPaths.get(uuid).points = allPaths.get(uuid).points.concat(serializedPath.points);
+            console.log(`allPaths`);
+            console.log(allPaths);
+            console.log(`allPathslength`);
+            console.log(allPaths.get(uuid).points.length);
+            //drawRemainderOfPath(allPaths.get(uuid), Math.max(allPaths.get(uuid).points.length - serializedPath.points.length - 1, 0));
+            console.log(`triplet start index ${Math.max(allPaths.get(uuid).points.length - serializedPath.points.length - 2, 0)}`)
+            drawRemainderOfPath(allPaths.get(uuid), Math.max(allPaths.get(uuid).points.length - serializedPath.points.length - 2, 0));
+
+        } else {
+            allPaths.set(uuid, serializedPath);
+            drawRemainderOfPath(serializedPath, 0);
         }
     });
 }
@@ -143,6 +167,7 @@ function addDrawingPathsDiffEventListener() {
 function mouseMoveEventListener(e) {
     const point = { x: e.clientX, y: e.clientY };
     if (isDrawing) {
+        console.log('mousemove');
         allPaths.get(currentPathUUIDFromMouse).points.push(point);
         drawRemainderOfPath(allPaths.get(currentPathUUIDFromMouse), currentTripletIndexFromMouse);
 
@@ -150,7 +175,7 @@ function mouseMoveEventListener(e) {
             currentTripletIndexFromMouse++;
         }
 
-        trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, point);
+        trackDiffsAndPushUpdates(currentPathUUIDFromMouse, point);
     }
 
     //Move cursor anyways
@@ -173,7 +198,7 @@ function mouseUpEventListener(e) {
 
         setIsDrawing(false);
 
-        //trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
+        //trackDiffsAndPushUpdates(currentPathUUIDFromMouse, { x: currentX, y: currentY });
     }
 }
 
@@ -201,8 +226,6 @@ function scaleAllPathsAndRedrawAllCurves(scaleX, scaleY) {
 
         newAllPaths.set(crypto.randomUUID(), newSerializedPath);
     }
-
-    console.log(newAllPaths);
 
     allPaths = newAllPaths;
 }
@@ -274,7 +297,8 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize
         window.addEventListener("mousedown", mouseDownEventListener);
         window.addEventListener("mousemove", mouseMoveEventListener);
         window.addEventListener("mouseup", mouseUpEventListener);
-        window.addEventListener("resize", windowResizeListener)
+        window.addEventListener("resize", windowResizeListener);
+        socket.on('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
     }
 
     return () => {
@@ -282,10 +306,12 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize
             window.removeEventListener("mousedown", mouseDownEventListener);
             window.removeEventListener("mousemove", mouseMoveEventListener);
             window.removeEventListener("mouseup", mouseUpEventListener);
-            window.removeEventListener("resize", windowResizeListener)
+            window.removeEventListener("resize", windowResizeListener);
+            socket.off('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
         }
     }
 }
+
 
 
 export default setUpDrawingForCanvas;

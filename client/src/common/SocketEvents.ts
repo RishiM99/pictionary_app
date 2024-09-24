@@ -1,4 +1,4 @@
-import { SerializedPath } from '../helpers/Types.ts';
+import { SerializedPath, UUIDandSerializedPath } from '../helpers/Types';
 
 export type RoomAndMembers = {
     roomId: any;
@@ -7,14 +7,14 @@ export type RoomAndMembers = {
 };
 
 export type DrawingPathsDiffFromClientType = {
-    pathsDiff: Map<any, SerializedPath>,
+    pathsDiff: UUIDandSerializedPath[];
     width: number,
     height: number,
     roomId: string,
 };
 
 export type BroadcastDrawingPathsDiffType = {
-    pathsDiff: Map<any, SerializedPath>,
+    pathsDiff: UUIDandSerializedPath[];
     width: number,
     height: number,
 };
@@ -22,12 +22,12 @@ export type BroadcastDrawingPathsDiffType = {
 export interface ServerToClientEvents {
     listOfRoomsAndMembers: (listOfRoomsAndMembers: RoomAndMembers[]) => void;
     nameOfNewRoom: (roomId: string) => void;
-    broadcastDrawingPathsDiff: (input: BroadcastDrawingPathsDiffType) => void;
+    broadcastDrawingPathsDiff: (msg: BroadcastDrawingPathsDiffType) => void;
 }
 
 export interface ClientToServerEvents {
     createRoom: (roomName: string) => void;
     joinRoom: (roomName: string) => void;
     getListOfRoomsAndMembers: () => void;
-    drawingPathsDiffFromClient: (input: DrawingPathsDiffFromClientType) => void;
+    drawingPathsDiffFromClient: (msg: DrawingPathsDiffFromClientType) => void;
 }

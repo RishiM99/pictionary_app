@@ -102,9 +102,9 @@ io.on('connection', async (socket) => {
     io.emit('listOfRoomsAndMembers', roomsAndMembersInfo);
   });
 
-  socket.on('drawingPathsDiffFromClient', async (input) => {
-    const { pathsDiff, width, height, roomId } = input;
-    io.to(roomId).emit('broadcastDrawingPathsDiff', { pathsDiff, width, height });
+  socket.on('drawingPathsDiffFromClient', async (msg) => {
+    const { pathsDiff, width, height, roomId } = msg;
+    socket.broadcast.to(roomId).emit('broadcastDrawingPathsDiff', { pathsDiff, width, height });
   });
 });
 
