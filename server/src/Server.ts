@@ -102,10 +102,10 @@ io.on('connection', async (socket) => {
     io.emit('listOfRoomsAndMembers', roomsAndMembersInfo);
   });
 
-  // socket.on('broadcast-drawing-paths-diff', async (msg) => {
-  //   const { pathsDiff, roomName } = msg;
-  //   io.to(roomName).emit('updated-drawing-paths-diff', pathsDiff);
-  // });
+  socket.on('broadcast-drawing-paths-diff', async (msg) => {
+    const { pathsDiff, roomName } = msg;
+    io.to(roomName).emit('updated-drawing-paths-diff', pathsDiff);
+  });
 });
 
 server.listen(Constants.PORT, () => {

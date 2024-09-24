@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './styles/Room.css';
+import getSocket from '../helpers/socket.ts';
 import Canvas from '../components/Canvas';
 import CurrentPlayersList from '../components/CurrentPlayersList';
 import Chat from "../components/Chat";
@@ -16,6 +17,9 @@ export async function loader({ params }) {
         return redirect('/');
     }
 
+    const socket = getSocket();
+    socket.emit('joinRoom', params.roomId);
+
     console.log(params);
 
     return params.roomId;
@@ -30,8 +34,6 @@ export default function Room() {
 
     const currentPlayersSidebarRef = useRef<HTMLDivElement>(null);
     const roomNameHeaderRef = useRef<HTMLDivElement>(null);
-
-
 
 
     useEffect(() => {

@@ -13,7 +13,7 @@ export default class DBUtil {
     }
 
     // If no params, set to [].
-    async #selectAndExtractSingleColumn(sql: string, params: any[], column: string, sqlClient: pg.PoolClient | null = null) {
+    async #selectAndExtractSingleColumn(sql: string, params: any[], column: string, sqlClient: pg.PoolClient | null = null): Promise<any[]> {
         if (sqlClient == null) {
             return (await this.pgPool.query(sql, params)).rows.map((row) => row[column]);
         } else {
@@ -54,6 +54,14 @@ export default class DBUtil {
     }
 
     async addSocketToRoom(socketId: string, roomId: string) {
+        const roomsSocketIsIn = await this.#selectAndExtractSingleColumn("SELECT room_id FROM sockets_to_rooms WHERE socket_id = $1", [socketId], "room_id");
+        for (const roomSocketIsIn of roomsSocketIsIn) {
+            if (roomSocketIsIn === roomId) {
+                // Don't re-add socket to room if it is already in it
+                return;
+            }
+        }
+
         await this.pgPool.query("INSERT INTO sockets_to_rooms (socket_id, room_id) VALUES ($1, $2)", [socketId, roomId]);
     }
 
@@ -96,10 +104,16 @@ export default class DBUtil {
         for (const roomId of rooms) {
             const socketsInRoom = await this.#selectAndExtractSingleColumn("SELECT socket_id FROM sockets_to_rooms WHERE room_id = $1", [roomId], "socket_id");
             const membersNames = [];
+            const sessionsInTheRoom = new Set<string>();
             for (const socketId of socketsInRoom) {
                 const sessionIdResp = await this.#selectAndExtractSingleColumn("SELECT session_id FROM sockets_to_sessions WHERE socket_id = $1", [socketId], "session_id");
                 assert(sessionIdResp.length === 1);
                 const sessionId = sessionIdResp[0];
+                if (sessionsInTheRoom.has(sessionId)) {
+                    // Don't add duplicate session info
+                    continue;
+                }
+                sessionsInTheRoom.add(sessionId);
                 const sessionResp = await this.#selectAndExtractSingleColumn("SELECT sess FROM session WHERE sid = $1", [sessionId], "sess");
                 assert(sessionResp.length === 1);
                 //TODO: FIGURE OUT WHY USERNAME CAN BE NULL

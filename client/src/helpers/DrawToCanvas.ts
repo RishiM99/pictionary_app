@@ -2,6 +2,7 @@ import { setOldCanvasWidth, setOldCanvasHeight, getOldCanvasHeight, getOldCanvas
 import { Color, convertColorToString, PaletteOption, StrokeSize } from './Enums.ts';
 import getSocket from './socket.ts';
 import { StrokeInfo } from './StrokeInfoMapping.ts';
+import assert from 'assert';
 
 const MAXIMUM_CURSOR_MOVE_DISTANCE: number = 300;
 
@@ -42,7 +43,7 @@ let showEraseStrokePicker: boolean = null;
 
 // How often to push updates of drawing
 const FREQUENCY_OF_DRAWING_UPDATES = 3;
-let diffFromPreviousAllPaths = {};
+let diffFromPreviousAllPaths: Map<any, SerializedPath> = new Map<any, SerializedPath>();
 let updatesSinceLastSync = 0;
 const socket = getSocket();
 
@@ -113,47 +114,50 @@ function mouseDownEventListener(e) {
     allPaths.set(uuid, { points: [{ x: e.clientX, y: e.clientY }], lineWidth, strokeStyle });
     currentPathUUIDFromMouse = uuid;
     setIsDrawing(true);
+    trackDiffsAndPushUpdates(uuid, { x: e.clientX, y: e.clientY }, { lineWidth, strokeStyle });
 }
 
-// function trackDiffsAndPushUpdates(pathUUID, point) {
-//     if (updatesSinceLastSync === FREQUENCY_OF_DRAWING_UPDATES) {
-//         socket.emit('broadcast-drawing-paths-diff', { diff: diffFromPreviousAllPaths, x: getOldCanvasWidth(), y: getOldCanvasHeight() });
-//         updatesSinceLastSync = 0;
-//         diffFromPreviousAllPaths = {};
-//     }
+function trackDiffsAndPushUpdates(pathUUID, point, newPathOptions?: { lineWidth: number, strokeStyle: string }) {
+    if (updatesSinceLastSync === FREQUENCY_OF_DRAWING_UPDATES) {
+        socket.emit('broadcast-drawing-paths-diff', { diff: diffFromPreviousAllPaths, x: getOldCanvasWidth(), y: getOldCanvasHeight() });
+        updatesSinceLastSync = 0;
+        diffFromPreviousAllPaths = new Map();
+    }
 
-//     if (pathUUID in diffFromPreviousAllPaths) {
-//         diffFromPreviousAllPaths[pathUUID].push(point);
-//     } else {
-//         diffFromPreviousAllPaths[pathUUID] = [point];
-//     }
+    if (pathUUID in diffFromPreviousAllPaths) {
+        assert(typeof newPathOptions === 'undefined');
+        diffFromPreviousAllPaths.get(pathUUID).points.push(point);
+    } else {
+        assert(typeof newPathOptions !== 'undefined');
+        diffFromPreviousAllPaths.set(pathUUID, { points: [point], lineWidth: newPathOptions.lineWidth, strokeStyle: newPathOptions.strokeStyle });
+    }
 
-//     updatesSinceLastSync++;
-// }
+    updatesSinceLastSync++;
+}
 
-// function addDrawingPathsDiffEventListener() {
-//     socket.on('updated-drawing-paths-diff', (msg) => {
-//         const pathsDiff = msg.diff;
-//         const { x, y } = msg;
-//         for (const [uuid, serializedPath] of Object.entries(pathsDiff)) {
+function addDrawingPathsDiffEventListener() {
+    socket.on('updated-drawing-paths-diff', (msg) => {
+        const pathsDiff = msg.diff;
+        const { x, y } = msg;
+        for (const [uuid, serializedPath] of Object.entries(pathsDiff)) {
 
-//             allPaths
-//         });
+            allPaths
+        });
 
-//     if (updatesSinceLastSync === FREQUENCY_OF_DRAWING_UPDATES) {
-//         socket.emit('broadcast-drawing-paths-diff', diffFromPreviousAllPaths);
-//         updatesSinceLastSync = 0;
-//         diffFromPreviousAllPaths = {};
-//     }
+    if (updatesSinceLastSync === FREQUENCY_OF_DRAWING_UPDATES) {
+        socket.emit('broadcast-drawing-paths-diff', diffFromPreviousAllPaths);
+        updatesSinceLastSync = 0;
+        diffFromPreviousAllPaths = {};
+    }
 
-//     if (pathUUID in diffFromPreviousAllPaths) {
-//         diffFromPreviousAllPaths[pathUUID].push(point);
-//     } else {
-//         diffFromPreviousAllPaths[pathUUID] = [point];
-//     }
+    if (pathUUID in diffFromPreviousAllPaths) {
+        diffFromPreviousAllPaths[pathUUID].push(point);
+    } else {
+        diffFromPreviousAllPaths[pathUUID] = [point];
+    }
 
-//     updatesSinceLastSync++;
-// }
+    updatesSinceLastSync++;
+}
 
 
 function mouseMoveEventListener(e) {
@@ -166,7 +170,7 @@ function mouseMoveEventListener(e) {
             currentTripletIndexFromMouse++;
         }
 
-        //trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, { x: currentX, y: currentY });
+        trackDiffsAndPushUpdates(this.currentPathUUIDFromMouse, point);
     }
 
     //Move cursor anyways
