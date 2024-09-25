@@ -1,9 +1,8 @@
-import { setOldCanvasWidth, setOldCanvasHeight, getOldCanvasHeight, getOldCanvasWidth } from './CanvasResizingHelper.ts';
+import { setCurrentCanvasWidth, setCurrentCanvasHeight, getCurrentCanvasHeight, getCurrentCanvasWidth, setCurrentMousePosition, getCurrentMousePosition } from './StateStorageHelper.ts';
 import { Color, convertColorToString, PaletteOption, StrokeSize } from './Enums.ts';
 import getSocket from './socket.ts';
 import { StrokeInfo } from './StrokeInfoMapping.ts';
-import assert from 'assert';
-import { SerializedPath, UUIDandSerializedPath } from './Types.ts';
+import { SerializedPath, StrPoint, UUIDandSerializedPath } from './Types.ts';
 import { BroadcastDrawingPathsDiffType } from '../common/SocketEvents.ts';
 
 
@@ -30,6 +29,8 @@ let showColorPicker: boolean = null;
 let showDrawStrokePicker: boolean = null;
 let showEraseStrokePicker: boolean = null;
 let roomId: string = null;
+let roomNameHeaderRef: React.MutableRefObject<HTMLDivElement> = null;
+let currentPlayersSidebarRef: React.MutableRefObject<HTMLDivElement> = null;
 
 // How often to push updates of drawing
 const FREQUENCY_OF_DRAWING_UPDATES = 3;
@@ -121,7 +122,7 @@ function trackDiffsAndPushUpdates(pathUUID, point) {
     if (updatesSinceLastSync === FREQUENCY_OF_DRAWING_UPDATES) {
         console.log(`sentmap`);
         console.log(diffFromPreviousAllPaths);
-        socket.emit('drawingPathsDiffFromClient', { pathsDiff: convertPathsDiffMapToArray(diffFromPreviousAllPaths), width: getOldCanvasWidth(), height: getOldCanvasHeight(), roomId });
+        socket.emit('drawingPathsDiffFromClient', { pathsDiff: convertPathsDiffMapToArray(diffFromPreviousAllPaths), width: getCurrentCanvasWidth(), height: getCurrentCanvasHeight(), roomId });
         updatesSinceLastSync = 0;
         diffFromPreviousAllPaths = new Map();
     }
@@ -144,9 +145,9 @@ function drawingPathsDiffEventListener(msg: BroadcastDrawingPathsDiffType) {
     console.log(`receivedmap`);
     console.log(pathsDiffMap);
 
-    const xScale = getOldCanvasWidth() / width;
+    const xScale = getCurrentCanvasWidth() / width;
     console.log(`xscale ${xScale}`);
-    const yScale = getOldCanvasHeight() / height;
+    const yScale = getCurrentCanvasHeight() / height;
     console.log(`yscale ${yScale}`);
 
     pathsDiffMap.forEach((serializedPath, uuid) => {
@@ -166,6 +167,12 @@ function drawingPathsDiffEventListener(msg: BroadcastDrawingPathsDiffType) {
             drawRemainderOfPath(serializedPath, 0);
         }
     });
+}
+
+function setLeftAndTopForCursor() {
+    const mousePosition = getCurrentMousePosition();
+    cursor.style.left = `${parseInt(mousePosition.x, 10) - currentPlayersSidebarRef.current.getBoundingClientRect().width - parseInt(window.getComputedStyle(cursor).getPropertyValue("width"), 10) / 2}px`;;
+    cursor.style.top = `${parseInt(mousePosition.y, 10) - roomNameHeaderRef.current.getBoundingClientRect().height - parseInt(window.getComputedStyle(cursor).getPropertyValue("height"), 10) / 2}px`;;
 }
 
 
@@ -188,8 +195,8 @@ function mouseMoveEventListener(e) {
         cursor.style.visibility = "hidden";
     } else {
         cursor.style.visibility = "visible";
-        cursor.style.left = `${parseInt(e.clientX, 10) - currentPlayersSidebarWidth - parseInt(window.getComputedStyle(cursor).getPropertyValue("width"), 10) / 2}px`;
-        cursor.style.top = `${parseInt(e.clientY, 10) - roomNameHeaderHeight - parseInt(window.getComputedStyle(cursor).getPropertyValue("height"), 10) / 2}px`;
+        setCurrentMousePosition({ x: e.clientX, y: e.clientY });
+        setLeftAndTopForCursor();
     }
 }
 
@@ -240,11 +247,15 @@ function windowResizeListener(e) {
     drawingCanvas.height = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("height"), 10);
     drawingCanvas.width = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("width"), 10);
 
-    const xScale = drawingCanvas.width / getOldCanvasWidth();
-    const yScale = drawingCanvas.height / getOldCanvasHeight();
+    const xScale = drawingCanvas.width / getCurrentCanvasWidth();
+    const yScale = drawingCanvas.height / getCurrentCanvasHeight();
     scaleAllPathsAndRedrawAllCurves(xScale, yScale);
-    setOldCanvasWidth(drawingCanvas.width);
-    setOldCanvasHeight(drawingCanvas.height);
+    setCurrentCanvasWidth(drawingCanvas.width);
+    setCurrentCanvasHeight(drawingCanvas.height);
+
+    // Change position of cursor to account for changed room name header and member sidebar sizes
+    setLeftAndTopForCursor();
+
 }
 
 function onMouseDownClearCanvasButton(e: Event) {
@@ -277,10 +288,12 @@ type SetUpDrawingForCanvasParamsType = {
     showDrawStrokePickerVar: boolean,
     roomIdVar: string,
     clearCanvasButtonRefVar: React.MutableRefObject<HTMLDivElement>,
+    roomNameHeaderRefVar: React.MutableRefObject<HTMLDivElement>,
+    currentPlayersSidebarRefVar: React.MutableRefObject<HTMLDivElement>,
 }
 
 
-function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef, drawStrokePickerRef, eraseStrokePickerRef, colorPickerRef, showColorPickerVar, showEraseStrokePickerVar, showDrawStrokePickerVar, roomNameHeaderHeightVar, currentPlayersSidebarWidthVar, roomIdVar, clearCanvasButtonRefVar }: SetUpDrawingForCanvasParamsType) {
+function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef, drawStrokePickerRef, eraseStrokePickerRef, colorPickerRef, showColorPickerVar, showEraseStrokePickerVar, showDrawStrokePickerVar, roomNameHeaderHeightVar, currentPlayersSidebarWidthVar, roomIdVar, clearCanvasButtonRefVar, roomNameHeaderRefVar, currentPlayersSidebarRefVar }: SetUpDrawingForCanvasParamsType) {
 
     cursor = cursorRef.current;
     drawingCanvas = drawingCanvasRef.current;
@@ -306,6 +319,9 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize
     showColorPicker = showColorPickerVar;
     showDrawStrokePicker = showDrawStrokePickerVar;
     showEraseStrokePicker = showEraseStrokePickerVar;
+
+    roomNameHeaderRef = roomNameHeaderRefVar;
+    currentPlayersSidebarRef = currentPlayersSidebarRefVar;
 
 
     if (drawingCanvas) {

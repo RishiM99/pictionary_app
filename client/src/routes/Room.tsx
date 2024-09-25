@@ -30,6 +30,8 @@ export default function Room() {
     const [copyUrlClicked, setCopyUrlClicked] = useState(false);
     const [currentPlayersSidebarWidth, setCurrentPlayersSidebarWidth] = useState<number>(null);
     const [roomNameHeaderHeight, setRoomNameHeaderHeight] = useState<number>(null);
+    const [currentPlayersSidebarRefProp, setCurrentPlayersSidebarRefProp] = useState<React.MutableRefObject<HTMLDivElement>>(null);
+    const [roomNameHeaderRefProp, setRoomNameHeaderRefProp] = useState<React.MutableRefObject<HTMLDivElement>>(null);
 
 
     const currentPlayersSidebarRef = useRef<HTMLDivElement>(null);
@@ -63,13 +65,18 @@ export default function Room() {
         setCurrentPlayersSidebarWidth(currentPlayersSidebarRef.current.getBoundingClientRect().width);
     }, [roomNameHeaderRef, currentPlayersSidebarRef]);
 
+    useEffect(() => {
+        setCurrentPlayersSidebarRefProp(currentPlayersSidebarRef);
+        setRoomNameHeaderRefProp(roomNameHeaderRef);
+    }, [roomNameHeaderRef, currentPlayersSidebarRef]);
+
 
 
     return (
         <div className="container">
             <div className="room-name" ref={roomNameHeaderRef}>
                 <p className="room-name-text"> {roomId} </p>
-                {copyUrlClicked ?
+                {/* {copyUrlClicked ?
                     <p className="copy-url-copied-confirmation-text"> ✔ Room link has been copied </p> :
                     <div className="copy-url-show-tooltip">
                         <img src={require("../assets/copy.png")} alt="Copy link" className="copy-url-image" onClick={() => {
@@ -78,11 +85,11 @@ export default function Room() {
                         }} />
                         <span> Copy room URL </span>
                     </div>
-                }
+                } */}
             </div>
             <div className="game-play-area">
                 <CurrentPlayersList ref={currentPlayersSidebarRef} />
-                <Canvas roomNameHeaderHeight={roomNameHeaderHeight} currentPlayersSidebarWidth={currentPlayersSidebarWidth} roomId={roomId} />
+                <Canvas roomNameHeaderHeight={roomNameHeaderHeight} currentPlayersSidebarWidth={currentPlayersSidebarWidth} roomNameHeaderRef={roomNameHeaderRefProp} currentPlayersSidebarRef={currentPlayersSidebarRefProp} roomId={roomId} />
                 <Chat />
             </div>
         </div>

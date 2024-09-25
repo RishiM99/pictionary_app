@@ -3,6 +3,11 @@ export type Point = {
     y: number
 };
 
+export type StrPoint = {
+    x: string,
+    y: string,
+};
+
 export type SerializedPath = {
     lineWidth: number,
     strokeStyle: string,

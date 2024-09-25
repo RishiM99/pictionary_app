@@ -12,6 +12,9 @@ body {
 
 .room-name {
     margin: 3px;
+    height: 55px;
+    position: sticky;
+    top: 0;
 }
 
 .room-name-text {
