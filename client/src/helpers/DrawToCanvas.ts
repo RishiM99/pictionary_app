@@ -105,7 +105,7 @@ function mouseDownEventListener(e) {
     allPaths.set(uuid, { points: [{ x: e.clientX, y: e.clientY }], lineWidth, strokeStyle });
     currentPathUUIDFromMouse = uuid;
     setIsDrawing(true);
-    trackDiffsAndPushUpdates(uuid, { x: e.clientX, y: e.clientY }, { lineWidth, strokeStyle });
+    trackDiffsAndPushUpdates(uuid, { x: e.clientX, y: e.clientY });
 }
 
 function convertPathsDiffMapToArray(pathsDiffMap: Map<any, SerializedPath>): UUIDandSerializedPath[] {
@@ -117,7 +117,7 @@ function convertPathsDiffArrayToMap(pathsDiffArr: UUIDandSerializedPath[]): Map<
     return new Map(arrToConvertToMap);
 }
 
-function trackDiffsAndPushUpdates(pathUUID, point, newPathOptions?: { lineWidth: number, strokeStyle: string }) {
+function trackDiffsAndPushUpdates(pathUUID, point) {
     if (updatesSinceLastSync === FREQUENCY_OF_DRAWING_UPDATES) {
         console.log(`sentmap`);
         console.log(diffFromPreviousAllPaths);
@@ -130,7 +130,9 @@ function trackDiffsAndPushUpdates(pathUUID, point, newPathOptions?: { lineWidth:
         diffFromPreviousAllPaths.get(pathUUID).points.push(point);
     }
     if (!(diffFromPreviousAllPaths.has(pathUUID))) {
-        diffFromPreviousAllPaths.set(pathUUID, { points: [point], lineWidth: 2, strokeStyle: "black" });
+        const lineWidth = allPaths.get(pathUUID).lineWidth;
+        const strokeStyle = allPaths.get(pathUUID).strokeStyle;
+        diffFromPreviousAllPaths.set(pathUUID, { points: [point], lineWidth, strokeStyle });
     }
 
     updatesSinceLastSync++;
@@ -143,9 +145,12 @@ function drawingPathsDiffEventListener(msg: BroadcastDrawingPathsDiffType) {
     console.log(pathsDiffMap);
 
     const xScale = getOldCanvasWidth() / width;
+    console.log(`xscale ${xScale}`);
     const yScale = getOldCanvasHeight() / height;
+    console.log(`yscale ${yScale}`);
+
     pathsDiffMap.forEach((serializedPath, uuid) => {
-        serializedPath.points.map(((point) => ({ x: point.x * xScale, y: point.y * yScale })));
+        serializedPath.points = serializedPath.points.map(((point) => ({ x: point.x * xScale, y: point.y * yScale })));
         if (allPaths.has(uuid)) {
             allPaths.get(uuid).points = allPaths.get(uuid).points.concat(serializedPath.points);
             console.log(`allPaths`);
@@ -198,7 +203,7 @@ function mouseUpEventListener(e) {
 
         setIsDrawing(false);
 
-        //trackDiffsAndPushUpdates(currentPathUUIDFromMouse, { x: currentX, y: currentY });
+        trackDiffsAndPushUpdates(currentPathUUIDFromMouse, { x: e.clientX, y: e.clientY });
     }
 }
 
