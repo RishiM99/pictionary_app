@@ -1,18 +1,19 @@
 .color-picker-container {
-    position:absolute;
-    left: 0; 
+    position: absolute;
+    left: 0;
     right: 0;
     margin-left: 43%;
-
     bottom: 18%;
     z-index: 1;
-    border: 1px solid #c0c4c4;;
-    border-radius:10px;
+    border: 1px solid #c0c4c4;
+    border-radius: 10px;
     cursor: pointer;
     background: #e0e4e4;
     width: 35%;
     height: 15%;
     display: flex;
-    align-items:center;
-    justify-content:space-between;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 5px;
+    padding-right: 5px;
 }

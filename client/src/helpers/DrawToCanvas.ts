@@ -247,6 +247,16 @@ function windowResizeListener(e) {
     setOldCanvasHeight(drawingCanvas.height);
 }
 
+function onMouseDownClearCanvasButton(e: Event) {
+    (e.currentTarget as HTMLDivElement).style.height = "30px";
+    (e.currentTarget as HTMLDivElement).style.width = "30px";
+}
+
+function onMouseUpClearCanvasButton(e: Event) {
+    (e.currentTarget as HTMLDivElement).style.height = "40px";
+    (e.currentTarget as HTMLDivElement).style.width = "40px";
+}
+
 type SetUpDrawingForCanvasParamsType = {
     drawingCanvasRef: React.MutableRefObject<HTMLCanvasElement>,
     currColor: Color,
@@ -266,10 +276,11 @@ type SetUpDrawingForCanvasParamsType = {
     showEraseStrokePickerVar: boolean,
     showDrawStrokePickerVar: boolean,
     roomIdVar: string,
+    clearCanvasButtonRefVar: React.MutableRefObject<HTMLDivElement>,
 }
 
 
-function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef, drawStrokePickerRef, eraseStrokePickerRef, colorPickerRef, showColorPickerVar, showEraseStrokePickerVar, showDrawStrokePickerVar, roomNameHeaderHeightVar, currentPlayersSidebarWidthVar, roomIdVar }: SetUpDrawingForCanvasParamsType) {
+function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef, drawStrokePickerRef, eraseStrokePickerRef, colorPickerRef, showColorPickerVar, showEraseStrokePickerVar, showDrawStrokePickerVar, roomNameHeaderHeightVar, currentPlayersSidebarWidthVar, roomIdVar, clearCanvasButtonRefVar }: SetUpDrawingForCanvasParamsType) {
 
     cursor = cursorRef.current;
     drawingCanvas = drawingCanvasRef.current;
@@ -297,13 +308,15 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize
     showEraseStrokePicker = showEraseStrokePickerVar;
 
 
-
     if (drawingCanvas) {
         window.addEventListener("mousedown", mouseDownEventListener);
         window.addEventListener("mousemove", mouseMoveEventListener);
         window.addEventListener("mouseup", mouseUpEventListener);
         window.addEventListener("resize", windowResizeListener);
         socket.on('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
+        console.log(clearCanvasButtonRefVar.current);
+        clearCanvasButtonRefVar.current.addEventListener("mousedown", onMouseDownClearCanvasButton);
+        clearCanvasButtonRefVar.current.addEventListener("mouseup", onMouseUpClearCanvasButton);
     }
 
     return () => {
@@ -313,6 +326,8 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize
             window.removeEventListener("mouseup", mouseUpEventListener);
             window.removeEventListener("resize", windowResizeListener);
             socket.off('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
+            clearCanvasButtonRefVar.current.removeEventListener("mousedown", onMouseDownClearCanvasButton);
+            clearCanvasButtonRefVar.current.removeEventListener("mouseup", onMouseUpClearCanvasButton);
         }
     }
 }

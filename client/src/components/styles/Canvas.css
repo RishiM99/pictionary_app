@@ -71,6 +71,7 @@
     background-color: #bbb;
     border-radius: 50%;
     position: relative;
+    margin: auto;
 }
 
 .draw-icon-background-selected {
@@ -82,17 +83,7 @@
     border-radius: 50%;
     position: relative;
     border: 3px solid black;
-}
-
-.draw-icon-background-selected {
-    height: 40px;
-    width: 40px;
-    background-color: #bbb;
-    border-radius: 50%;
-    position: relative;
-    border-radius: 50%;
-    position: relative;
-    border: 3px solid black;
+    margin: auto;
 }
 
 
@@ -105,21 +96,13 @@
     transform: translate(-50%, -50%);
 }
 
-.clear-canvas-icon {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 60%;
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-}
-
 .palette-icon-description {
     margin-top: 5px;
     margin-bottom: 0px;
     color: black;
     font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
     font-weight: 600;
+    text-align: center;
 }
 
 
@@ -129,14 +112,7 @@
     background-color: #bbb;
     border-radius: 50%;
     position: relative;
-}
-
-.clear-canvas-background {
-    height: 40px;
-    width: 40px;
-    background-color: #bbb;
-    border-radius: 50%;
-    position: relative;
+    margin: auto;
 }
 
 .erase-icon-background-selected {
@@ -146,6 +122,36 @@
     border-radius: 50%;
     position: relative;
     border: 3px solid black;
+    margin: auto;
+}
+
+.erase-icon {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+
+.clear-canvas-background {
+    height: 40px;
+    width: 40px;
+    margin: auto;
+    background-color: #bbb;
+    border-radius: 50%;
+    position: relative;
+}
+
+
+.clear-canvas-icon {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 60%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 }
 
 .color-picker-button-border {
@@ -158,6 +164,7 @@
     background-origin: border-box;
     background-clip: content-box, border-box;
     position: relative;
+    margin: auto;
     /* 
     height: 50px;
     width: 50px;
@@ -167,22 +174,12 @@
     position: relative; */
 }
 
-.erase-icon {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-}
-
 .black {
     height: 25px;
     width: 25px;
     background-color: black;
     border-radius: 50%;
     position: relative;
-    margin-left: 2px;
 }
 
 .gray {
@@ -294,7 +291,6 @@
     width: 25px;
     background-color: red;
     border-radius: 50%;
-    margin-right: 2px;
 }
 
 /* .maroon {

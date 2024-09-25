@@ -54,12 +54,12 @@ export default function Canvas({ roomId, roomNameHeaderHeight, currentPlayersSid
     }, []);
 
     useEffect(() => {
-        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currColor: currentColor, currDrawStrokeSize: currentDrawStrokeSize, isDrawingVar: isDrawing, setIsDrawingFn: setIsDrawing, currEraseStrokeSize: currentEraseStrokeSize, selectedPaletteOptionVar: selectedPaletteOption, paletteRefVar: paletteRef, cursorRef, colorPickerRef, drawStrokePickerRef, eraseStrokePickerRef, showColorPickerVar: showColorPicker, showDrawStrokePickerVar: showDrawStrokePicker, showEraseStrokePickerVar: showEraseStrokePicker, roomNameHeaderHeightVar: roomNameHeaderHeight, currentPlayersSidebarWidthVar: currentPlayersSidebarWidth, roomIdVar: roomId });
+        const setUpDrawingCanvasCleanup = setUpDrawingForCanvas({ drawingCanvasRef, currColor: currentColor, currDrawStrokeSize: currentDrawStrokeSize, isDrawingVar: isDrawing, setIsDrawingFn: setIsDrawing, currEraseStrokeSize: currentEraseStrokeSize, selectedPaletteOptionVar: selectedPaletteOption, paletteRefVar: paletteRef, cursorRef, colorPickerRef, drawStrokePickerRef, eraseStrokePickerRef, showColorPickerVar: showColorPicker, showDrawStrokePickerVar: showDrawStrokePicker, showEraseStrokePickerVar: showEraseStrokePicker, roomNameHeaderHeightVar: roomNameHeaderHeight, currentPlayersSidebarWidthVar: currentPlayersSidebarWidth, roomIdVar: roomId, clearCanvasButtonRefVar: clearCanvasButtonRef });
 
         return () => {
             setUpDrawingCanvasCleanup();
         }
-    }, [currentDrawStrokeSize, currentColor, isDrawing, drawingCanvasRef, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption, paletteRef, colorPickerRef, drawStrokePickerRef, eraseStrokePickerRef, showColorPicker, showDrawStrokePicker, showEraseStrokePicker, roomNameHeaderHeight, currentPlayersSidebarWidth, roomId]);
+    }, [currentDrawStrokeSize, currentColor, isDrawing, drawingCanvasRef, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption, paletteRef, colorPickerRef, drawStrokePickerRef, eraseStrokePickerRef, showColorPicker, showDrawStrokePicker, showEraseStrokePicker, roomNameHeaderHeight, currentPlayersSidebarWidth, roomId, clearCanvasButtonRef]);
 
     const colorPickerButtonOnClick = () => {
         if (!showColorPicker && showDrawStrokePicker) {
