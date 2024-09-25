@@ -105,8 +105,33 @@
     transform: translate(-50%, -50%);
 }
 
+.clear-canvas-icon {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 60%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+.palette-icon-description {
+    margin-top: 5px;
+    margin-bottom: 0px;
+    color: black;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight: 600;
+}
+
 
 .erase-icon-background-unselected {
+    height: 40px;
+    width: 40px;
+    background-color: #bbb;
+    border-radius: 50%;
+    position: relative;
+}
+
+.clear-canvas-background {
     height: 40px;
     width: 40px;
     background-color: #bbb;
