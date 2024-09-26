@@ -180,6 +180,8 @@ function mouseMoveEventListener(e) {
     const point = { x: e.clientX, y: e.clientY };
     if (isDrawing) {
         console.log('mousemove');
+        console.log(allPaths);
+        console.log(currentPathUUIDFromMouse);
         allPaths.get(currentPathUUIDFromMouse).points.push(point);
         drawRemainderOfPath(allPaths.get(currentPathUUIDFromMouse), currentTripletIndexFromMouse);
 
@@ -325,9 +327,9 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize
 
 
     if (drawingCanvas) {
-        window.addEventListener("mousedown", mouseDownEventListener);
-        window.addEventListener("mousemove", mouseMoveEventListener);
-        window.addEventListener("mouseup", mouseUpEventListener);
+        drawingCanvas.addEventListener("mousedown", mouseDownEventListener);
+        drawingCanvas.addEventListener("mousemove", mouseMoveEventListener);
+        drawingCanvas.addEventListener("mouseup", mouseUpEventListener);
         window.addEventListener("resize", windowResizeListener);
         socket.on('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
         console.log(clearCanvasButtonRefVar.current);
@@ -337,9 +339,9 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize
 
     return () => {
         if (drawingCanvas) {
-            window.removeEventListener("mousedown", mouseDownEventListener);
-            window.removeEventListener("mousemove", mouseMoveEventListener);
-            window.removeEventListener("mouseup", mouseUpEventListener);
+            drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
+            drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
+            drawingCanvas.removeEventListener("mouseup", mouseUpEventListener);
             window.removeEventListener("resize", windowResizeListener);
             socket.off('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
             clearCanvasButtonRefVar.current.removeEventListener("mousedown", onMouseDownClearCanvasButton);

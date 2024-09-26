@@ -12,7 +12,7 @@ body {
 
 .room-name {
     margin: 3px;
-    height: 55px;
+    height: 60px;
     position: sticky;
     top: 0;
 }
@@ -57,7 +57,7 @@ body {
 }
 
 .game-play-area {
-    height: 100%;
+    height: calc(100% - 60px);
     width: 100%;
     display: flex;
 }

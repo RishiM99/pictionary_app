@@ -76,7 +76,7 @@ export default function Room() {
         <div className="container">
             <div className="room-name" ref={roomNameHeaderRef}>
                 <p className="room-name-text"> {roomId} </p>
-                {/* {copyUrlClicked ?
+                {copyUrlClicked ?
                     <p className="copy-url-copied-confirmation-text"> ✔ Room link has been copied </p> :
                     <div className="copy-url-show-tooltip">
                         <img src={require("../assets/copy.png")} alt="Copy link" className="copy-url-image" onClick={() => {
@@ -85,7 +85,7 @@ export default function Room() {
                         }} />
                         <span> Copy room URL </span>
                     </div>
-                } */}
+                }
             </div>
             <div className="game-play-area">
                 <CurrentPlayersList ref={currentPlayersSidebarRef} />
