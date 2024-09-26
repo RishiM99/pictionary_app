@@ -171,8 +171,10 @@ function drawingPathsDiffEventListener(msg: BroadcastDrawingPathsDiffType) {
 
 function setLeftAndTopForCursor() {
     const mousePosition = getCurrentMousePosition();
-    cursor.style.left = `${parseInt(mousePosition.x, 10) - currentPlayersSidebarRef.current.getBoundingClientRect().width - parseInt(window.getComputedStyle(cursor).getPropertyValue("width"), 10) / 2}px`;;
-    cursor.style.top = `${parseInt(mousePosition.y, 10) - roomNameHeaderRef.current.getBoundingClientRect().height - parseInt(window.getComputedStyle(cursor).getPropertyValue("height"), 10) / 2}px`;;
+    if (mousePosition != null && currentPlayersSidebarRef != null && roomNameHeaderRef != null) {
+        cursor.style.left = `${parseInt(mousePosition.x, 10) - currentPlayersSidebarRef.current.getBoundingClientRect().width - parseInt(window.getComputedStyle(cursor).getPropertyValue("width"), 10) / 2}px`;
+        cursor.style.top = `${parseInt(mousePosition.y, 10) - roomNameHeaderRef.current.getBoundingClientRect().height - parseInt(window.getComputedStyle(cursor).getPropertyValue("height"), 10) / 2}px`;
+    }
 }
 
 
@@ -238,7 +240,13 @@ function scaleAllPathsAndRedrawAllCurves(scaleX, scaleY) {
 
         drawRemainderOfPath(newSerializedPath, 0);
 
-        newAllPaths.set(crypto.randomUUID(), newSerializedPath);
+        const newUUID = crypto.randomUUID();
+
+        newAllPaths.set(newUUID, newSerializedPath);
+
+        if (uuid === currentPathUUIDFromMouse) {
+            currentPathUUIDFromMouse = uuid;
+        }
     }
 
     allPaths = newAllPaths;
@@ -246,8 +254,12 @@ function scaleAllPathsAndRedrawAllCurves(scaleX, scaleY) {
 
 
 function windowResizeListener(e) {
+    console.log("window resize being called");
     drawingCanvas.height = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("height"), 10);
     drawingCanvas.width = parseInt(window.getComputedStyle(drawingCanvas).getPropertyValue("width"), 10);
+    console.log(drawingCanvas.height);
+    console.log(drawingCanvas.width);
+    console.log(getCurrentCanvasHeight());
 
     const xScale = drawingCanvas.width / getCurrentCanvasWidth();
     const yScale = drawingCanvas.height / getCurrentCanvasHeight();
