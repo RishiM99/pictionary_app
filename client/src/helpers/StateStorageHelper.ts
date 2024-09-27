@@ -1,8 +1,8 @@
-import { StrPoint } from "./Types";
+import { Point } from "./Types";
 
 let currentCanvasWidth: number = null;
 let currentCanvasHeight: number = null;
-let currentMousePosition: StrPoint = null;
+let currentMousePosition: Point = null;
 
 export function getCurrentCanvasWidth(): number {
     return currentCanvasWidth;
@@ -20,11 +20,11 @@ export function setCurrentCanvasHeight(val: number) {
     currentCanvasHeight = val;
 }
 
-export function getCurrentMousePosition(): StrPoint {
+export function getCurrentMousePosition(): Point {
     return currentMousePosition;
 }
 
-export function setCurrentMousePosition(val: StrPoint) {
+export function setCurrentMousePosition(val: Point) {
     currentMousePosition = val;
 }
 

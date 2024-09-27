@@ -2,7 +2,7 @@ import { setCurrentCanvasWidth, setCurrentCanvasHeight, getCurrentCanvasHeight, 
 import { Color, convertColorToString, PaletteOption, StrokeSize } from './Enums.ts';
 import getSocket from './socket.ts';
 import { StrokeInfo } from './StrokeInfoMapping.ts';
-import { SerializedPath, StrPoint, UUIDandSerializedPath } from './Types.ts';
+import { Point, SerializedPath, StrPoint, UUIDandSerializedPath } from './Types.ts';
 import { BroadcastDrawingPathsDiffType } from '../common/SocketEvents.ts';
 
 
@@ -43,6 +43,10 @@ function calcMidpoint(point1, point2) {
     return { x: 0.5 * point1.x + 0.5 * point2.x, y: 0.5 * point1.y + 0.5 * point2.y };
 }
 
+function convertClientXYToOffsetXY(clientXY: Point): Point {
+    return { x: clientXY.x - drawingCanvasBoundingRect.left, y: clientXY.y - drawingCanvasBoundingRect.top };
+}
+
 
 // Draws remainder of path from tripletStartIndex to end of serializedPath.points
 function drawRemainderOfPath(serializedPath, tripletStartIndex) {
@@ -54,15 +58,11 @@ function drawRemainderOfPath(serializedPath, tripletStartIndex) {
 
 
     for (let currentTripletIndex = tripletStartIndex; currentTripletIndex <= points.length - 3; currentTripletIndex++) {
-        const firstPoint = { x: points[currentTripletIndex].x - drawingCanvasBoundingRect.left, y: points[currentTripletIndex].y - drawingCanvasBoundingRect.top };
-        const secondPoint = { x: points[currentTripletIndex + 1].x - drawingCanvasBoundingRect.left, y: points[currentTripletIndex + 1].y - drawingCanvasBoundingRect.top };
-        const thirdPoint = { x: points[currentTripletIndex + 2].x - drawingCanvasBoundingRect.left, y: points[currentTripletIndex + 2].y - drawingCanvasBoundingRect.top };
-
-        const firstMidpoint = calcMidpoint(firstPoint, secondPoint);
+        const firstMidpoint = calcMidpoint(points[currentTripletIndex], points[currentTripletIndex + 1]);
         context.moveTo(firstMidpoint.x, firstMidpoint.y);
-        const nextMidpoint = calcMidpoint(secondPoint, thirdPoint);
+        const nextMidpoint = calcMidpoint(points[currentTripletIndex + 1], points[currentTripletIndex + 2]);
 
-        context.quadraticCurveTo(secondPoint.x, secondPoint.y, nextMidpoint.x, nextMidpoint.y);
+        context.quadraticCurveTo(points[currentTripletIndex + 1].x, points[currentTripletIndex + 1].y, nextMidpoint.x, nextMidpoint.y);
     }
     context.stroke();
 }
@@ -93,20 +93,23 @@ function isPointUnderEraseStrokePicker(point) {
 
 function mouseDownEventListener(e) {
     console.log('mousedown');
+    const clientXY = { x: Number(e.clientX), y: Number(e.clientY) };
 
-    if (isPointUnderPalette({ x: e.clientX, y: e.clientY }) || isPointOutsideOfCanvas({ x: e.clientX, y: e.clientY })) {
+    if (isPointUnderPalette(clientXY) || isPointOutsideOfCanvas(clientXY)) {
         setIsDrawing(false);
     }
+
+    const offsetXY = convertClientXYToOffsetXY(clientXY);
 
     const lineWidth = selectedPaletteOption === PaletteOption.Eraser ? StrokeInfo.get(currentEraseStrokeSize).pixelSize : StrokeInfo.get(currentDrawStrokeSize).pixelSize;
     const strokeStyle = selectedPaletteOption === PaletteOption.Eraser ? 'white' : getComputedStyle(document.querySelector(`.${convertColorToString(currentColor)}`))["background-color"];
 
     const uuid = crypto.randomUUID();
     currentTripletIndexFromMouse = 0;
-    allPaths.set(uuid, { points: [{ x: e.clientX, y: e.clientY }], lineWidth, strokeStyle });
+    allPaths.set(uuid, { points: [offsetXY], lineWidth, strokeStyle });
     currentPathUUIDFromMouse = uuid;
     setIsDrawing(true);
-    trackDiffsAndPushUpdates(uuid, { x: e.clientX, y: e.clientY });
+    trackDiffsAndPushUpdates(uuid, offsetXY);
 }
 
 function convertPathsDiffMapToArray(pathsDiffMap: Map<any, SerializedPath>): UUIDandSerializedPath[] {
@@ -172,49 +175,54 @@ function drawingPathsDiffEventListener(msg: BroadcastDrawingPathsDiffType) {
 function setLeftAndTopForCursor() {
     const mousePosition = getCurrentMousePosition();
     if (mousePosition != null && currentPlayersSidebarRef != null && roomNameHeaderRef != null) {
-        cursor.style.left = `${parseInt(mousePosition.x, 10) - currentPlayersSidebarRef.current.getBoundingClientRect().width - parseInt(window.getComputedStyle(cursor).getPropertyValue("width"), 10) / 2}px`;
-        cursor.style.top = `${parseInt(mousePosition.y, 10) - roomNameHeaderRef.current.getBoundingClientRect().height - parseInt(window.getComputedStyle(cursor).getPropertyValue("height"), 10) / 2}px`;
+        cursor.style.left = `${mousePosition.x - currentPlayersSidebarRef.current.getBoundingClientRect().width - parseInt(window.getComputedStyle(cursor).getPropertyValue("width"), 10) / 2}px`;
+        cursor.style.top = `${mousePosition.y - roomNameHeaderRef.current.getBoundingClientRect().height - parseInt(window.getComputedStyle(cursor).getPropertyValue("height"), 10) / 2}px`;
     }
 }
 
 
 function mouseMoveEventListener(e) {
-    const point = { x: e.clientX, y: e.clientY };
+    const clientXY = { x: Number(e.clientX), y: Number(e.clientY) };
+    const offsetXY = convertClientXYToOffsetXY(clientXY);
+
     if (isDrawing) {
         console.log('mousemove');
         console.log(allPaths);
         console.log(currentPathUUIDFromMouse);
-        allPaths.get(currentPathUUIDFromMouse).points.push(point);
+        allPaths.get(currentPathUUIDFromMouse).points.push(offsetXY);
         drawRemainderOfPath(allPaths.get(currentPathUUIDFromMouse), currentTripletIndexFromMouse);
 
         if (allPaths.get(currentPathUUIDFromMouse).points.length >= 3) {
             currentTripletIndexFromMouse++;
         }
 
-        trackDiffsAndPushUpdates(currentPathUUIDFromMouse, point);
+        trackDiffsAndPushUpdates(currentPathUUIDFromMouse, offsetXY);
     }
 
     //Move cursor anyways
-    if (isPointOutsideOfCanvas(point) || isPointUnderPalette(point) || isPointUnderColorPicker(point) || isPointUnderDrawStrokePicker(point) || isPointUnderEraseStrokePicker(point)) {
+    if (isPointOutsideOfCanvas(clientXY) || isPointUnderPalette(clientXY) || isPointUnderColorPicker(clientXY) || isPointUnderDrawStrokePicker(clientXY) || isPointUnderEraseStrokePicker(clientXY)) {
         cursor.style.visibility = "hidden";
     } else {
         cursor.style.visibility = "visible";
-        setCurrentMousePosition({ x: e.clientX, y: e.clientY });
+        setCurrentMousePosition(offsetXY);
         setLeftAndTopForCursor();
     }
 }
 
 function mouseUpEventListener(e) {
     if (isDrawing) {
-        if (isPointUnderPalette({ x: e.clientX, y: e.clientY }) || isPointOutsideOfCanvas({ x: e.clientX, y: e.clientY })) {
+        const clientXY = { x: Number(e.clientX), y: Number(e.clientY) };
+        const offsetXY = convertClientXYToOffsetXY(clientXY);
+
+        if (isPointUnderPalette(clientXY) || isPointOutsideOfCanvas(clientXY)) {
             setIsDrawing(false);
         }
-        allPaths.get(currentPathUUIDFromMouse).points.push({ x: e.clientX, y: e.clientY });
+        allPaths.get(currentPathUUIDFromMouse).points.push(offsetXY);
         drawRemainderOfPath(allPaths.get(currentPathUUIDFromMouse), currentTripletIndexFromMouse);
 
         setIsDrawing(false);
 
-        trackDiffsAndPushUpdates(currentPathUUIDFromMouse, { x: e.clientX, y: e.clientY });
+        trackDiffsAndPushUpdates(currentPathUUIDFromMouse, offsetXY);
     }
 }
 
@@ -266,6 +274,11 @@ function windowResizeListener(e) {
     scaleAllPathsAndRedrawAllCurves(xScale, yScale);
     setCurrentCanvasWidth(drawingCanvas.width);
     setCurrentCanvasHeight(drawingCanvas.height);
+
+    const currentMousePosition = getCurrentMousePosition();
+    const newCurrentMousePosition = { x: currentMousePosition.x * xScale, y: currentMousePosition.y * yScale };
+
+    setCurrentMousePosition(newCurrentMousePosition);
 
     // Change position of cursor to account for changed room name header and member sidebar sizes
     setLeftAndTopForCursor();
