@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './styles/Room.css';
 import getSocket from '../helpers/socket.ts';
 import Canvas from '../components/Canvas';
@@ -28,15 +28,6 @@ export async function loader({ params }) {
 export default function Room() {
     const roomId = useLoaderData() as string;
     const [copyUrlClicked, setCopyUrlClicked] = useState(false);
-    const [currentPlayersSidebarWidth, setCurrentPlayersSidebarWidth] = useState<number>(null);
-    const [roomNameHeaderHeight, setRoomNameHeaderHeight] = useState<number>(null);
-    const [currentPlayersSidebarRefProp, setCurrentPlayersSidebarRefProp] = useState<React.MutableRefObject<HTMLDivElement>>(null);
-    const [roomNameHeaderRefProp, setRoomNameHeaderRefProp] = useState<React.MutableRefObject<HTMLDivElement>>(null);
-
-
-    const currentPlayersSidebarRef = useRef<HTMLDivElement>(null);
-    const roomNameHeaderRef = useRef<HTMLDivElement>(null);
-
 
     useEffect(() => {
         function handleCopyUrlClicked() {
@@ -59,22 +50,9 @@ export default function Room() {
         }
     }, [copyUrlClicked]);
 
-
-    useEffect(() => {
-        setRoomNameHeaderHeight(roomNameHeaderRef.current.getBoundingClientRect().height);
-        setCurrentPlayersSidebarWidth(currentPlayersSidebarRef.current.getBoundingClientRect().width);
-    }, [roomNameHeaderRef, currentPlayersSidebarRef]);
-
-    useEffect(() => {
-        setCurrentPlayersSidebarRefProp(currentPlayersSidebarRef);
-        setRoomNameHeaderRefProp(roomNameHeaderRef);
-    }, [roomNameHeaderRef, currentPlayersSidebarRef]);
-
-
-
     return (
         <div className="container">
-            <div className="room-name" ref={roomNameHeaderRef}>
+            <div className="room-name">
                 <p className="room-name-text"> {roomId} </p>
                 {copyUrlClicked ?
                     <p className="copy-url-copied-confirmation-text"> ✔ Room link has been copied </p> :
@@ -88,8 +66,8 @@ export default function Room() {
                 }
             </div>
             <div className="game-play-area">
-                <CurrentPlayersList ref={currentPlayersSidebarRef} />
-                <Canvas roomNameHeaderHeight={roomNameHeaderHeight} currentPlayersSidebarWidth={currentPlayersSidebarWidth} roomNameHeaderRef={roomNameHeaderRefProp} currentPlayersSidebarRef={currentPlayersSidebarRefProp} roomId={roomId} />
+                <CurrentPlayersList />
+                <Canvas roomId={roomId} />
                 <Chat />
             </div>
         </div>

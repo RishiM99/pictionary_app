@@ -18,8 +18,6 @@ let isDrawing: boolean = null;
 let selectedPaletteOption: PaletteOption = null;
 let currentPathUUIDFromMouse = null;
 let paletteBoundingRect: DOMRect = null;
-let roomNameHeaderHeight: number = null;
-let currentPlayersSidebarWidth: number = null;
 let drawingCanvasBoundingRect: DOMRect = null;
 let cursor: HTMLDivElement = null;
 let drawStrokePickerBoundingRect: DOMRect = null;
@@ -29,8 +27,6 @@ let showColorPicker: boolean = null;
 let showDrawStrokePicker: boolean = null;
 let showEraseStrokePicker: boolean = null;
 let roomId: string = null;
-let roomNameHeaderRef: React.MutableRefObject<HTMLDivElement> = null;
-let currentPlayersSidebarRef: React.MutableRefObject<HTMLDivElement> = null;
 let cursorWidth: number = null;
 let cursorHeight: number = null;
 
@@ -169,7 +165,7 @@ function drawingPathsDiffEventListener(msg: BroadcastDrawingPathsDiffType) {
 
 function setLeftAndTopForCursor() {
     const mousePosition = getCurrentMousePosition();
-    if (mousePosition != null && currentPlayersSidebarRef != null && roomNameHeaderRef != null) {
+    if (mousePosition != null) {
         cursor.style.left = `${mousePosition.x - cursorWidth / 2}px`;
         cursor.style.top = `${mousePosition.y - cursorHeight / 2}px`;
     }
@@ -296,8 +292,6 @@ type SetUpDrawingForCanvasParamsType = {
     selectedPaletteOptionVar: PaletteOption,
     currEraseStrokeSize: StrokeSize,
     paletteRefVar: React.MutableRefObject<HTMLDivElement>,
-    roomNameHeaderHeightVar: number,
-    currentPlayersSidebarWidthVar: number,
     cursorRef: React.MutableRefObject<HTMLDivElement>,
     drawStrokePickerRef: React.MutableRefObject<HTMLDivElement>,
     eraseStrokePickerRef: React.MutableRefObject<HTMLDivElement>,
@@ -307,12 +301,10 @@ type SetUpDrawingForCanvasParamsType = {
     showDrawStrokePickerVar: boolean,
     roomIdVar: string,
     clearCanvasButtonRefVar: React.MutableRefObject<HTMLDivElement>,
-    roomNameHeaderRefVar: React.MutableRefObject<HTMLDivElement>,
-    currentPlayersSidebarRefVar: React.MutableRefObject<HTMLDivElement>,
 }
 
 
-function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef, drawStrokePickerRef, eraseStrokePickerRef, colorPickerRef, showColorPickerVar, showEraseStrokePickerVar, showDrawStrokePickerVar, roomNameHeaderHeightVar, currentPlayersSidebarWidthVar, roomIdVar, clearCanvasButtonRefVar, roomNameHeaderRefVar, currentPlayersSidebarRefVar }: SetUpDrawingForCanvasParamsType) {
+function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef, drawStrokePickerRef, eraseStrokePickerRef, colorPickerRef, showColorPickerVar, showEraseStrokePickerVar, showDrawStrokePickerVar, roomIdVar, clearCanvasButtonRefVar }: SetUpDrawingForCanvasParamsType) {
 
     cursor = cursorRef.current;
     cursorWidth = parseInt(window.getComputedStyle(cursor).getPropertyValue("width"), 10);
@@ -328,8 +320,6 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize
 
     paletteBoundingRect = paletteRefVar.current.getBoundingClientRect();
     drawingCanvasBoundingRect = drawingCanvas.getBoundingClientRect();
-    roomNameHeaderHeight = roomNameHeaderHeightVar;
-    currentPlayersSidebarWidth = currentPlayersSidebarWidthVar;
 
     roomId = roomIdVar;
 
@@ -340,9 +330,6 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize
     showColorPicker = showColorPickerVar;
     showDrawStrokePicker = showDrawStrokePickerVar;
     showEraseStrokePicker = showEraseStrokePickerVar;
-
-    roomNameHeaderRef = roomNameHeaderRefVar;
-    currentPlayersSidebarRef = currentPlayersSidebarRefVar;
 
     window.addEventListener("mousedown", mouseDownEventListener);
     window.addEventListener("mousemove", mouseMoveEventListener);
