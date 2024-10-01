@@ -269,6 +269,7 @@ function windowResizeListener(e) {
 function onMouseDownClearCanvasButton(e: Event) {
     (e.currentTarget as HTMLDivElement).style.height = "30px";
     (e.currentTarget as HTMLDivElement).style.width = "30px";
+    context.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
 }
 
 function onMouseUpClearCanvasButton(e: Event) {

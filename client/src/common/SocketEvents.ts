@@ -8,21 +8,28 @@ export type RoomAndMembers = {
 
 export type DrawingPathsDiffFromClientType = {
     pathsDiff: UUIDandSerializedPath[];
-    width: number,
-    height: number,
-    roomId: string,
+    width: number;
+    height: number;
+    roomId: string;
 };
 
 export type BroadcastDrawingPathsDiffType = {
     pathsDiff: UUIDandSerializedPath[];
-    width: number,
-    height: number,
+    width: number;
+    height: number;
 };
+
+export type RoomStateUponJoiningType = {
+    paths: UUIDandSerializedPath[];
+    width: number;
+    height: number;
+}
 
 export interface ServerToClientEvents {
     listOfRoomsAndMembers: (listOfRoomsAndMembers: RoomAndMembers[]) => void;
     nameOfNewRoom: (roomId: string) => void;
     broadcastDrawingPathsDiff: (msg: BroadcastDrawingPathsDiffType) => void;
+    roomStateUponJoining: (msg: RoomStateUponJoiningType) => void;
 }
 
 export interface ClientToServerEvents {
