@@ -87,26 +87,6 @@ function isPointUnderEraseStrokePicker(point) {
 }
 
 
-function mouseDownEventListener(e) {
-    const clientXY = { x: Number(e.clientX), y: Number(e.clientY) };
-    const offsetXY = convertClientXYToOffsetXY(clientXY);
-
-    if (isPointUnderPalette(offsetXY) || isPointOutsideOfCanvas(offsetXY)) {
-        setIsDrawing(false);
-    }
-
-
-    const lineWidth = selectedPaletteOption === PaletteOption.Eraser ? StrokeInfo.get(currentEraseStrokeSize).pixelSize : StrokeInfo.get(currentDrawStrokeSize).pixelSize;
-    const strokeStyle = selectedPaletteOption === PaletteOption.Eraser ? 'white' : getComputedStyle(document.querySelector(`.${convertColorToString(currentColor)}`))["background-color"];
-
-    const uuid = crypto.randomUUID();
-    currentTripletIndexFromMouse = 0;
-    allPaths.set(uuid, { points: [offsetXY], lineWidth, strokeStyle });
-    currentPathUUIDFromMouse = uuid;
-    setIsDrawing(true);
-    trackDiffsAndPushUpdates(uuid, offsetXY);
-}
-
 function convertPathsDiffMapToArray(pathsDiffMap: Map<any, SerializedPath>): UUIDandSerializedPath[] {
     return [...pathsDiffMap].map(([uuid, serializedPath]) => ({ 'uuid': uuid, 'serializedPath': serializedPath }));
 }
@@ -171,6 +151,22 @@ function setLeftAndTopForCursor() {
     }
 }
 
+function mouseDownEventListener(e) {
+    const clientXY = { x: Number(e.clientX), y: Number(e.clientY) };
+    const offsetXY = convertClientXYToOffsetXY(clientXY);
+
+    if (!isPointUnderPalette(offsetXY) && !isPointOutsideOfCanvas(offsetXY) && !isPointUnderColorPicker(offsetXY) && !isPointUnderDrawStrokePicker(offsetXY) && !isPointUnderEraseStrokePicker(offsetXY)) {
+        const lineWidth = selectedPaletteOption === PaletteOption.Eraser ? StrokeInfo.get(currentEraseStrokeSize).pixelSize : StrokeInfo.get(currentDrawStrokeSize).pixelSize;
+        const strokeStyle = selectedPaletteOption === PaletteOption.Eraser ? 'white' : getComputedStyle(document.querySelector(`.${convertColorToString(currentColor)}`))["background-color"];
+
+        const uuid = crypto.randomUUID();
+        currentTripletIndexFromMouse = 0;
+        allPaths.set(uuid, { points: [offsetXY], lineWidth, strokeStyle });
+        currentPathUUIDFromMouse = uuid;
+        setIsDrawing(true);
+        trackDiffsAndPushUpdates(uuid, offsetXY);
+    }
+}
 
 function mouseMoveEventListener(e) {
     const clientXY = { x: Number(e.clientX), y: Number(e.clientY) };
@@ -202,9 +198,6 @@ function mouseUpEventListener(e) {
         const clientXY = { x: Number(e.clientX), y: Number(e.clientY) };
         const offsetXY = convertClientXYToOffsetXY(clientXY);
 
-        if (isPointUnderPalette(offsetXY) || isPointOutsideOfCanvas(offsetXY)) {
-            setIsDrawing(false);
-        }
         allPaths.get(currentPathUUIDFromMouse).points.push(offsetXY);
         drawRemainderOfPath(allPaths.get(currentPathUUIDFromMouse), currentTripletIndexFromMouse);
 
@@ -339,8 +332,6 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize
     console.log(clearCanvasButtonRefVar.current);
     clearCanvasButtonRefVar.current.addEventListener("mousedown", onMouseDownClearCanvasButton);
     clearCanvasButtonRefVar.current.addEventListener("mouseup", onMouseUpClearCanvasButton);
-
-
 
     return () => {
         window.removeEventListener("mousedown", mouseDownEventListener);
