@@ -31,6 +31,8 @@ let showEraseStrokePicker: boolean = null;
 let roomId: string = null;
 let roomNameHeaderRef: React.MutableRefObject<HTMLDivElement> = null;
 let currentPlayersSidebarRef: React.MutableRefObject<HTMLDivElement> = null;
+let cursorWidth: number = null;
+let cursorHeight: number = null;
 
 // How often to push updates of drawing
 const FREQUENCY_OF_DRAWING_UPDATES = 3;
@@ -69,37 +71,34 @@ function drawRemainderOfPath(serializedPath, tripletStartIndex) {
 
 
 function isPointOutsideOfCanvas(point) {
-    return (point.x <= drawingCanvasBoundingRect.left || point.x >= drawingCanvasBoundingRect.right || point.y <= drawingCanvasBoundingRect.top || point.y >= drawingCanvasBoundingRect.bottom);
+    return (point.x < cursorWidth / 2 || point.x >= (drawingCanvasBoundingRect.width - cursorWidth / 2) || point.y < cursorHeight / 2 || point.y >= (drawingCanvasBoundingRect.height - cursorHeight / 2));
 }
 
 function isPointUnderPalette(point) {
-    return (point.x >= paletteBoundingRect.left && point.x <= paletteBoundingRect.right && point.y >= paletteBoundingRect.top && point.y <= paletteBoundingRect.bottom);
+    return (point.x >= (paletteBoundingRect.left - drawingCanvasBoundingRect.left - cursorWidth / 2) && point.x <= (paletteBoundingRect.right - drawingCanvasBoundingRect.left + cursorWidth / 2) && point.y >= (paletteBoundingRect.top - drawingCanvasBoundingRect.top - cursorHeight / 2) && point.y <= (paletteBoundingRect.bottom - drawingCanvasBoundingRect.top + cursorHeight / 2));
 }
 
 function isPointUnderColorPicker(point) {
-    return showColorPicker && colorPickerBoundingRect != null && (point.x >= colorPickerBoundingRect.left && point.x <= colorPickerBoundingRect.right && point.y >= colorPickerBoundingRect.top && point.y <= colorPickerBoundingRect.bottom);
+    return showColorPicker && colorPickerBoundingRect != null && (point.x >= (colorPickerBoundingRect.left - drawingCanvasBoundingRect.left - cursorWidth / 2) && point.x <= (colorPickerBoundingRect.right - drawingCanvasBoundingRect.left + cursorWidth / 2) && point.y >= (colorPickerBoundingRect.top - drawingCanvasBoundingRect.top - cursorHeight / 2) && point.y <= (colorPickerBoundingRect.bottom - drawingCanvasBoundingRect.top + cursorHeight / 2));
 }
 
 function isPointUnderDrawStrokePicker(point) {
-
-    return showDrawStrokePicker && drawStrokePickerBoundingRect != null && (point.x >= drawStrokePickerBoundingRect.left && point.x <= drawStrokePickerBoundingRect.right && point.y >= drawStrokePickerBoundingRect.top && point.y <= drawStrokePickerBoundingRect.bottom);
+    return showDrawStrokePicker && drawStrokePickerBoundingRect != null && (point.x >= (drawStrokePickerBoundingRect.left - drawingCanvasBoundingRect.left - cursorWidth / 2) && point.x <= (drawStrokePickerBoundingRect.right - drawingCanvasBoundingRect.left + cursorWidth / 2) && point.y >= (drawStrokePickerBoundingRect.top - drawingCanvasBoundingRect.top - cursorHeight / 2) && point.y <= (drawStrokePickerBoundingRect.bottom - drawingCanvasBoundingRect.top + cursorHeight / 2));
 }
 
 function isPointUnderEraseStrokePicker(point) {
-
-    return showEraseStrokePicker && eraseStrokePickerBoundingRect != null && (point.x >= eraseStrokePickerBoundingRect.left && point.x <= eraseStrokePickerBoundingRect.right && point.y >= eraseStrokePickerBoundingRect.top && point.y <= eraseStrokePickerBoundingRect.bottom);
+    return showEraseStrokePicker && eraseStrokePickerBoundingRect != null && (point.x >= (eraseStrokePickerBoundingRect.left - drawingCanvasBoundingRect.left - cursorWidth / 2) && point.x <= (eraseStrokePickerBoundingRect.right - drawingCanvasBoundingRect.left + cursorWidth / 2) && point.y >= (eraseStrokePickerBoundingRect.top - drawingCanvasBoundingRect.top - cursorHeight / 2) && point.y <= (eraseStrokePickerBoundingRect.bottom - drawingCanvasBoundingRect.top + cursorHeight / 2));
 }
 
 
 function mouseDownEventListener(e) {
-    console.log('mousedown');
     const clientXY = { x: Number(e.clientX), y: Number(e.clientY) };
+    const offsetXY = convertClientXYToOffsetXY(clientXY);
 
-    if (isPointUnderPalette(clientXY) || isPointOutsideOfCanvas(clientXY)) {
+    if (isPointUnderPalette(offsetXY) || isPointOutsideOfCanvas(offsetXY)) {
         setIsDrawing(false);
     }
 
-    const offsetXY = convertClientXYToOffsetXY(clientXY);
 
     const lineWidth = selectedPaletteOption === PaletteOption.Eraser ? StrokeInfo.get(currentEraseStrokeSize).pixelSize : StrokeInfo.get(currentDrawStrokeSize).pixelSize;
     const strokeStyle = selectedPaletteOption === PaletteOption.Eraser ? 'white' : getComputedStyle(document.querySelector(`.${convertColorToString(currentColor)}`))["background-color"];
@@ -145,13 +144,9 @@ function trackDiffsAndPushUpdates(pathUUID, point) {
 function drawingPathsDiffEventListener(msg: BroadcastDrawingPathsDiffType) {
     const { pathsDiff, width, height } = msg;
     const pathsDiffMap = convertPathsDiffArrayToMap(pathsDiff);
-    console.log(`receivedmap`);
-    console.log(pathsDiffMap);
 
     const xScale = getCurrentCanvasWidth() / width;
-    console.log(`xscale ${xScale}`);
     const yScale = getCurrentCanvasHeight() / height;
-    console.log(`yscale ${yScale}`);
 
     pathsDiffMap.forEach((serializedPath, uuid) => {
         serializedPath.points = serializedPath.points.map(((point) => ({ x: point.x * xScale, y: point.y * yScale })));
@@ -175,8 +170,8 @@ function drawingPathsDiffEventListener(msg: BroadcastDrawingPathsDiffType) {
 function setLeftAndTopForCursor() {
     const mousePosition = getCurrentMousePosition();
     if (mousePosition != null && currentPlayersSidebarRef != null && roomNameHeaderRef != null) {
-        cursor.style.left = `${mousePosition.x - currentPlayersSidebarRef.current.getBoundingClientRect().width - parseInt(window.getComputedStyle(cursor).getPropertyValue("width"), 10) / 2}px`;
-        cursor.style.top = `${mousePosition.y - roomNameHeaderRef.current.getBoundingClientRect().height - parseInt(window.getComputedStyle(cursor).getPropertyValue("height"), 10) / 2}px`;
+        cursor.style.left = `${mousePosition.x - cursorWidth / 2}px`;
+        cursor.style.top = `${mousePosition.y - cursorHeight / 2}px`;
     }
 }
 
@@ -186,9 +181,6 @@ function mouseMoveEventListener(e) {
     const offsetXY = convertClientXYToOffsetXY(clientXY);
 
     if (isDrawing) {
-        console.log('mousemove');
-        console.log(allPaths);
-        console.log(currentPathUUIDFromMouse);
         allPaths.get(currentPathUUIDFromMouse).points.push(offsetXY);
         drawRemainderOfPath(allPaths.get(currentPathUUIDFromMouse), currentTripletIndexFromMouse);
 
@@ -200,7 +192,7 @@ function mouseMoveEventListener(e) {
     }
 
     //Move cursor anyways
-    if (isPointOutsideOfCanvas(clientXY) || isPointUnderPalette(clientXY) || isPointUnderColorPicker(clientXY) || isPointUnderDrawStrokePicker(clientXY) || isPointUnderEraseStrokePicker(clientXY)) {
+    if (isPointOutsideOfCanvas(offsetXY) || isPointUnderPalette(offsetXY) || isPointUnderColorPicker(offsetXY) || isPointUnderDrawStrokePicker(offsetXY) || isPointUnderEraseStrokePicker(offsetXY)) {
         cursor.style.visibility = "hidden";
     } else {
         cursor.style.visibility = "visible";
@@ -214,7 +206,7 @@ function mouseUpEventListener(e) {
         const clientXY = { x: Number(e.clientX), y: Number(e.clientY) };
         const offsetXY = convertClientXYToOffsetXY(clientXY);
 
-        if (isPointUnderPalette(clientXY) || isPointOutsideOfCanvas(clientXY)) {
+        if (isPointUnderPalette(offsetXY) || isPointOutsideOfCanvas(offsetXY)) {
             setIsDrawing(false);
         }
         allPaths.get(currentPathUUIDFromMouse).points.push(offsetXY);
@@ -323,6 +315,8 @@ type SetUpDrawingForCanvasParamsType = {
 function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef, drawStrokePickerRef, eraseStrokePickerRef, colorPickerRef, showColorPickerVar, showEraseStrokePickerVar, showDrawStrokePickerVar, roomNameHeaderHeightVar, currentPlayersSidebarWidthVar, roomIdVar, clearCanvasButtonRefVar, roomNameHeaderRefVar, currentPlayersSidebarRefVar }: SetUpDrawingForCanvasParamsType) {
 
     cursor = cursorRef.current;
+    cursorWidth = parseInt(window.getComputedStyle(cursor).getPropertyValue("width"), 10);
+    cursorHeight = parseInt(window.getComputedStyle(cursor).getPropertyValue("height"), 10);
     drawingCanvas = drawingCanvasRef.current;
     context = drawingCanvas.getContext("2d");
     currentColor = currColor;
@@ -350,28 +344,25 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize
     roomNameHeaderRef = roomNameHeaderRefVar;
     currentPlayersSidebarRef = currentPlayersSidebarRefVar;
 
+    window.addEventListener("mousedown", mouseDownEventListener);
+    window.addEventListener("mousemove", mouseMoveEventListener);
+    window.addEventListener("mouseup", mouseUpEventListener);
+    window.addEventListener("resize", windowResizeListener);
+    socket.on('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
+    console.log(clearCanvasButtonRefVar.current);
+    clearCanvasButtonRefVar.current.addEventListener("mousedown", onMouseDownClearCanvasButton);
+    clearCanvasButtonRefVar.current.addEventListener("mouseup", onMouseUpClearCanvasButton);
 
-    if (drawingCanvas) {
-        drawingCanvas.addEventListener("mousedown", mouseDownEventListener);
-        drawingCanvas.addEventListener("mousemove", mouseMoveEventListener);
-        drawingCanvas.addEventListener("mouseup", mouseUpEventListener);
-        window.addEventListener("resize", windowResizeListener);
-        socket.on('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
-        console.log(clearCanvasButtonRefVar.current);
-        clearCanvasButtonRefVar.current.addEventListener("mousedown", onMouseDownClearCanvasButton);
-        clearCanvasButtonRefVar.current.addEventListener("mouseup", onMouseUpClearCanvasButton);
-    }
+
 
     return () => {
-        if (drawingCanvas) {
-            drawingCanvas.removeEventListener("mousedown", mouseDownEventListener);
-            drawingCanvas.removeEventListener("mousemove", mouseMoveEventListener);
-            drawingCanvas.removeEventListener("mouseup", mouseUpEventListener);
-            window.removeEventListener("resize", windowResizeListener);
-            socket.off('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
-            clearCanvasButtonRefVar.current.removeEventListener("mousedown", onMouseDownClearCanvasButton);
-            clearCanvasButtonRefVar.current.removeEventListener("mouseup", onMouseUpClearCanvasButton);
-        }
+        window.removeEventListener("mousedown", mouseDownEventListener);
+        window.removeEventListener("mousemove", mouseMoveEventListener);
+        window.removeEventListener("mouseup", mouseUpEventListener);
+        window.removeEventListener("resize", windowResizeListener);
+        socket.off('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
+        clearCanvasButtonRefVar.current.removeEventListener("mousedown", onMouseDownClearCanvasButton);
+        clearCanvasButtonRefVar.current.removeEventListener("mouseup", onMouseUpClearCanvasButton);
     }
 }
 
