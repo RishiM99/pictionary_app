@@ -5,8 +5,14 @@ import Canvas from '../components/Canvas';
 import CurrentPlayersList from '../components/CurrentPlayersList';
 import Chat from "../components/Chat";
 import { useLoaderData, redirect } from 'react-router-dom';
+import { RoomState } from '../common/SocketEvents.ts';
 
-export async function loader({ params }) {
+type loaderData = {
+    roomId: string;
+    initialRoomState: RoomState;
+};
+
+export async function loader({ params }): Promise<loaderData | Response> {
     const response = await fetch("/getUserName");
     if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
@@ -20,13 +26,22 @@ export async function loader({ params }) {
     const socket = getSocket();
     socket.emit('joinRoom', params.roomId);
 
+    socket.emit('getRoomStateUponJoining');
+    const waitForRoomState = function () {
+        return new Promise<RoomState>((resolve) => {
+            socket.on('sendRoomStateUponJoining', (roomState) => resolve(roomState));
+        });
+    }
+
+    const initialRoomState = await waitForRoomState();
+
     console.log(params);
 
-    return params.roomId;
+    return { roomId: params.roomId, initialRoomState };
 }
 
 export default function Room() {
-    const roomId = useLoaderData() as string;
+    const { roomId, initialRoomState } = useLoaderData() as loaderData;
     const [copyUrlClicked, setCopyUrlClicked] = useState(false);
 
     useEffect(() => {
@@ -67,7 +82,7 @@ export default function Room() {
             </div>
             <div className="game-play-area">
                 <CurrentPlayersList />
-                <Canvas roomId={roomId} />
+                <Canvas roomId={roomId} initialRoomState={initialRoomState} />
                 <Chat />
             </div>
         </div>

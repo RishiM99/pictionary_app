@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import setUpDrawingForCanvas from '../helpers/DrawToCanvas.ts';
+import { setUpDrawingForCanvas, setInitialRoomState } from '../helpers/DrawToCanvas.ts';
 import './styles/Canvas.css';
 import { DrawingContext } from '../contexts/DrawingContext.ts';
 import ColorPicker from './ColorPicker.tsx';
@@ -8,12 +8,14 @@ import EraseStrokePicker from './EraseStrokePicker.tsx';
 import { setCurrentCanvasHeight, setCurrentCanvasWidth } from '../helpers/StateStorageHelper.ts';
 import { StrokeInfo } from '../helpers/StrokeInfoMapping.ts';
 import { PaletteOption, Color, StrokeSize, convertColorToString } from '../helpers/Enums.ts';
+import { RoomState } from '../common/SocketEvents.ts';
 
 type Props = {
     roomId: string;
+    initialRoomState: RoomState;
 }
 
-export default function Canvas({ roomId }: Props) {
+export default function Canvas({ roomId, initialRoomState }: Props) {
     const [showColorPicker, setShowColorPicker] = useState(false);
     const [showDrawStrokePicker, setShowDrawStrokePicker] = useState(false);
     const [showEraseStrokePicker, setShowEraseStrokePicker] = useState(false);
@@ -56,7 +58,13 @@ export default function Canvas({ roomId }: Props) {
         return () => {
             setUpDrawingCanvasCleanup();
         }
-    }, [currentDrawStrokeSize, currentColor, isDrawing, drawingCanvasRef, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption, paletteRef, colorPickerRef, drawStrokePickerRef, eraseStrokePickerRef, showColorPicker, showDrawStrokePicker, showEraseStrokePicker, roomId, clearCanvasButtonRef]);
+    }, [currentDrawStrokeSize, currentColor, isDrawing, drawingCanvasRef, setIsDrawing, currentEraseStrokeSize, selectedPaletteOption, paletteRef, colorPickerRef, drawStrokePickerRef, eraseStrokePickerRef, showColorPicker, showDrawStrokePicker, showEraseStrokePicker, roomId, clearCanvasButtonRef, initialRoomState]);
+
+    useEffect(() => {
+        setInitialRoomState(initialRoomState);
+        return () => {
+        }
+    }, [initialRoomState]);
 
     const colorPickerButtonOnClick = () => {
         if (!showColorPicker && showDrawStrokePicker) {

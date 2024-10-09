@@ -3,7 +3,7 @@ import { Color, convertColorToString, PaletteOption, StrokeSize } from './Enums.
 import getSocket from './socket.ts';
 import { StrokeInfo } from './StrokeInfoMapping.ts';
 import { Point, SerializedPath, StrPoint, UUIDandSerializedPath } from './Types.ts';
-import { BroadcastDrawingPathsDiffType } from '../common/SocketEvents.ts';
+import { BroadcastDrawingPathsDiffType, RoomState } from '../common/SocketEvents.ts';
 
 
 let allPaths: Map<any, SerializedPath> = new Map();
@@ -277,6 +277,16 @@ function onMouseUpClearCanvasButton(e: Event) {
     (e.currentTarget as HTMLDivElement).style.width = "40px";
 }
 
+export function setInitialRoomState(initialRoomState: RoomState) {
+    const xScale = drawingCanvas.width / initialRoomState.width;
+    const yScale = drawingCanvas.height / initialRoomState.height;
+    const initialRoomStatePaths = convertPathsDiffArrayToMap(initialRoomState.paths);
+    initialRoomStatePaths.forEach((serializedPath, uuid) => {
+        serializedPath.points = serializedPath.points.map(((point) => ({ x: point.x * xScale, y: point.y * yScale })));
+    });
+    allPaths = initialRoomStatePaths;
+}
+
 type SetUpDrawingForCanvasParamsType = {
     drawingCanvasRef: React.MutableRefObject<HTMLCanvasElement>,
     currColor: Color,
@@ -298,7 +308,7 @@ type SetUpDrawingForCanvasParamsType = {
 }
 
 
-function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef, drawStrokePickerRef, eraseStrokePickerRef, colorPickerRef, showColorPickerVar, showEraseStrokePickerVar, showDrawStrokePickerVar, roomIdVar, clearCanvasButtonRefVar }: SetUpDrawingForCanvasParamsType) {
+export function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize, setIsDrawingFn, isDrawingVar, selectedPaletteOptionVar, currEraseStrokeSize, paletteRefVar, cursorRef, drawStrokePickerRef, eraseStrokePickerRef, colorPickerRef, showColorPickerVar, showEraseStrokePickerVar, showDrawStrokePickerVar, roomIdVar, clearCanvasButtonRefVar }: SetUpDrawingForCanvasParamsType) {
 
     cursor = cursorRef.current;
     cursorWidth = parseInt(window.getComputedStyle(cursor).getPropertyValue("width"), 10);
@@ -345,9 +355,6 @@ function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStrokeSize
     }
 }
 
-
-
-export default setUpDrawingForCanvas;
 
 
 
