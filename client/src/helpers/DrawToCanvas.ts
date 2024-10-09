@@ -266,6 +266,10 @@ function windowResizeListener(e) {
 
 }
 
+function serverRequestCurrentRoomStateListener() {
+
+}
+
 function onMouseDownClearCanvasButton(e: Event) {
     (e.currentTarget as HTMLDivElement).style.height = "30px";
     (e.currentTarget as HTMLDivElement).style.width = "30px";
@@ -340,6 +344,7 @@ export function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStr
     window.addEventListener("mouseup", mouseUpEventListener);
     window.addEventListener("resize", windowResizeListener);
     socket.on('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
+    socket.on('requestCurrentRoomState', serverRequestCurrentRoomStateListener);
     console.log(clearCanvasButtonRefVar.current);
     clearCanvasButtonRefVar.current.addEventListener("mousedown", onMouseDownClearCanvasButton);
     clearCanvasButtonRefVar.current.addEventListener("mouseup", onMouseUpClearCanvasButton);

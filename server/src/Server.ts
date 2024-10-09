@@ -106,6 +106,11 @@ io.on('connection', async (socket) => {
     const { pathsDiff, width, height, roomId } = msg;
     socket.broadcast.to(roomId).emit('broadcastDrawingPathsDiff', { pathsDiff, width, height });
   });
+
+  socket.on('getRoomStateUponJoining', async (roomName: string) => {
+    io.to(roomName).emit("requestCurrentRoomState");
+
+  });
 });
 
 server.listen(Constants.PORT, () => {
