@@ -6,6 +6,7 @@ import { RoomAndMembers } from './../common/SocketEvents.ts';
 
 const socket = getSocket();
 
+
 type loaderData = {
   userName: string;
   initialListOfRoomsAndMembers: RoomAndMembers[];
