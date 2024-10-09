@@ -26,7 +26,7 @@ export async function loader({ params }): Promise<loaderData | Response> {
     const socket = getSocket();
     socket.emit('joinRoom', params.roomId);
 
-    socket.emit('getRoomStateUponJoining');
+    socket.emit('getRoomStateUponJoining', params.roomId);
     const waitForRoomState = function () {
         return new Promise<RoomState>((resolve) => {
             socket.on('sendRoomStateUponJoining', (roomState) => resolve(roomState));
@@ -41,6 +41,7 @@ export async function loader({ params }): Promise<loaderData | Response> {
 }
 
 export default function Room() {
+    console.log('loading room');
     const { roomId, initialRoomState } = useLoaderData() as loaderData;
     const [copyUrlClicked, setCopyUrlClicked] = useState(false);
 

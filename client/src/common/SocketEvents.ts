@@ -38,6 +38,6 @@ export interface ClientToServerEvents {
     joinRoom: (roomName: string) => void;
     getListOfRoomsAndMembers: () => void;
     drawingPathsDiffFromClient: (msg: DrawingPathsDiffFromClientType) => void;
-    getRoomStateUponJoining: () => void;
+    getRoomStateUponJoining: (roomName: string) => void;
     sendCurrentRoomState: (roomState: RoomState) => void;
 }
