@@ -97,6 +97,11 @@ export default class DBUtil {
         }
     }
 
+    async doesRoomHaveAdditionalSocketsOtherThanThisSocket(roomId: string, socketId: string) {
+        const socketsInRoom = await this.#selectAndExtractSingleColumn("SELECT socket_id FROM sockets_to_rooms WHERE room_id = $1", [roomId], "socket_id");
+        return socketsInRoom.length > 1 && socketsInRoom.includes(socketId);
+    }
+
     async getRoomAndMembersInfo() {
         const rooms = await this.#selectAndExtractSingleColumn("SELECT room_id FROM rooms", [], "room_id");
         console.log(`Rooms: ${rooms}`);

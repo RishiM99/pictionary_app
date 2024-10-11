@@ -77,6 +77,23 @@ io.on('connection', async (socket) => {
         const { pathsDiff, width, height, roomId } = msg;
         socket.broadcast.to(roomId).emit('broadcastDrawingPathsDiff', { pathsDiff, width, height });
     });
+    socket.on('getRoomStateUponJoining', async (roomName) => {
+        if (!await dbUtil.doesRoomHaveAdditionalSocketsOtherThanThisSocket(roomName, socket.id)) {
+            // Send empty RoomState if room is empty
+            console.log("HERE");
+            socket.emit("sendRoomStateUponJoining", { isRoomEmpty: true, paths: [], width: 0, height: 0 });
+        }
+        else {
+            console.log('getRoomStateUponJoining');
+            const exchngId = crypto.randomUUID();
+            io.to(roomName).emit("requestCurrentRoomState", exchngId);
+            io.on("sendCurrentRoomState", (exchangeId, roomState) => {
+                if (exchangeId === exchngId) {
+                    socket.emit("sendRoomStateUponJoining", roomState);
+                }
+            });
+        }
+    });
 });
 server.listen(Constants.PORT, () => {
     console.log(`Server listening on ${Constants.PORT}`);

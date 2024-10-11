@@ -8,7 +8,7 @@ import { Server } from 'socket.io';
 import DBUtil from './DBUtil.js';
 import * as Constants from './Constants.js';
 import { type Request } from "express";
-import { ClientToServerEvents, ServerToClientEvents } from "../../client/src/common/SocketEvents.js";
+import { ClientToServerEvents, RoomState, ServerToClientEvents } from "../../client/src/common/SocketEvents.js";
 
 
 declare module 'express-session' {
@@ -108,8 +108,20 @@ io.on('connection', async (socket) => {
   });
 
   socket.on('getRoomStateUponJoining', async (roomName: string) => {
-    io.to(roomName).emit("requestCurrentRoomState");
-
+    if (!await dbUtil.doesRoomHaveAdditionalSocketsOtherThanThisSocket(roomName, socket.id)) {
+      // Send empty RoomState if room is empty
+      console.log("HERE");
+      socket.emit("sendRoomStateUponJoining", { isRoomEmpty: true, paths: [], width: 0, height: 0 });
+    } else {
+      console.log('getRoomStateUponJoining');
+      const exchngId = crypto.randomUUID();
+      io.to(roomName).emit("requestCurrentRoomState", exchngId);
+      io.on("sendCurrentRoomState", (exchangeId: string, roomState: RoomState) => {
+        if (exchangeId === exchngId) {
+          socket.emit("sendRoomStateUponJoining", roomState);
+        }
+      });
+    }
   });
 });
 

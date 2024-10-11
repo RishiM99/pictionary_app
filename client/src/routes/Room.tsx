@@ -27,6 +27,7 @@ export async function loader({ params }): Promise<loaderData | Response> {
     socket.emit('joinRoom', params.roomId);
 
     socket.emit('getRoomStateUponJoining', params.roomId);
+    console.log("gettingRoomState");
     const waitForRoomState = function () {
         return new Promise<RoomState>((resolve) => {
             socket.on('sendRoomStateUponJoining', (roomState) => resolve(roomState));

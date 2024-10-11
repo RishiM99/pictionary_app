@@ -20,6 +20,7 @@ export type BroadcastDrawingPathsDiffType = {
 };
 
 export type RoomState = {
+    isRoomEmpty: boolean;
     paths: UUIDandSerializedPath[];
     width: number;
     height: number;
@@ -29,8 +30,8 @@ export interface ServerToClientEvents {
     listOfRoomsAndMembers: (listOfRoomsAndMembers: RoomAndMembers[]) => void;
     nameOfNewRoom: (roomId: string) => void;
     broadcastDrawingPathsDiff: (msg: BroadcastDrawingPathsDiffType) => void;
-    sendRoomStateUponJoining: (msg: RoomState) => void;
-    requestCurrentRoomState: () => void;
+    sendRoomStateUponJoining: (roomState: RoomState) => void;
+    requestCurrentRoomState: (exchangeId: string) => void;
 }
 
 export interface ClientToServerEvents {
@@ -39,5 +40,5 @@ export interface ClientToServerEvents {
     getListOfRoomsAndMembers: () => void;
     drawingPathsDiffFromClient: (msg: DrawingPathsDiffFromClientType) => void;
     getRoomStateUponJoining: (roomName: string) => void;
-    sendCurrentRoomState: (roomState: RoomState) => void;
+    sendCurrentRoomState: (exchangeId: string, roomState: RoomState) => void;
 }

@@ -87,11 +87,11 @@ function isPointUnderEraseStrokePicker(point) {
 }
 
 
-function convertPathsDiffMapToArray(pathsDiffMap: Map<any, SerializedPath>): UUIDandSerializedPath[] {
+function convertPathsMapToArray(pathsDiffMap: Map<any, SerializedPath>): UUIDandSerializedPath[] {
     return [...pathsDiffMap].map(([uuid, serializedPath]) => ({ 'uuid': uuid, 'serializedPath': serializedPath }));
 }
 
-function convertPathsDiffArrayToMap(pathsDiffArr: UUIDandSerializedPath[]): Map<any, SerializedPath> {
+function convertPathsArrayToMap(pathsDiffArr: UUIDandSerializedPath[]): Map<any, SerializedPath> {
     const arrToConvertToMap = pathsDiffArr.map((uuidAndSerializedPath) => [uuidAndSerializedPath.uuid, uuidAndSerializedPath.serializedPath]) as [any, SerializedPath][];
     return new Map(arrToConvertToMap);
 }
@@ -100,7 +100,7 @@ function trackDiffsAndPushUpdates(pathUUID, point) {
     if (updatesSinceLastSync === FREQUENCY_OF_DRAWING_UPDATES) {
         console.log(`sentmap`);
         console.log(diffFromPreviousAllPaths);
-        socket.emit('drawingPathsDiffFromClient', { pathsDiff: convertPathsDiffMapToArray(diffFromPreviousAllPaths), width: getCurrentCanvasWidth(), height: getCurrentCanvasHeight(), roomId });
+        socket.emit('drawingPathsDiffFromClient', { pathsDiff: convertPathsMapToArray(diffFromPreviousAllPaths), width: getCurrentCanvasWidth(), height: getCurrentCanvasHeight(), roomId });
         updatesSinceLastSync = 0;
         diffFromPreviousAllPaths = new Map();
     }
@@ -119,7 +119,7 @@ function trackDiffsAndPushUpdates(pathUUID, point) {
 
 function drawingPathsDiffEventListener(msg: BroadcastDrawingPathsDiffType) {
     const { pathsDiff, width, height } = msg;
-    const pathsDiffMap = convertPathsDiffArrayToMap(pathsDiff);
+    const pathsDiffMap = convertPathsArrayToMap(pathsDiff);
 
     const xScale = getCurrentCanvasWidth() / width;
     const yScale = getCurrentCanvasHeight() / height;
@@ -266,8 +266,8 @@ function windowResizeListener(e) {
 
 }
 
-function serverRequestCurrentRoomStateListener() {
-
+function serverRequestsCurrentRoomStateListener(exchangeId: string) {
+    socket.emit("sendCurrentRoomState", exchangeId, { paths: convertPathsMapToArray(allPaths), width: getCurrentCanvasWidth(), height: getCurrentCanvasHeight(), isRoomEmpty: false });
 }
 
 function onMouseDownClearCanvasButton(e: Event) {
@@ -282,13 +282,16 @@ function onMouseUpClearCanvasButton(e: Event) {
 }
 
 export function setInitialRoomState(initialRoomState: RoomState) {
-    const xScale = drawingCanvas.width / initialRoomState.width;
-    const yScale = drawingCanvas.height / initialRoomState.height;
-    const initialRoomStatePaths = convertPathsDiffArrayToMap(initialRoomState.paths);
-    initialRoomStatePaths.forEach((serializedPath, uuid) => {
-        serializedPath.points = serializedPath.points.map(((point) => ({ x: point.x * xScale, y: point.y * yScale })));
-    });
-    allPaths = initialRoomStatePaths;
+    if (!initialRoomState.isRoomEmpty) {
+        const xScale = drawingCanvas.width / initialRoomState.width;
+        const yScale = drawingCanvas.height / initialRoomState.height;
+        const initialRoomStatePaths = convertPathsArrayToMap(initialRoomState.paths);
+        initialRoomStatePaths.forEach((serializedPath, uuid) => {
+            serializedPath.points = serializedPath.points.map(((point) => ({ x: point.x * xScale, y: point.y * yScale })));
+            drawRemainderOfPath(serializedPath, 0);
+        });
+        allPaths = initialRoomStatePaths;
+    }
 }
 
 type SetUpDrawingForCanvasParamsType = {
@@ -344,7 +347,7 @@ export function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStr
     window.addEventListener("mouseup", mouseUpEventListener);
     window.addEventListener("resize", windowResizeListener);
     socket.on('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
-    socket.on('requestCurrentRoomState', serverRequestCurrentRoomStateListener);
+    socket.on('requestCurrentRoomState', serverRequestsCurrentRoomStateListener);
     console.log(clearCanvasButtonRefVar.current);
     clearCanvasButtonRefVar.current.addEventListener("mousedown", onMouseDownClearCanvasButton);
     clearCanvasButtonRefVar.current.addEventListener("mouseup", onMouseUpClearCanvasButton);
@@ -355,8 +358,11 @@ export function setUpDrawingForCanvas({ drawingCanvasRef, currColor, currDrawStr
         window.removeEventListener("mouseup", mouseUpEventListener);
         window.removeEventListener("resize", windowResizeListener);
         socket.off('broadcastDrawingPathsDiff', drawingPathsDiffEventListener);
-        clearCanvasButtonRefVar.current.removeEventListener("mousedown", onMouseDownClearCanvasButton);
-        clearCanvasButtonRefVar.current.removeEventListener("mouseup", onMouseUpClearCanvasButton);
+        socket.off('requestCurrentRoomState', serverRequestsCurrentRoomStateListener);
+        if (clearCanvasButtonRefVar.current != null) {
+            clearCanvasButtonRefVar.current.removeEventListener("mousedown", onMouseDownClearCanvasButton);
+            clearCanvasButtonRefVar.current.removeEventListener("mouseup", onMouseUpClearCanvasButton);
+        }
     }
 }
 

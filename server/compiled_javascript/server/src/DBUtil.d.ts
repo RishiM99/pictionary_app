@@ -9,6 +9,7 @@ export default class DBUtil {
     addSocketToRelevantRoomsOnConnection(socket: Socket): Promise<void>;
     addSocketToRoom(socketId: string, roomId: string): Promise<void>;
     createNewRoomWithDeduplicatedRoomName(roomName: string): Promise<string>;
+    doesRoomHaveAdditionalSocketsOtherThanThisSocket(roomId: string, socketId: string): Promise<boolean>;
     getRoomAndMembersInfo(): Promise<{
         roomId: any;
         membersNames: any[];
