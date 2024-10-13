@@ -65,6 +65,11 @@ export default class DBUtil {
         await this.pgPool.query("INSERT INTO sockets_to_rooms (socket_id, room_id) VALUES ($1, $2)", [socketId, roomId]);
     }
 
+    async removeSocketUponDisconnection(socket: Socket) {
+        await this.pgPool.query("DELETE FROM sockets_to_rooms WHERE socket_id = $1", [socket.id]);
+        await this.pgPool.query("DELETE FROM sockets_to_sessions WHERE socket_id = $1", [socket.id]);
+    }
+
     async createNewRoomWithDeduplicatedRoomName(roomName: string): Promise<string> {
         // Create individual client for transaction
         const client = await this.pgPool.connect();
@@ -104,7 +109,6 @@ export default class DBUtil {
 
     async getRoomAndMembersInfo() {
         const rooms = await this.#selectAndExtractSingleColumn("SELECT room_id FROM rooms", [], "room_id");
-        console.log(`Rooms: ${rooms}`);
         let roomAndMembersInfo = [];
         for (const roomId of rooms) {
             const socketsInRoom = await this.#selectAndExtractSingleColumn("SELECT socket_id FROM sockets_to_rooms WHERE room_id = $1", [roomId], "socket_id");

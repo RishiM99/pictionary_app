@@ -74,7 +74,6 @@ io.engine.use(sessionMiddleware);
 io.on('connection', async (socket) => {
   const request = socket.request as Request;
   const sessionId = request.session.id;
-  console.log(`Session Id: ${sessionId}`);
   await dbUtil.addSocketIntoSocketsToSessionsTable(socket.id, sessionId);
   await dbUtil.addSocketToRelevantRoomsOnConnection(socket);
 
@@ -84,8 +83,6 @@ io.on('connection', async (socket) => {
   });
 
   socket.on('createRoom', async (requestedRoomName: string) => {
-    console.log(`Socket Id: ${socket.id}`);
-    console.log(`requested room name ${requestedRoomName}`);
     const dedupedRoomName = await dbUtil.createNewRoomWithDeduplicatedRoomName(requestedRoomName);
     socket.join(dedupedRoomName);
     dbUtil.addSocketToRoom(socket.id, dedupedRoomName);
@@ -95,7 +92,6 @@ io.on('connection', async (socket) => {
   });
 
   socket.on('joinRoom', async (roomName: string) => {
-    console.log(`Socket Id: ${socket.id}`);
     socket.join(roomName);
     dbUtil.addSocketToRoom(socket.id, roomName);
     const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
@@ -123,6 +119,12 @@ io.on('connection', async (socket) => {
       });
     }
   });
+
+  socket.on('disconnect', async (reason) => {
+    console.log("removing socket upon disconnect");
+    await dbUtil.removeSocketUponDisconnection(socket);
+  });
+
 });
 
 server.listen(Constants.PORT, () => {

@@ -11,6 +11,10 @@ type loaderData = {
   initialListOfRoomsAndMembers: RoomAndMembers[];
 };
 
+function disconnectSocket(ev) {
+  socket.disconnect();
+}
+
 export async function loader(): Promise<loaderData | Response> {
   const response = await fetch("/getUserName");
   if (!response.ok) {
@@ -71,7 +75,13 @@ export default function CreateOrJoinRooms() {
     return () => {
       socket.off('listOfRoomsAndMembers', onGetListOfRoomsAndMembers);
     };
-  })
+  });
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", disconnectSocket);
+
+    return () => { };
+  });
 
   return (
     <div className="container" >
