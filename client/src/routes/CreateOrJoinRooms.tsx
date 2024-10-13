@@ -11,10 +11,6 @@ type loaderData = {
   initialListOfRoomsAndMembers: RoomAndMembers[];
 };
 
-function disconnectSocket(ev) {
-  socket.disconnect();
-}
-
 export async function loader(): Promise<loaderData | Response> {
   const response = await fetch("/getUserName");
   if (!response.ok) {
@@ -27,7 +23,6 @@ export async function loader(): Promise<loaderData | Response> {
     return redirect('/');
   }
 
-  const socket = getSocket();
   socket.emit('getListOfRoomsAndMembers');
   const waitForRoomsAndMembers = function () {
     return new Promise<RoomAndMembers[]>((resolve) => {
@@ -78,9 +73,15 @@ export default function CreateOrJoinRooms() {
   });
 
   useEffect(() => {
+    function disconnectSocket(ev) {
+      socket.disconnect();
+    }
+
     window.addEventListener("beforeunload", disconnectSocket);
 
-    return () => { };
+    return () => {
+      window.removeEventListener("beforeunload", disconnectSocket);
+    };
   });
 
   return (

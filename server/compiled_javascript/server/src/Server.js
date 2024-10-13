@@ -93,6 +93,8 @@ io.on('connection', async (socket) => {
     socket.on('disconnect', async (reason) => {
         console.log("removing socket upon disconnect");
         await dbUtil.removeSocketUponDisconnection(socket);
+        const roomsAndMembersInfo = await dbUtil.getRoomAndMembersInfo();
+        io.emit('listOfRoomsAndMembers', roomsAndMembersInfo);
     });
 });
 server.listen(Constants.PORT, () => {

@@ -12,6 +12,8 @@ type loaderData = {
     initialRoomState: RoomState;
 };
 
+const socket = getSocket();
+
 export async function loader({ params }): Promise<loaderData | Response> {
     const response = await fetch("/getUserName");
     if (!response.ok) {
@@ -23,7 +25,6 @@ export async function loader({ params }): Promise<loaderData | Response> {
         return redirect('/');
     }
 
-    const socket = getSocket();
     socket.emit('joinRoom', params.roomId);
 
     socket.emit('getRoomStateUponJoining', params.roomId);
@@ -45,6 +46,18 @@ export default function Room() {
     console.log('loading room');
     const { roomId, initialRoomState } = useLoaderData() as loaderData;
     const [copyUrlClicked, setCopyUrlClicked] = useState(false);
+
+    useEffect(() => {
+        function disconnectSocket(ev) {
+            socket.disconnect();
+        }
+
+        window.addEventListener("beforeunload", disconnectSocket);
+
+        return () => {
+            window.removeEventListener("beforeunload", disconnectSocket);
+        };
+    });
 
     useEffect(() => {
         function handleCopyUrlClicked() {
