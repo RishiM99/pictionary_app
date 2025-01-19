@@ -21,7 +21,7 @@ const server = createServer(app);
 // socket.io Server
 const io = new Server(server);
 // Have Node serve the files for our built React app
-app.use(express.static(path.resolve(__dirname, '../../client/build')));
+app.use(express.static(path.resolve(__dirname, '../../../../client/build')));
 app.use(express.json());
 const sessionMiddleware = session({
     secret: 'l7xQ2zLX93',
@@ -36,7 +36,7 @@ const dbUtil = new DBUtil(pgPool);
 await dbUtil.scheduleCleanUpOfExpiredSessions();
 app.use(sessionMiddleware);
 app.get('/', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'));
+    res.sendFile(path.resolve(__dirname, '../../../../client/build', 'index.html'));
 });
 app.post('/createUser', (req, res) => {
     req.session.userName = req.body.userName;

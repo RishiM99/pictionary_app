@@ -38,7 +38,7 @@ const server = createServer(app)
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(server)
 
 // Have Node serve the files for our built React app
-app.use(express.static(path.resolve(__dirname, '../../client/build')));
+app.use(express.static(path.resolve(__dirname, '../../../../client/build')));
 
 app.use(express.json())
 
@@ -58,7 +58,7 @@ await dbUtil.scheduleCleanUpOfExpiredSessions();
 app.use(sessionMiddleware);
 
 app.get('/', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'));
+  res.sendFile(path.resolve(__dirname, '../../../../client/build', 'index.html'));
 });
 
 app.post('/createUser', (req, res) => {
